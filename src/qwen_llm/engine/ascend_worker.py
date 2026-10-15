@@ -21,11 +21,15 @@ class BudgetedNPUWorker(NPUWorker):
         from vllm.v1.core.kv_cache_utils import get_max_concurrency_for_kv_cache_config
 
         cache = self.model_runner.kv_cache_config
+        drafter = getattr(self.model_runner, "drafter", None)
+        speculative = self.vllm_config.speculative_config
         return {
             "worker": f"{type(self).__module__}.{type(self).__name__}",
             "device": str(self.device),
             "graph_mode": str(self.vllm_config.compilation_config.cudagraph_mode),
             "graphs_captured": compilation_counter.num_cudagraph_captured,
+            "drafter": type(drafter).__name__ if drafter is not None else None,
+            "speculative_tokens": speculative.num_speculative_tokens if speculative else 0,
             "kv_cache_allocated_bytes": sum(t.size for t in cache.kv_cache_tensors),
             "cache_block_sizes": sorted({g.kv_cache_spec.block_size for g in cache.kv_cache_groups}),
             "full_context_capacity": get_max_concurrency_for_kv_cache_config(self.vllm_config, cache),

@@ -64,6 +64,8 @@ def summarize(directory: Path) -> dict:
     long = read("logs/long-steady-128.json")
     if long:
         rounds = long["rounds"]
+        cache_patterns = [[sample["response"]["usage"]["input_tokens_details"]["cached_tokens"]
+                          for sample in item["samples"] if sample.get("response")] for item in rounds[-3:]]
         valid = long.get("after", {}).get("isolated", False) and len(rounds) >= 4 and all(
             item.get("resources", {}).get("isolated", False) and len(item["samples"]) == 4 and all(
             sample.get("response", {}).get("status") in ("completed", "incomplete")
@@ -73,6 +75,9 @@ def summarize(directory: Path) -> dict:
             "transition_rounds": max(0, len(rounds)-4),
             "cold_tps": rounds[0]["tokens_per_second"] if valid else None,
             "repeat_tps_median": statistics.median(item["tokens_per_second"] for item in rounds[-3:]) if valid else None,
+            "last_three_tps": [item["tokens_per_second"] for item in rounds[-3:]],
+            "cache_stable": len(cache_patterns) == 3 and all(pattern == cache_patterns[0] for pattern in cache_patterns),
+            "repeat_cache_patterns": cache_patterns,
             "repeat_cached_tokens": sorted({sample["response"]["usage"]["input_tokens_details"]["cached_tokens"]
                 for item in rounds[-3:] for sample in item["samples"] if sample.get("response")}),
         }
