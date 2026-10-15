@@ -56,4 +56,7 @@ MAX_JOBS="${MAX_JOBS:-8}" SETUPTOOLS_SCM_PRETEND_VERSION=0.18.0+torch291.cann911
 env -u PYTHONPATH poetry run python -m pip install -c "$QWEN_CONSTRAINTS" \
     --index-url https://pypi.org/simple --extra-index-url https://mirrors.huaweicloud.com/ascend/repos/pypi \
     "$QWEN_RUNTIME_ROOT/wheels/vllm_ascend-0.18.0+torch291.cann911-cp310-cp310-linux_aarch64.whl"
+# 同版本源码补丁重建后必须覆盖旧 wheel；不重装依赖，保留源码 vLLM。
+env -u PYTHONPATH poetry run python -m pip install --force-reinstall --no-deps \
+    "$QWEN_RUNTIME_ROOT/wheels/vllm_ascend-0.18.0+torch291.cann911-cp310-cp310-linux_aarch64.whl"
 env -u PYTHONPATH poetry run python -m pip check
