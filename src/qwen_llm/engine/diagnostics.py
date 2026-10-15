@@ -55,7 +55,7 @@ def diagnose(model: Path, probe_runtime: bool = False) -> dict:
         except (OSError, ValueError) as exc:
             blockers.append(f"量化描述文件无效：{exc}")
     if quant == "awq":
-        blockers.append("当前 CANN 8.3.RC1 配套基线 vllm-ascend 0.11.0rc1 仅声明 ascend 量化，未支持此 AWQ GEMM 模型；禁止静默解量化或替换权重")
+        blockers.append("该 AWQ GEMM 模型未纳入已验证的 Ascend 配置，请选用模型目录中的 W8A8/W4A8 权重")
     if packages["vllm"] and packages["vllm"].startswith("0.11.") and (
         config.get("model_type") in {"qwen3_5", "qwen3_5_moe"} or quant == "compressed-tensors"
     ):

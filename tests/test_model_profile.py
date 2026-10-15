@@ -21,3 +21,15 @@ def test_profile_selects_matching_model_and_preserves_explicit_override(tmp_path
     assert invoked[invoked.index('--model-name')+1] == 'qwen3.5-9b'
     assert invoked[invoked.index('--speculative-tokens')+1] == '2'
     assert invoked[-2:] == ['--kv-cache-gib', '2.5']
+
+
+def test_profile_rejects_capacity_values_that_would_be_ignored(tmp_path, monkeypatch):
+    catalog = tmp_path / 'models.json'
+    catalog.write_text(json.dumps([{'name': 'invalid', 'path': '/models/weights',
+                                    'kv_cache_gib': 3, 'max_concurrency': 8}]))
+    invoked = []
+    monkeypatch.setattr(os, 'execv', lambda *args: invoked.append(args))
+    result = CliRunner().invoke(app, ['serve-model', 'invalid', '--catalog', str(catalog)])
+    assert result.exit_code != 0
+    assert 'max_concurrency' in result.output
+    assert invoked == []

@@ -55,6 +55,11 @@ def serve_model(
     row = next((item for item in entries if item["name"].casefold() == name.casefold()), None)
     if row is None:
         raise typer.BadParameter("未知模型；可选：" + ", ".join(item["name"] for item in entries))
+    for field, supported in (("max_input_tokens", 8192), ("max_output_tokens", 8192), ("max_concurrency", 4)):
+        if row.get(field, supported) != supported:
+            raise typer.BadParameter(f"模型目录中的 {field} 必须为 {supported}，容量变更需要重新验收")
+    if not row.get("language_model_only", True):
+        raise typer.BadParameter("当前服务只支持文本模型配置")
     options = ["--model-name", row["name"], "--model-path", str(Path(row["path"]).resolve()),
                "--dtype", row.get("dtype", "bfloat16"), "--runner", row.get("runner", "aclgraph"),
                "--graph-mode", row.get("graph_mode", "FULL_DECODE_ONLY"),
