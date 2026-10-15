@@ -86,6 +86,7 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
                 "max_input_tokens": config.max_input_tokens,
                 "max_output_tokens": config.max_output_tokens,
                 "kv_cache_bytes": config.kv_cache_bytes, "enforce_eager": config.runner is Runner.EAGER,
+                "gpu_memory_utilization": config.gpu_memory_utilization,
                 "requested_runner": config.runner.value, "dtype": config.dtype.value, "prefix_caching": config.prefix_caching,
                 "batch_tokens": config.batch_tokens, "graph_mode": config.graph_mode.value,
                 "speculative_tokens": config.speculative_tokens,

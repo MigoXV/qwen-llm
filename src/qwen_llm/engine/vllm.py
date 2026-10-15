@@ -89,6 +89,13 @@ class V1Engine:
         await self.health()
         async for _ in self.generate([self.tokenizer.eos_token_id], "warmup", max_tokens=1):
             pass
+        if modern:
+            workers = await self.llm.collective_rpc("runtime_status", timeout=30)
+            self.runtime_identity["workers"] = workers
+            if any(row["full_context_capacity"] < self.config.max_concurrency for row in workers):
+                raise ValueError("实际 KV 缓存不足以容纳配置的四路完整上下文")
+            if self.config.runner is Runner.ACLGRAPH and any(row["graphs_captured"] == 0 for row in workers):
+                raise RuntimeError("请求 ACL Graph，但真实 worker 未捕获执行图")
         logger.info("V1 ready: %s", self.config)
 
     async def health(self):
