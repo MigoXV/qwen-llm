@@ -17,7 +17,7 @@
 
 35B 权重包含视觉部分，本服务通过 `language_model_only=True` 只加载文本模型。已回补 [上游 PR #14618](https://github.com/vllm-project/vllm-ascend/pull/14618)：预热与实际请求统一使用 `supports_mm_inputs` 判断输入路径，避免首次真实请求时 `NoneType.size` 崩溃。源补丁纳入安装脚本。
 
-910B/A2 的 [CANN QuantMatmulV4 API](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/API/aolapi/context/ops-nn/aclnnQuantMatmulV4.md) 包含 INT4 路径。下载的 30B W4A8 将低位整数保存在 INT8 容器里，磁盘体积不会减半；只有实际装载、INT4 打包、正确性和测速完成后，才判定本机部署可用。
+官方 [Ascend C Matmul 类型表](https://www.hiascend.com/doc_center/source/zh/canncommercial/800/apiref/ascendcopapi/atlasascendc_api_07_0614.html)列出 Atlas A2 的 `int4b_t × int4b_t` 支持；本次 W4A8 表示 INT4 权重、INT8 激活，不等同于全程 INT4 计算或固定两倍算力。910B/A2 的 [CANN QuantMatmulV4 API](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/API/aolapi/context/ops-nn/aclnnQuantMatmulV4.md) 包含 INT4 路径。下载的 30B W4A8 将低位整数保存在 INT8 容器里，磁盘体积不会减半；只有实际装载、INT4 打包、正确性和测速完成后，才判定本机部署可用。
 
 能力验证使用 40 道固定基础题与 GSM8K test 固定前 32 题，温度零、关闭思考，答案严格判定，并保存每题完整输出。GSM8K 来自 OpenAI 官方仓库固定提交 `3101c7d5072418e28b9008a6636bde82a006892c`，下载在 `/home/qwen-models/evaluation/`。这 72 题只用于发现明显能力问题，不代表完整基准成绩。
 
@@ -48,3 +48,7 @@ RedHatAI 9B 的 tokenizer 配置来自 Transformers 5，声明 `TokenizersBacken
 | 9B RedHatAI W8A8，batch4096/KV8.5 | 71/72 | 4/4、4/4 | 74.67 | 128.88 | 241.32 | 24.87 |
 
 9B 的唯一未通过题为 GSM8K 盈亏平衡年份题，回答反复讨论并在2048输出token预算内未给出指定的最终答案。30B W8A8在eager下也未通过重复填充材料，不能只归因为图执行；未运行完整BF16基线，无法判定属于原模型还是量化/后端的损失。各份权重和失败输出均保留。
+
+所有配置保持输入8192、输出上限8192、4个活动请求。长输入实测为每路8192输入加128输出；worker返回的完整16384-token并发容量是运行时估算，未将它当作四路各8192输出的实测结果。
+
+9B 两步 MTP 的严格得分降至70/72，基础算术题 `29×31` 返回 `897`，正确答案为 `899`；无MTP基线此题通过。两组8K检索仍各4/4。该配置不设为默认，完整错误输出与参数保存在 `qwen3.5-9b/redhat-w8a8-mtp2-b4096-kv5p5/`，原权重继续保留。
