@@ -24,7 +24,7 @@ openai = ">=3.31,<4"
 [tool.poetry]
 packages = [{include = "qwen_llm", from = "src"}]
 
-[tool.poetry.scripts]
+[project.scripts]
 qwen-llm = "qwen_llm.commands.app:app"
 
 [[tool.poetry.source]]
