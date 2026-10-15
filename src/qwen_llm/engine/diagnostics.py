@@ -49,7 +49,7 @@ def diagnose(model: Path, probe_runtime: bool = False) -> dict:
     if description.exists() and quant != "awq":
         try:
             model_quant_type = json.loads(description.read_text()).get("model_quant_type")
-            if model_quant_type != "W8A8":
+            if model_quant_type not in {"W8A8", "W8A8_DYNAMIC", "W4A8_DYNAMIC"}:
                 blockers.append(f"尚未验证的昇腾量化类型：{model_quant_type}")
             quant = "ascend"
         except (OSError, ValueError) as exc:
@@ -59,13 +59,19 @@ def diagnose(model: Path, probe_runtime: bool = False) -> dict:
     expected = {"vllm": "0.11.0", "vllm-ascend": "0.11.0rc1",
                 "torch": "2.7.1", "torch-npu": "2.7.1", "transformers": "4.57.1",
                 "huggingface-hub": "0.36.0", "setuptools": "79.0.1", "openai": "3.31.0"}
+    if packages["vllm"] and packages["vllm"].split("+")[0] == "0.18.0":
+        expected.update({"vllm": "0.18.0", "vllm-ascend": "0.18.0",
+                         "torch": "2.9.1", "torch-npu": "2.9.1", "transformers": "4.57.6"})
     for name, prefix in expected.items():
         if packages[name] and packages[name].split("+")[0] != prefix:
             blockers.append(f"{name} 版本 {packages[name]} 不匹配诊断基线 {prefix}")
     for name, value in packages.items():
         if value is None:
             blockers.append(f"未安装 {name}")
-    cann = Path("/usr/local/Ascend/ascend-toolkit/latest/version.cfg")
+    cann_root = Path(os.getenv("ASCEND_HOME_PATH", "/usr/local/Ascend/ascend-toolkit/latest"))
+    cann = cann_root / "version.cfg"
+    if not cann.exists():
+        cann = cann_root / "share/info/runtime/version.info"
     devices = sorted(str(p) for p in Path("/dev").glob("davinci[0-9]*"))
     if not devices:
         blockers.append("未发现可见 Ascend NPU 设备节点")
@@ -84,5 +90,5 @@ def diagnose(model: Path, probe_runtime: bool = False) -> dict:
     return {"runtime_probe": runtime_probe, "devices": devices, "architecture": platform.machine(), "model": str(model.resolve()),
             "quantization": quant, "model_quant_type": model_quant_type,
             "weight_files": sorted(weight_files), "packages": packages,
-            "cann": cann.read_text() if cann.exists() else None,
+            "cann_root": str(cann_root), "cann": cann.read_text() if cann.exists() else None,
             "blockers": blockers, "ready": not blockers}

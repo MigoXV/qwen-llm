@@ -8,7 +8,7 @@ from importlib.metadata import version
 
 import typer
 
-from qwen_llm.config import ModelDType, Runner
+from qwen_llm.config import GraphMode, ModelDType, Runner
 
 logging.basicConfig(
     level=logging.INFO,
@@ -65,7 +65,10 @@ def serve(
     batch_tokens: int = typer.Option(2048, min=4, envvar="QWEN_BATCH_TOKENS"),
     runner: Runner = typer.Option(Runner.ACLGRAPH, envvar="QWEN_RUNNER"),
     prefix_caching: bool = typer.Option(True, "--prefix-caching/--no-prefix-caching", envvar="QWEN_PREFIX_CACHING"),
-    kv_cache_gib: float = typer.Option(10.25, min=10, envvar="QWEN_KV_CACHE_GIB"),
+    kv_cache_gib: float = typer.Option(10.25, min=0.125, envvar="QWEN_KV_CACHE_GIB"),
+    graph_mode: GraphMode = typer.Option(GraphMode.PIECEWISE, envvar="QWEN_GRAPH_MODE"),
+    speculative_tokens: int = typer.Option(0, min=0, max=3, envvar="QWEN_SPECULATIVE_TOKENS"),
+    async_scheduling: bool | None = typer.Option(None, "--async-scheduling/--no-async-scheduling", envvar="QWEN_ASYNC_SCHEDULING"),
 ) -> None:
     """启动单 worker V1 Responses 服务。"""
     import uvicorn
@@ -74,7 +77,9 @@ def serve(
     config = ServingConfig(model_path=model_path, model_name=model_name, dtype=dtype,
                            timeout=timeout, batch_tokens=batch_tokens,
                            runner=runner, prefix_caching=prefix_caching,
-                           kv_cache_bytes=int(kv_cache_gib * 1024**3))
+                           kv_cache_bytes=int(kv_cache_gib * 1024**3),
+                           graph_mode=graph_mode, speculative_tokens=speculative_tokens,
+                           async_scheduling=async_scheduling)
     uvicorn.run(create_app(config), host=host, port=port, workers=1,
                 timeout_graceful_shutdown=int(config.shutdown_grace))
 

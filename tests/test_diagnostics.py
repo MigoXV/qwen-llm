@@ -39,13 +39,14 @@ def test_config_rejects_zero():
     with pytest.raises(ValueError): ServingConfig(max_concurrency=0)
 
 
-def test_ascend_quantized_index_is_recognized(tmp_path):
+@pytest.mark.parametrize("quant_type", ["W8A8", "W8A8_DYNAMIC", "W4A8_DYNAMIC"])
+def test_ascend_quantized_index_is_recognized(tmp_path, quant_type):
     (tmp_path/'config.json').write_text(json.dumps({'architectures':['Qwen3ForCausalLM']}))
-    (tmp_path/'quant_model_description.json').write_text(json.dumps({'model_quant_type':'W8A8'}))
+    (tmp_path/'quant_model_description.json').write_text(json.dumps({'model_quant_type':quant_type}))
     (tmp_path/'quant_model_weight_w8a8.safetensors.index.json').write_text(
         json.dumps({'weight_map':{'model.weight':'quant_model_weight_w8a8-00001-of-00001.safetensors'}}))
     (tmp_path/'quant_model_weight_w8a8-00001-of-00001.safetensors').touch()
     report = diagnose(tmp_path)
     assert report['quantization']=='ascend'
-    assert report['model_quant_type']=='W8A8'
+    assert report['model_quant_type']==quant_type
     assert not any('缺少权重' in x for x in report['blockers'])

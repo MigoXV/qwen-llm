@@ -86,6 +86,17 @@ def test_stream_and_json_equal_content():
         assert plain['output'][0]['content'] == streamed['output'][0]['content']
 
 
+def test_instruct_model_rejects_reasoning_without_consuming_a_slot():
+    engine = FakeEngine()
+    engine.supports_thinking = False
+    with TestClient(create_app(engine=engine)) as client:
+        rejected = client.post('/responses', json=payload(reasoning={'effort': 'medium'}))
+        assert rejected.status_code == 400
+        assert rejected.json()['error']['code'] == 'unsupported_parameter'
+        assert not engine.prepared
+        assert client.post('/responses', json=payload()).json()['status'] == 'completed'
+
+
 @pytest.mark.parametrize('extra', [
     {'previous_response_id':'r1'}, {'store':True}, {'tools':[]},
     {'input':[{'role':'user','content':[{'type':'input_image','image_url':'x'}]}]},

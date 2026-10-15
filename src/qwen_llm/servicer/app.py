@@ -87,7 +87,10 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
                 "max_output_tokens": config.max_output_tokens,
                 "kv_cache_bytes": config.kv_cache_bytes, "enforce_eager": config.runner is Runner.EAGER,
                 "requested_runner": config.runner.value, "dtype": config.dtype.value, "prefix_caching": config.prefix_caching,
-                "batch_tokens": config.batch_tokens}
+                "batch_tokens": config.batch_tokens, "graph_mode": config.graph_mode.value,
+                "speculative_tokens": config.speculative_tokens,
+                "requested_async_scheduling": config.async_scheduling,
+                "runtime": getattr(engine, "runtime_identity", {})}
 
     @app.get("/metrics")
     async def metrics():
@@ -106,6 +109,8 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
             return error("未知模型", 404, "model_not_found")
         if body.max_output_tokens > config.max_output_tokens:
             return error("超出服务输出 token 上限")
+        if body.reasoning.effort != "none" and not getattr(engine, "supports_thinking", True):
+            return error("当前模型只支持非思考模式，请设置reasoning.effort=none", code="unsupported_parameter")
         if len(active) >= config.max_concurrency:
             requests.labels("overloaded").inc()
             return error("四路活动请求已满", 429, "rate_limit_exceeded")

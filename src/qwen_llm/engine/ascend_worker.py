@@ -1,7 +1,12 @@
 """保留上游 NPU worker，只补齐 0.11.0rc1 遗漏的 KV 字节上限。"""
 import logging
 
-from vllm_ascend.worker.worker_v1 import NPUWorker
+from importlib.metadata import version
+
+if version("vllm-ascend").startswith("0.11."):
+    from vllm_ascend.worker.worker_v1 import NPUWorker
+else:
+    from vllm_ascend.worker.worker import NPUWorker
 
 from qwen_llm.engine.memory import bounded_kv_memory
 
