@@ -79,14 +79,14 @@
     "max_output_tokens": 8192,
     "max_concurrency": 4,
     "batch_tokens": 4096,
-    "kv_cache_gib": 8.5,
+    "kv_cache_gib": 3,
     "download_root": "/home/qwen-models/weights/Qwen3.5-9B-W8A8-RedHatAI",
     "async_scheduling": true,
     "npugraph_ex": true,
     "speculative_tokens": 0,
     "graph_mode": "FULL_DECODE_ONLY",
     "prefix_caching": true,
-    "validation_report": "/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-compat-b4096-kv8p5"
+    "validation_report": "/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-base-b4096-kv3"
   },
   {
     "name": "qwen3-30b-a3b-instruct-2507-w4a8",
