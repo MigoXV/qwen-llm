@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # 固定的 CANN 8.3.RC1 诊断基线；不修改系统 CANN 或原有虚拟环境。
 set -euo pipefail
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+case "${QWEN_RUNTIME:-cann911}" in
+    cann911) exec bash "$PROJECT_ROOT/scripts/install_ascend_291.sh" ;;
+    legacy) ;;
+    *) echo 'QWEN_RUNTIME must be cann911 or legacy' >&2; exit 2 ;;
+esac
 BUILD_ROOT="${QWEN_BUILD_ROOT:-/home/qwen-llm-build}"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 mkdir -p "$BUILD_ROOT" "$BUILD_ROOT/logs"

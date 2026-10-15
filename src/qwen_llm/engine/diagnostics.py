@@ -56,6 +56,10 @@ def diagnose(model: Path, probe_runtime: bool = False) -> dict:
             blockers.append(f"量化描述文件无效：{exc}")
     if quant == "awq":
         blockers.append("当前 CANN 8.3.RC1 配套基线 vllm-ascend 0.11.0rc1 仅声明 ascend 量化，未支持此 AWQ GEMM 模型；禁止静默解量化或替换权重")
+    if packages["vllm"] and packages["vllm"].startswith("0.11.") and (
+        config.get("model_type") in {"qwen3_5", "qwen3_5_moe"} or quant == "compressed-tensors"
+    ):
+        blockers.append("该模型需使用新Ascend环境，请通过scripts/run_model.sh启动")
     expected = {"vllm": "0.11.0", "vllm-ascend": "0.11.0rc1",
                 "torch": "2.7.1", "torch-npu": "2.7.1", "transformers": "4.57.1",
                 "huggingface-hub": "0.36.0", "setuptools": "79.0.1", "openai": "3.31.0"}

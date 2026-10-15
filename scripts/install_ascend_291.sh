@@ -27,6 +27,12 @@ for QWEN_SOURCE_NAME in vllm vllm-ascend; do
         git -C "$QWEN_SOURCE_DIR" apply "$QWEN_PATCH"
     fi
 done
+# 上游 PR #14618：language_model_only 的预热与实际请求必须使用相同输入路径。
+QWEN_MM_PATCH="$QWEN_PROJECT_ROOT/deploy/ascend-291/patches/language-model-only.patch"
+if ! git -C "$QWEN_RUNTIME_ROOT/src/ascend018" apply --reverse --check "$QWEN_MM_PATCH" 2>/dev/null; then
+    git -C "$QWEN_RUNTIME_ROOT/src/ascend018" apply --check "$QWEN_MM_PATCH"
+    git -C "$QWEN_RUNTIME_ROOT/src/ascend018" apply "$QWEN_MM_PATCH"
+fi
 # 先安装基础 Triton，最后覆盖 Ascend 实现，避免共用 triton 目录被覆盖。
 env -u PYTHONPATH poetry run python -m pip install --index-url https://download.pytorch.org/whl/cpu \
     torch==2.9.1 torchvision==0.24.1 torchaudio==2.9.1

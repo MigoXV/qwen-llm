@@ -90,6 +90,7 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
                 "batch_tokens": config.batch_tokens, "graph_mode": config.graph_mode.value,
                 "speculative_tokens": config.speculative_tokens,
                 "requested_async_scheduling": config.async_scheduling,
+                "requested_npugraph_ex": config.npugraph_ex,
                 "runtime": getattr(engine, "runtime_identity", {})}
 
     @app.get("/metrics")

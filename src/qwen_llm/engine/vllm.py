@@ -3,7 +3,7 @@ import logging
 import json
 import os
 
-from qwen_llm.config import Runner, ServingConfig
+from qwen_llm.config import GraphMode, Runner, ServingConfig
 from qwen_llm.engine.base import Generation
 from qwen_llm.engine.diagnostics import diagnose
 
@@ -35,6 +35,9 @@ class V1Engine:
         modern_options = {"language_model_only": True} if modern else {}
         if modern and self.config.async_scheduling is not None:
             modern_options["async_scheduling"] = self.config.async_scheduling
+        if modern and self.config.npugraph_ex is not None:
+            modern_options["additional_config"] = {
+                "ascend_compilation_config": {"enable_npugraph_ex": self.config.npugraph_ex}}
         if modern and hybrid and self.config.prefix_caching:
             modern_options["mamba_cache_mode"] = "align"
         if self.config.speculative_tokens:
@@ -52,10 +55,15 @@ class V1Engine:
         graph_options = {}
         if self.config.runner is Runner.ACLGRAPH:
             graph_multiplier = self.config.speculative_tokens + 1
+            capture_sizes = [n * graph_multiplier for n in (1, 2, 4) if n <= self.config.max_concurrency]
+            if self.config.graph_mode is GraphMode.FULL:
+                if not modern or hybrid or self.config.speculative_tokens:
+                    raise ValueError("完整预填充图仅开放给新版vLLM的非混合、无MTP模型")
+                capture_sizes += [n for n in (64, 128, 256) if n <= self.config.batch_tokens]
             graph_options["compilation_config"] = {
                 **({"mode": 3} if modern else {"level": 3, "use_inductor": False}),
                 "cudagraph_mode": self.config.graph_mode.value,
-                "cudagraph_capture_sizes": [n * graph_multiplier for n in (1, 2, 4) if n <= self.config.max_concurrency],
+                "cudagraph_capture_sizes": capture_sizes,
             }
         args = AsyncEngineArgs(
             model=str(self.config.model_path.resolve()), dtype=self.config.dtype.value,
@@ -67,12 +75,17 @@ class V1Engine:
             enforce_eager=self.config.runner is Runner.EAGER, enable_chunked_prefill=True,
             enable_prefix_caching=self.config.prefix_caching, tensor_parallel_size=1,
             cpu_offload_gb=0, kv_cache_memory_bytes=self.config.kv_cache_bytes,
+            gpu_memory_utilization=self.config.gpu_memory_utilization,
             **modern_options,
             **graph_options,
         )
         self.llm = AsyncLLM.from_engine_args(args)
         scheduler = getattr(getattr(self.llm, "vllm_config", None), "scheduler_config", None)
         self.runtime_identity["async_scheduling"] = getattr(scheduler, "async_scheduling", None)
+        compilation = getattr(getattr(self.llm, "vllm_config", None), "compilation_config", None)
+        if compilation is not None:
+            self.runtime_identity["graph_mode"] = str(compilation.cudagraph_mode)
+            self.runtime_identity["graph_capture_sizes"] = compilation.cudagraph_capture_sizes
         await self.health()
         async for _ in self.generate([self.tokenizer.eos_token_id], "warmup", max_tokens=1):
             pass

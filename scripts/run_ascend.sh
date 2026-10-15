@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # 本机验证使用的昇腾运行环境与 W8A8 配置；额外 Typer 参数放在最后覆盖默认值。
 set -eo pipefail
+QWEN_PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+case "${QWEN_RUNTIME:-cann911}" in
+    cann911) exec bash "$QWEN_PROJECT_ROOT/scripts/run_ascend_291.sh" "$@" ;;
+    legacy) ;;
+    *) echo 'QWEN_RUNTIME must be cann911 or legacy' >&2; exit 2 ;;
+esac
 QWEN_BUILD_ROOT="${QWEN_BUILD_ROOT:-/home/qwen-llm-build}"
 QWEN_PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export POETRY_CACHE_DIR="$QWEN_BUILD_ROOT/poetry-cache"
@@ -20,4 +26,4 @@ export TMPDIR="$QWEN_BUILD_ROOT/tmp"
 mkdir -p "$VLLM_CACHE_ROOT" "$ASCEND_PROCESS_LOG_PATH" "$TMPDIR"
 exec poetry run qwen-llm serve \
     --model-path "$QWEN_PROJECT_ROOT/model-bin/Qwen3-14B-W8A8-Ascend" \
-    --port 8100 --dtype bfloat16 --batch-tokens 2048 --kv-cache-gib 10.25 "$@"
+    --port 8100 --dtype bfloat16 --batch-tokens 2048 --kv-cache-gib 10.25 --graph-mode PIECEWISE "$@"

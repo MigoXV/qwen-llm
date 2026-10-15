@@ -3,8 +3,10 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 from pathlib import Path
 from importlib.metadata import version
+import sys
 
 import typer
 
@@ -41,6 +43,30 @@ def download_model(
     download_modelscope(model_id, output_dir, workers)
 
 
+@app.command("serve-model", context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
+def serve_model(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., envvar="QWEN_MODEL_PROFILE"),
+    catalog: Path = typer.Option(Path(__file__).resolve().parents[3] / "configs/models.json",
+                                 exists=True, dir_okay=False, envvar="QWEN_MODEL_CATALOG"),
+) -> None:
+    """按模型配置选择权重与已验证参数；后面的serve选项可覆盖配置。"""
+    entries = json.loads(catalog.read_text())
+    row = next((item for item in entries if item["name"].casefold() == name.casefold()), None)
+    if row is None:
+        raise typer.BadParameter("未知模型；可选：" + ", ".join(item["name"] for item in entries))
+    options = ["--model-name", row["name"], "--model-path", str(Path(row["path"]).resolve()),
+               "--dtype", row.get("dtype", "bfloat16"), "--runner", row.get("runner", "aclgraph"),
+               "--graph-mode", row.get("graph_mode", "FULL_DECODE_ONLY"),
+               "--batch-tokens", str(row.get("batch_tokens", 2048)),
+               "--kv-cache-gib", str(row["kv_cache_gib"]),
+               "--speculative-tokens", str(row.get("speculative_tokens", 0)),
+               "--prefix-caching" if row.get("prefix_caching", True) else "--no-prefix-caching",
+               "--async-scheduling" if row.get("async_scheduling", True) else "--no-async-scheduling",
+               "--npugraph-ex" if row.get("npugraph_ex", True) else "--no-npugraph-ex"]
+    os.execv(sys.executable, [sys.executable, "-m", "qwen_llm.commands.app", "serve", *options, *ctx.args])
+
+
 @app.command()
 def doctor(
     model_path: Path = typer.Option(Path("model-bin/Qwen3-14B-W8A8-Ascend"), envvar="QWEN_MODEL_PATH"),
@@ -66,9 +92,11 @@ def serve(
     runner: Runner = typer.Option(Runner.ACLGRAPH, envvar="QWEN_RUNNER"),
     prefix_caching: bool = typer.Option(True, "--prefix-caching/--no-prefix-caching", envvar="QWEN_PREFIX_CACHING"),
     kv_cache_gib: float = typer.Option(10.25, min=0.125, envvar="QWEN_KV_CACHE_GIB"),
+    gpu_memory_utilization: float = typer.Option(0.82, min=0.01, max=1, envvar="QWEN_GPU_MEMORY_UTILIZATION"),
     graph_mode: GraphMode = typer.Option(GraphMode.PIECEWISE, envvar="QWEN_GRAPH_MODE"),
     speculative_tokens: int = typer.Option(0, min=0, max=3, envvar="QWEN_SPECULATIVE_TOKENS"),
     async_scheduling: bool | None = typer.Option(None, "--async-scheduling/--no-async-scheduling", envvar="QWEN_ASYNC_SCHEDULING"),
+    npugraph_ex: bool | None = typer.Option(None, "--npugraph-ex/--no-npugraph-ex", envvar="QWEN_NPUGRAPH_EX"),
 ) -> None:
     """启动单 worker V1 Responses 服务。"""
     import uvicorn
@@ -78,8 +106,9 @@ def serve(
                            timeout=timeout, batch_tokens=batch_tokens,
                            runner=runner, prefix_caching=prefix_caching,
                            kv_cache_bytes=int(kv_cache_gib * 1024**3),
+                           gpu_memory_utilization=gpu_memory_utilization,
                            graph_mode=graph_mode, speculative_tokens=speculative_tokens,
-                           async_scheduling=async_scheduling)
+                           async_scheduling=async_scheduling, npugraph_ex=npugraph_ex)
     uvicorn.run(create_app(config), host=host, port=port, workers=1,
                 timeout_graceful_shutdown=int(config.shutdown_grace))
 
