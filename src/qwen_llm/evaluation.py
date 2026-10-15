@@ -106,7 +106,7 @@ async def evaluate(base_url: str, model: str, output: Path, math_dataset: Path |
                     text = "".join(part.get("text", "") for item in value.get("output", [])
                                    if item.get("type") == "message" for part in item.get("content", []))
                     return {**case, "response": value, "text": text,
-                            "passed": check_answer(case, text), "seconds": time.perf_counter() - started}
+                            "passed": value.get("status") == "completed" and check_answer(case, text), "seconds": time.perf_counter() - started}
                 except Exception as exc:
                     return {**case, "passed": False, "error": str(exc),
                             "seconds": time.perf_counter() - started}
