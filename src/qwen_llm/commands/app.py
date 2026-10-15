@@ -116,5 +116,21 @@ def benchmark(
     asyncio.run(run_benchmark(base_url, model_name, prompt, output_tokens, output))
 
 
+@app.command("evaluate")
+def evaluate_model(
+    base_url: str = typer.Option("http://127.0.0.1:8100/v1", envvar="QWEN_BASE_URL"),
+    model_name: str = typer.Option("qwen3-14b", envvar="QWEN_MODEL_NAME"),
+    output: Path = typer.Option(Path("outputs/quality.json"), envvar="QWEN_EVAL_OUTPUT"),
+    math_dataset: Path | None = typer.Option(None, exists=True, dir_okay=False, envvar="QWEN_EVAL_MATH_DATASET"),
+    math_samples: int = typer.Option(32, min=1, max=1319, envvar="QWEN_EVAL_MATH_SAMPLES"),
+) -> None:
+    """保存40道固定答案题的逐请求结果；不代替完整量化精度评估。"""
+    from qwen_llm.evaluation import evaluate
+    result = asyncio.run(evaluate(base_url, model_name, output, math_dataset, math_samples))
+    typer.echo(f"{result['passed']}/{result['total']} passed; execution errors={result['execution_errors']}")
+    if result["execution_errors"] or not result["instance_unchanged"]:
+        raise typer.Exit(1)
+
+
 if __name__ == "__main__":
     app()

@@ -13,6 +13,7 @@ from qwen_llm.benchmark import inventory
 root=Path(os.getenv('QWEN_BUILD_ROOT','/home/qwen-llm-build'))
 base_url=os.getenv('QWEN_BASE_URL','http://127.0.0.1:8100/v1').removesuffix('/v1').rstrip('/')
 tag=os.getenv('QWEN_LONG_TAG','eager')
+model_name=os.getenv('QWEN_MODEL_NAME','qwen3-14b')
 output_tokens=int(os.getenv('QWEN_LONG_OUTPUT','128'))
 rounds=int(os.getenv('QWEN_LONG_ROUNDS','3'))
 tokenizer=AutoTokenizer.from_pretrained(os.getenv('QWEN_MODEL_PATH','model-bin/Qwen3-14B-W8A8-Ascend'),local_files_only=True)
@@ -47,7 +48,7 @@ async def main():
             started=time.perf_counter();first=None;final=None
             try:
                 async with client.stream('POST',base_url+'/v1/responses',json={
-                    'model':'qwen3-14b','input':prompts[index],'temperature':0,'stream':True,'max_output_tokens':output_tokens}) as response:
+                    'model':model_name,'input':prompts[index],'temperature':0,'stream':True,'max_output_tokens':output_tokens}) as response:
                     response.raise_for_status()
                     async for line in response.aiter_lines():
                         if not line.startswith('data: '):continue
