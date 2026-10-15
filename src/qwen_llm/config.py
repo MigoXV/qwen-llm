@@ -38,6 +38,7 @@ class ServingConfig:
     speculative_tokens: int = 0
     async_scheduling: bool | None = None
     npugraph_ex: bool | None = None
+    overlap_shared_expert: bool = False
 
     def __post_init__(self):
         object.__setattr__(self, "runner", Runner(self.runner))

@@ -92,6 +92,7 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
                 "speculative_tokens": config.speculative_tokens,
                 "requested_async_scheduling": config.async_scheduling,
                 "requested_npugraph_ex": config.npugraph_ex,
+                "overlap_shared_expert": config.overlap_shared_expert,
                 "runtime": getattr(engine, "runtime_identity", {})}
 
     @app.get("/metrics")

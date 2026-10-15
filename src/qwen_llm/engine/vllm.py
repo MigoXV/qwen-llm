@@ -38,6 +38,10 @@ class V1Engine:
         if modern and self.config.npugraph_ex is not None:
             modern_options["additional_config"] = {
                 "ascend_compilation_config": {"enable_npugraph_ex": self.config.npugraph_ex}}
+        if self.config.overlap_shared_expert:
+            if not modern or model_config.get("model_type") != "qwen3_5_moe":
+                raise ValueError("共享专家流重叠仅用于新版 Qwen3.5 MoE 架构")
+            modern_options.setdefault("additional_config", {})["multistream_overlap_shared_expert"] = True
         if modern and hybrid and self.config.prefix_caching:
             modern_options["mamba_cache_mode"] = "align"
         if self.config.speculative_tokens:
