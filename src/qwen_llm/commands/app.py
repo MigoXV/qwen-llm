@@ -30,6 +30,17 @@ def show_version() -> None:
     typer.echo(version("qwen-llm"))
 
 
+@app.command("download-model")
+def download_model(
+    model_id: str = typer.Argument(..., envvar="QWEN_MODELSCOPE_ID"),
+    output_dir: Path = typer.Option(Path("model-bin/Qwen3-14B-W8A8-Ascend"), envvar="QWEN_DOWNLOAD_DIR"),
+    workers: int = typer.Option(4, min=1, max=8, envvar="QWEN_DOWNLOAD_WORKERS"),
+) -> None:
+    """从 ModelScope 下载并校验公开模型文件；支持断点续传。"""
+    from qwen_llm.modelscope import download_modelscope
+    download_modelscope(model_id, output_dir, workers)
+
+
 @app.command()
 def doctor(
     model_path: Path = typer.Option(Path("model-bin/Qwen3-14B-W8A8-Ascend"), envvar="QWEN_MODEL_PATH"),
@@ -90,6 +101,19 @@ def smoke(
     except Exception as exc:
         logger.error("真实推理验证失败：%s", exc)
         raise typer.Exit(1) from exc
+
+
+@app.command()
+def benchmark(
+    base_url: str = typer.Option("http://127.0.0.1:8100/v1", envvar="QWEN_BASE_URL"),
+    model_name: str = typer.Option("qwen3-14b", envvar="QWEN_MODEL_NAME"),
+    prompt: str = typer.Option("请介绍一下你自己。", envvar="QWEN_BENCH_PROMPT"),
+    output_tokens: int = typer.Option(128, min=1, max=8192, envvar="QWEN_BENCH_OUTPUT_TOKENS"),
+    output: Path = typer.Option(Path("outputs/benchmark.json"), envvar="QWEN_BENCH_OUTPUT"),
+) -> None:
+    """在独占设备上预热后测量 1/2/4/8 并发，各三轮；保存原始记录。"""
+    from qwen_llm.benchmark import run_benchmark
+    asyncio.run(run_benchmark(base_url, model_name, prompt, output_tokens, output))
 
 
 if __name__ == "__main__":
