@@ -10,7 +10,10 @@
     "tag": "v0.18.0",
     "commit": "e18643f8a4d5bd9990727654318ad069ea0b56e2",
     "wheel": "vllm_ascend-0.18.0+torch291.cann911-cp310-cp310-linux_aarch64.whl",
-    "wheel_sha256": "05f9dc83b1f4efc3b4dccdf2005de5c0905afd1cb49f2efc5aa915c9de5ce127"
+    "wheel_sha256": "94a6a381515a46d1833f2e648da38e3b3066306ecf327fac378bfe68028fb57a",
+    "backports": [
+      "https://github.com/vllm-project/vllm-ascend/pull/14618"
+    ]
   },
   "triton_ascend": "3.2.2",
   "triton_ascend_index": "https://mirrors.huaweicloud.com/ascend/repos/pypi"

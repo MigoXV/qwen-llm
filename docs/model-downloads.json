@@ -1,0 +1,312 @@
+{
+  "date": "2026-10-15",
+  "storage_mount": "/home",
+  "models": [
+    {
+      "name": "Qwen3-30B-A3B-Instruct-2507-W4A8",
+      "repo_id": "vllm-ascend/Qwen3-30B-A3B-Instruct-2507-quantized.w4a8",
+      "source": "https://modelscope.cn/models/vllm-ascend/Qwen3-30B-A3B-Instruct-2507-quantized.w4a8",
+      "directory": "/home/qwen-models/weights/Qwen3-30B-A3B-Instruct-2507-W4A8",
+      "verified": true,
+      "bytes": 31645042716,
+      "manifest_sha256": "fd62f5414875fda70a8e985c11d332d6f82c240a9c29c7ff2ae6b3f9ed4eb89c",
+      "weights": [
+        {
+          "path": "model-00001-of-00007.safetensors",
+          "revision": "6138b120aaf561bd23bc02325793168596f55970",
+          "sha256": "55fb94fdcc9b906a8937ef2209698058472a94e54261af08fee126790044f2ef",
+          "bytes": 5000142200
+        },
+        {
+          "path": "model-00002-of-00007.safetensors",
+          "revision": "6138b120aaf561bd23bc02325793168596f55970",
+          "sha256": "87532002b4d6aa0c44ed5241e6b99c8c620269fe252b42799766a9e41fabc225",
+          "bytes": 4999567680
+        },
+        {
+          "path": "model-00003-of-00007.safetensors",
+          "revision": "6138b120aaf561bd23bc02325793168596f55970",
+          "sha256": "f706ff42249333a45696d4b5d47848d388d8f8872a5502d2f6f04fcea684ab84",
+          "bytes": 4999570120
+        },
+        {
+          "path": "model-00004-of-00007.safetensors",
+          "revision": "6138b120aaf561bd23bc02325793168596f55970",
+          "sha256": "eb40a083cd1e3cedc0b1764da02a7c67d380ea7b1570588040d670d18036fb82",
+          "bytes": 4999570144
+        },
+        {
+          "path": "model-00005-of-00007.safetensors",
+          "revision": "6138b120aaf561bd23bc02325793168596f55970",
+          "sha256": "79626c7eab63ff14a749017bdf79611db4d35cfb423093b07058dd24ccfab050",
+          "bytes": 4999570144
+        },
+        {
+          "path": "model-00006-of-00007.safetensors",
+          "revision": "6138b120aaf561bd23bc02325793168596f55970",
+          "sha256": "9a6e06982117388e0d14c71ad21e8ee4c39a7016640d34ecc3b3905a7abdba20",
+          "bytes": 4999570144
+        },
+        {
+          "path": "model-00007-of-00007.safetensors",
+          "revision": "6138b120aaf561bd23bc02325793168596f55970",
+          "sha256": "053be8757d73c13f5fa423febdd1339abbdb3117e6d96991884e8acaa1ce1046",
+          "bytes": 1627539496
+        }
+      ]
+    },
+    {
+      "name": "Qwen3-30B-A3B-Instruct-2507-W8A8",
+      "repo_id": "vllm-ascend/Qwen3-30B-A3B-Instruct-2507-quantized.w8a8",
+      "source": "https://modelscope.cn/models/vllm-ascend/Qwen3-30B-A3B-Instruct-2507-quantized.w8a8",
+      "directory": "/home/qwen-models/weights/Qwen3-30B-A3B-Instruct-2507-W8A8",
+      "verified": true,
+      "bytes": 31236102047,
+      "manifest_sha256": "e9869600b7781d36514dbf31941d5d440d27864efe61ebd200d977a0af33498b",
+      "weights": [
+        {
+          "path": "model-00001-of-00007.safetensors",
+          "revision": "70d0db960a2eef275050cd056ed81813e30920ad",
+          "sha256": "a1a556357df8039d05eb3a29352290bfd8f968a637719c4b0f56327e92e4825e",
+          "bytes": 4993234720
+        },
+        {
+          "path": "model-00002-of-00007.safetensors",
+          "revision": "70d0db960a2eef275050cd056ed81813e30920ad",
+          "sha256": "a3445a188eee37bf64b103d27de62746dbdf039c9dafcbf819f2dbac6b9e0b6b",
+          "bytes": 4995310176
+        },
+        {
+          "path": "model-00003-of-00007.safetensors",
+          "revision": "70d0db960a2eef275050cd056ed81813e30920ad",
+          "sha256": "8342f423d8bc92311372b49fb0b323ff6a6e2b92b03babcde076e5c710a03e74",
+          "bytes": 4995312520
+        },
+        {
+          "path": "model-00004-of-00007.safetensors",
+          "revision": "70d0db960a2eef275050cd056ed81813e30920ad",
+          "sha256": "5728b58264fc7fbad0f7447d386f7ef9c1cd7e556a03700decab7f1e15fea355",
+          "bytes": 4995312520
+        },
+        {
+          "path": "model-00005-of-00007.safetensors",
+          "revision": "70d0db960a2eef275050cd056ed81813e30920ad",
+          "sha256": "37a428406fcc240c2e4e51780981a72d1c79aaf7b4e8559ceda6665764db9bbf",
+          "bytes": 4995312520
+        },
+        {
+          "path": "model-00006-of-00007.safetensors",
+          "revision": "70d0db960a2eef275050cd056ed81813e30920ad",
+          "sha256": "5d0fb2d44b6549b1e49d8d80d8ed3d45d58e51d72b470e273e9f2fd603e875f5",
+          "bytes": 4995312520
+        },
+        {
+          "path": "model-00007-of-00007.safetensors",
+          "revision": "70d0db960a2eef275050cd056ed81813e30920ad",
+          "sha256": "2c9120c22b0e1ec5402406837483f13553f1b005ca30a4116413bbbbaf8ebe3c",
+          "bytes": 1246749496
+        }
+      ]
+    },
+    {
+      "name": "Qwen3.5-35B-A3B-W8A8",
+      "repo_id": "Eco-Tech/Qwen3.5-35B-A3B-w8a8-mtp",
+      "source": "https://modelscope.cn/models/Eco-Tech/Qwen3.5-35B-A3B-w8a8-mtp",
+      "directory": "/home/qwen-models/weights/Qwen3.5-35B-A3B-W8A8",
+      "verified": true,
+      "bytes": 39807726905,
+      "manifest_sha256": "6ce4819193a71428863f5d457b95c1bbcfce7d2bfcf6cfac5ccafe547daf0c20",
+      "weights": [
+        {
+          "path": "quant_model_weights-00001-of-00010.safetensors",
+          "revision": "d01a078a8fdfcc6dba47a693d5bf6bac0eed4de6",
+          "sha256": "179e8a21a516431347d3fcb207a9297df10a55f0288884765a581e15d39ef850",
+          "bytes": 4295203496
+        },
+        {
+          "path": "quant_model_weights-00002-of-00010.safetensors",
+          "revision": "d01a078a8fdfcc6dba47a693d5bf6bac0eed4de6",
+          "sha256": "6e2ffb894b6f2c3db32d761580eba3b5b815436856bbb1a8876e0352fce37b68",
+          "bytes": 4296098400
+        },
+        {
+          "path": "quant_model_weights-00003-of-00010.safetensors",
+          "revision": "d01a078a8fdfcc6dba47a693d5bf6bac0eed4de6",
+          "sha256": "d5ed3a4c03765b842574fb0f9d841f382a9002e55587f7988d950d530f830b4e",
+          "bytes": 4296094488
+        },
+        {
+          "path": "quant_model_weights-00004-of-00010.safetensors",
+          "revision": "d01a078a8fdfcc6dba47a693d5bf6bac0eed4de6",
+          "sha256": "e0e08508e39fa0e22bd1cd3e0258433664df5f3074e2d605ab8f6bd9e0991b37",
+          "bytes": 4296109712
+        },
+        {
+          "path": "quant_model_weights-00005-of-00010.safetensors",
+          "revision": "d01a078a8fdfcc6dba47a693d5bf6bac0eed4de6",
+          "sha256": "f01e57a88cb72b2304faafa921244b4bbd375f2166ba817cc4c5fdcd52cbb722",
+          "bytes": 4296114960
+        },
+        {
+          "path": "quant_model_weights-00006-of-00010.safetensors",
+          "revision": "d01a078a8fdfcc6dba47a693d5bf6bac0eed4de6",
+          "sha256": "3225f6f2de8f8d76bfbe4206a4a4cd8328e9404b4180205703df32090a78eb4c",
+          "bytes": 4296097712
+        },
+        {
+          "path": "quant_model_weights-00007-of-00010.safetensors",
+          "revision": "d01a078a8fdfcc6dba47a693d5bf6bac0eed4de6",
+          "sha256": "d362f27a504968249b9d125ff4eba330de5cfd79e67583eb354cb117c359c1ba",
+          "bytes": 4296110008
+        },
+        {
+          "path": "quant_model_weights-00008-of-00010.safetensors",
+          "revision": "d01a078a8fdfcc6dba47a693d5bf6bac0eed4de6",
+          "sha256": "ff9896eaaa0a558dba79e439f457218c6e7f2915703b3e5a6872db61614b24a7",
+          "bytes": 4281193136
+        },
+        {
+          "path": "quant_model_weights-00009-of-00010.safetensors",
+          "revision": "d01a078a8fdfcc6dba47a693d5bf6bac0eed4de6",
+          "sha256": "f0f9b081ee27d3ace49b059ab5beb8f9dc6a2fbf7fcbb29cb518b295fb39ab2a",
+          "bytes": 3380678528
+        },
+        {
+          "path": "quant_model_weights-00010-of-00010.safetensors",
+          "revision": "d01a078a8fdfcc6dba47a693d5bf6bac0eed4de6",
+          "sha256": "ec378102b0192cde4f3e98c4c6a13fe74efd6f3b1dfb61cf8a7309ac96795014",
+          "bytes": 2034241864
+        }
+      ]
+    },
+    {
+      "name": "Qwen3.5-9B-W8A8",
+      "repo_id": "sogagaga/Qwen3.5-9B-W8A8",
+      "source": "https://modelscope.cn/models/sogagaga/Qwen3.5-9B-W8A8",
+      "directory": "/home/qwen-models/weights/Qwen3.5-9B-W8A8",
+      "verified": true,
+      "bytes": 14032045455,
+      "manifest_sha256": "f56822e77dd86759f0ad23ce6b6e2cc8f1331feb1b12bf402c14377ea8dda98c",
+      "weights": [
+        {
+          "path": "model.safetensors-00001-of-00004.safetensors",
+          "revision": "e328691d7059d807fb872d205b3a701a7be066c4",
+          "sha256": "6fbdfecf30bb61f9bb1e63ee7e381a5779cc38b582fa83e78ce796984ce4ba07",
+          "bytes": 4672883888
+        },
+        {
+          "path": "model.safetensors-00002-of-00004.safetensors",
+          "revision": "e328691d7059d807fb872d205b3a701a7be066c4",
+          "sha256": "4a4ac4df954cd2eba023cda469b665bb5abc30a453ee68ea3ce5982f3a9e6d26",
+          "bytes": 2820485760
+        },
+        {
+          "path": "model.safetensors-00003-of-00004.safetensors",
+          "revision": "e328691d7059d807fb872d205b3a701a7be066c4",
+          "sha256": "acf508f2a7371f1f3fb4b613390608ac79abbf90653a0546a73bbc0a39bcb06c",
+          "bytes": 3390616736
+        },
+        {
+          "path": "model.safetensors-00004-of-00004.safetensors",
+          "revision": "e328691d7059d807fb872d205b3a701a7be066c4",
+          "sha256": "87a5364e5dbfbd27f45802def5fd56e6ee41b739432aedd9f40944908a7f3ab3",
+          "bytes": 3124868800
+        }
+      ]
+    },
+    {
+      "name": "Qwen3.5-9B-W8A8-RedHatAI",
+      "repo_id": "RedHatAI/Qwen3.5-9B-quantized.w8a8",
+      "source": "https://modelscope.cn/models/RedHatAI/Qwen3.5-9B-quantized.w8a8",
+      "directory": "/home/qwen-models/weights/Qwen3.5-9B-W8A8-RedHatAI",
+      "verified": true,
+      "bytes": 14026939280,
+      "manifest_sha256": "f9e20910fba9752968ce9c931693707218f15c7edc18750b78235bc37001a34b",
+      "weights": [
+        {
+          "path": "model.safetensors",
+          "revision": "ffbf51dfb04c72ab11e4f94f83d468289688769b",
+          "sha256": "e755661d1adcb167956a7069f204b7d7068283bbe5609827d848050cb7e6d0a7",
+          "bytes": 13520202368
+        },
+        {
+          "path": "model_mtp.safetensors",
+          "revision": "d52b5f9d6723b5261755e82bcb67317d005700e4",
+          "sha256": "e9f83dae0fed4d0633fba652cd7eb942642491a283b11072c3cfc77731e0fae9",
+          "bytes": 486582848
+        }
+      ]
+    },
+    {
+      "name": "Qwen3.6-35B-A3B-W8A8",
+      "repo_id": "Eco-Tech/Qwen3.6-35B-A3B-w8a8",
+      "source": "https://modelscope.cn/models/Eco-Tech/Qwen3.6-35B-A3B-w8a8",
+      "directory": "/home/qwen-models/weights/Qwen3.6-35B-A3B-W8A8",
+      "verified": true,
+      "bytes": 39811078362,
+      "manifest_sha256": "796b5b88dd95e7e1b8c0f38cbf0794371e95cd8c33545f1a147461a53265d814",
+      "weights": [
+        {
+          "path": "quant_model_weights-00001-of-00010.safetensors",
+          "revision": "1a118d717bcbd59480f4a110fe22181d21711b4d",
+          "sha256": "89c0ea38e9fc007562c82521701a92e8a95411a1b54ee10dd34bf43a20a86eae",
+          "bytes": 4295203496
+        },
+        {
+          "path": "quant_model_weights-00002-of-00010.safetensors",
+          "revision": "1a118d717bcbd59480f4a110fe22181d21711b4d",
+          "sha256": "1be1e56ada520d65f6629c93f8718fde9c5402687b58046537ce68a1ddebf688",
+          "bytes": 4296098400
+        },
+        {
+          "path": "quant_model_weights-00003-of-00010.safetensors",
+          "revision": "1a118d717bcbd59480f4a110fe22181d21711b4d",
+          "sha256": "74bd333d8d800cce414f87fe6de49af988c6d743b5da7966ff222b2dc9ba6179",
+          "bytes": 4296094488
+        },
+        {
+          "path": "quant_model_weights-00004-of-00010.safetensors",
+          "revision": "1a118d717bcbd59480f4a110fe22181d21711b4d",
+          "sha256": "132cd317a2d4551c78cec3ded8944bdb5106d0590fc8aee7383ef09eb3cb2a3f",
+          "bytes": 4296109712
+        },
+        {
+          "path": "quant_model_weights-00005-of-00010.safetensors",
+          "revision": "1a118d717bcbd59480f4a110fe22181d21711b4d",
+          "sha256": "f356ab9a817634a66a6724ed8aefd19f59739464dced2f3d4f2ef1c70a3d2e32",
+          "bytes": 4296114960
+        },
+        {
+          "path": "quant_model_weights-00006-of-00010.safetensors",
+          "revision": "1a118d717bcbd59480f4a110fe22181d21711b4d",
+          "sha256": "91f009f77c04b5214fcad689d1ab3fd7994bd397a16d2ed2c180d839bf3cbe61",
+          "bytes": 4296097712
+        },
+        {
+          "path": "quant_model_weights-00007-of-00010.safetensors",
+          "revision": "1a118d717bcbd59480f4a110fe22181d21711b4d",
+          "sha256": "57b31bacd0b452c51359ebefe5a954b4db1e9fa19676b340b74b5c01de1b9ca5",
+          "bytes": 4296110008
+        },
+        {
+          "path": "quant_model_weights-00008-of-00010.safetensors",
+          "revision": "1a118d717bcbd59480f4a110fe22181d21711b4d",
+          "sha256": "f5181d974c6b5cddd30270af8f63126d6008877d06c6cb1fb116dec1a44e74ad",
+          "bytes": 4281193136
+        },
+        {
+          "path": "quant_model_weights-00009-of-00010.safetensors",
+          "revision": "1a118d717bcbd59480f4a110fe22181d21711b4d",
+          "sha256": "38ce5e495f5bf4692ce57b22f3ad0e24d5faa5a7ea0d2dfe39d05bffa110c98d",
+          "bytes": 3380678528
+        },
+        {
+          "path": "quant_model_weights-00010-of-00010.safetensors",
+          "revision": "1a118d717bcbd59480f4a110fe22181d21711b4d",
+          "sha256": "1e52ecee94186f3a3c51a6fd5b1875966ec61d2b3064a6484a5271a9cb9000af",
+          "bytes": 2034241864
+        }
+      ]
+    }
+  ]
+}
