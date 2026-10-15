@@ -11,15 +11,16 @@
     "max_input_tokens": 8192,
     "max_output_tokens": 8192,
     "max_concurrency": 4,
-    "batch_tokens": 2048,
-    "kv_cache_gib": 6,
+    "batch_tokens": 4096,
+    "kv_cache_gib": 4,
     "download_root": "/home/qwen-models/weights/Qwen3.6-35B-A3B-W8A8",
     "async_scheduling": true,
     "npugraph_ex": true,
     "speculative_tokens": 0,
     "graph_mode": "FULL_DECODE_ONLY",
     "prefix_caching": true,
-    "validation_report": "/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-base-fixed"
+    "validation_report": "/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-overlap-b4096-kv4",
+    "overlap_shared_expert": true
   },
   {
     "name": "qwen3.5-35b-a3b",
@@ -110,5 +111,29 @@
     "prefix_caching": true,
     "validation_report": "/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w4a8-full-kv6p25",
     "limitations": "重复data材料8K检索未通过；见报告，不推断为量化损失"
+  },
+  {
+    "name": "qwen3.6-35b-a3b-mtp2",
+    "path": "model-bin/Qwen3.6-35B-A3B-W8A8",
+    "source": "https://modelscope.cn/models/Eco-Tech/Qwen3.6-35B-A3B-w8a8",
+    "repo_id": "Eco-Tech/Qwen3.6-35B-A3B-w8a8",
+    "quantization": "W8A8_DYNAMIC",
+    "dtype": "bfloat16",
+    "runner": "aclgraph",
+    "language_model_only": true,
+    "max_input_tokens": 8192,
+    "max_output_tokens": 8192,
+    "max_concurrency": 4,
+    "batch_tokens": 8192,
+    "kv_cache_gib": 3.75,
+    "download_root": "/home/qwen-models/weights/Qwen3.6-35B-A3B-W8A8",
+    "async_scheduling": true,
+    "npugraph_ex": true,
+    "speculative_tokens": 2,
+    "graph_mode": "FULL_DECODE_ONLY",
+    "prefix_caching": true,
+    "validation_report": "/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75",
+    "overlap_shared_expert": true,
+    "limitations": "短输入吞吐更高；整卡HBM约46.2GiB；本次8K重复材料未命中缓存，重复请求TPS低于平衡配置"
   }
 ]
