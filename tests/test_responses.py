@@ -97,6 +97,15 @@ def test_instruct_model_rejects_reasoning_without_consuming_a_slot():
         assert client.post('/responses', json=payload()).json()['status'] == 'completed'
 
 
+def test_orphan_thinking_markers_never_leak_into_non_thinking_stream():
+    engine = FakeEngine(['</t', '</think>\n', '</think>\n\n</th', '</think>\n\n</think>\n\nAZ17B9'])
+    with TestClient(create_app(engine=engine)) as client:
+        events = parse_sse(client.post('/responses', json=payload(stream=True)).text)
+        assert ''.join(e['delta'] for e in events if e['type'] == 'response.output_text.delta') == 'AZ17B9'
+        assert events[-1]['response']['output'][0]['content'][0]['text'] == 'AZ17B9'
+    assert split_thinking('示例中的</think>属于正文', False) == ('', '示例中的</think>属于正文')
+
+
 @pytest.mark.parametrize('extra', [
     {'previous_response_id':'r1'}, {'store':True}, {'tools':[]},
     {'input':[{'role':'user','content':[{'type':'input_image','image_url':'x'}]}]},
