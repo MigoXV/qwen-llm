@@ -13,9 +13,11 @@ export POETRY_CACHE_DIR="$QWEN_BUILD_ROOT/poetry-cache"
 export POETRY_VIRTUALENVS_PATH="$QWEN_BUILD_ROOT/virtualenvs"
 # 不使用调用者可能激活的旧环境；只选择上述独立 Poetry 环境。
 unset VIRTUAL_ENV
+unset PYTHONPATH ASCEND_HOME_PATH ASCEND_TOOLKIT_HOME ASCEND_OPP_PATH ASCEND_AICPU_PATH ATB_HOME_PATH
+export LD_LIBRARY_PATH=/usr/local/Ascend/driver/lib64:/usr/local/Ascend/driver/lib64/common:/usr/local/Ascend/driver/lib64/driver
 cd "$QWEN_PROJECT_ROOT"
-QWEN_CXX_ABI="$(poetry run python -c 'import torch; print(int(torch.compiled_with_cxx11_abi()))')"
 source /usr/local/Ascend/ascend-toolkit/set_env.sh
+QWEN_CXX_ABI="$(poetry run python -c 'import torch; print(int(torch.compiled_with_cxx11_abi()))')"
 source /usr/local/Ascend/nnal/atb/set_env.sh "--cxx_abi=$QWEN_CXX_ABI"
 export ASCEND_RT_VISIBLE_DEVICES="${ASCEND_RT_VISIBLE_DEVICES:-0}"
 export VLLM_ASCEND_ENABLE_DENSE_OPTIMIZE="${VLLM_ASCEND_ENABLE_DENSE_OPTIMIZE:-0}"
