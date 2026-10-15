@@ -64,16 +64,17 @@ def summarize(directory: Path) -> dict:
     long = read("logs/long-steady-128.json")
     if long:
         rounds = long["rounds"]
-        valid = long.get("after", {}).get("isolated", False) and len(rounds) == 4 and all(
+        valid = long.get("after", {}).get("isolated", False) and len(rounds) >= 4 and all(
             item.get("resources", {}).get("isolated", False) and len(item["samples"]) == 4 and all(
             sample.get("response", {}).get("status") in ("completed", "incomplete")
             for sample in item["samples"]) for item in rounds)
         row["long"] = {
             "valid": valid, "round_count": len(rounds),
+            "transition_rounds": max(0, len(rounds)-4),
             "cold_tps": rounds[0]["tokens_per_second"] if valid else None,
-            "repeat_tps_median": statistics.median(item["tokens_per_second"] for item in rounds[1:]) if valid else None,
+            "repeat_tps_median": statistics.median(item["tokens_per_second"] for item in rounds[-3:]) if valid else None,
             "repeat_cached_tokens": sorted({sample["response"]["usage"]["input_tokens_details"]["cached_tokens"]
-                for item in rounds[1:] for sample in item["samples"] if sample.get("response")}),
+                for item in rounds[-3:] for sample in item["samples"] if sample.get("response")}),
         }
         for item in rounds:
             memory(item.get("resources", {}))

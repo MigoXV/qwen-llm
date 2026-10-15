@@ -98,7 +98,7 @@ if [[ ",$QWEN_SUITE_STAGES," == *",short,"* ]]; then
         --output "$QWEN_SUITE_OUTPUT/short.json"
 fi
 if [[ ",$QWEN_SUITE_STAGES," == *",long,"* ]]; then
-    QWEN_BUILD_ROOT="$QWEN_SUITE_OUTPUT" QWEN_LONG_TAG=steady QWEN_LONG_ROUNDS=4 \
+    QWEN_BUILD_ROOT="$QWEN_SUITE_OUTPUT" QWEN_LONG_TAG=steady QWEN_LONG_ROUNDS="${QWEN_SUITE_LONG_ROUNDS:-7}" \
         run_stage long poetry run python scripts/benchmark_long_context.py
 fi
 exit "$QWEN_SUITE_FAILURES"
