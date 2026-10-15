@@ -72,6 +72,8 @@ SSE 包含 `event` 与递增 `sequence_number`；从 created/in_progress 开始�
 2(K/V) × 40层 × 8 KV头 × 128维 × 2字节 × 16384 tokens × 4路 = 10GiB
 ```
 
+`--gpu-memory-utilization` 默认 0.82，是设备内存 profile 的上限比例；实际 KV 分配仍由 `--kv-cache-gib` 固定，不会按比例填满整卡。这样在 ASR 已运行时也可为 LLM 初始化保留余量。
+
 设置 10.25GiB 留少量块余量，实测 67072 个 KV tokens，最大 16384-token 请求并发容量 4.09。旧插件忽略上游 `kv_cache_memory_bytes`，因此项目 NPUWorker 子类在设备内存 profile 后显式应用预算，超出可用内存则报错；不修改厂商源码。
 
 原环境 Eager 实测整卡 HBM 33695MiB，包含无模型时约 3404MiB 的设备基础占用；不能把 KV 预算当成整卡占用。四路 8192-token 输入已测试，模型可能自然结束，因此短输出测试不等于四路满 8192-token 输出实测。
@@ -97,4 +99,17 @@ ASR 位于相邻的 `qwen-asr` 项目，启动器默认使用独立的 Torch 2.9
 ```bash
 systemctl start qwen-asr-ascend.service
 systemctl is-active qwen-asr-ascend.service
+```
+
+本机 LLM 的 systemd 单元模板为 `deploy/systemd/qwen-llm.service`，运行默认14B配置。API 的 `/health/ready` 返回成功后才表示模型就绪；`Type=simple` 单元可能在模型预热期间已显示 active。切换模型前先停止该实例，再启动目标配置；性能基准还需停止 ASR，保证独占 NPU。
+
+```bash
+# 安装本机服务模板；启动后检查 API 就绪。
+cp deploy/systemd/qwen-llm.service /etc/systemd/system/qwen-llm.service
+systemctl daemon-reload
+systemctl start qwen-llm.service
+curl --fail http://127.0.0.1:8100/health/ready
+# 切换到目录中的新模型。
+systemctl stop qwen-llm.service
+bash scripts/run_model.sh qwen3.6-35b-a3b
 ```
