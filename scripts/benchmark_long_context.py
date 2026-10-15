@@ -83,6 +83,8 @@ async def main():
             path.write_text(json.dumps(record,ensure_ascii=False,indent=2))
             print('round',iteration,'seconds',elapsed,'throughput',result['tokens_per_second'],
                   'usages',[s.get('response',{}).get('usage') if s.get('response') else s for s in samples],flush=True)
+            if not result['resources']['isolated']:
+                raise RuntimeError('长输入测量轮次发现其他NPU实例，结果无效')
             if len(success)!=4:raise RuntimeError('四路请求未全部成功')
             if cold and any(s['response']['usage']['input_tokens_details']['cached_tokens'] for s in success):
                 raise RuntimeError('冷缓存测量意外命中缓存，请更换QWEN_LONG_COLD_NAMESPACE或重启服务')
