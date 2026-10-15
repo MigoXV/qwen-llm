@@ -1,0 +1,30 @@
+[project]
+name = "qwen-llm"
+version = "0.1.0"
+description = "Qwen LLM 项目基础工程"
+authors = [
+    {name = "migo",email = "migo@migo.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "typer>=0.15.1,<1.0.0",
+]
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.0.0,<9.0.0"
+
+[tool.poetry]
+packages = [{include = "qwen_llm", from = "src"}]
+
+[tool.poetry.scripts]
+qwen-llm = "qwen_llm.commands.app:app"
+
+[[tool.poetry.source]]
+name = "tuna"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+priority = "primary"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
