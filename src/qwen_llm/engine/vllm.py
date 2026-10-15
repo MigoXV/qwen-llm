@@ -6,6 +6,7 @@ import os
 from qwen_llm.config import GraphMode, Runner, ServingConfig
 from qwen_llm.engine.base import Generation
 from qwen_llm.engine.diagnostics import diagnose
+from qwen_llm.engine.tokenizer import tokenizer_path
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +53,10 @@ class V1Engine:
                 "method": "qwen3_5_mtp", "num_speculative_tokens": self.config.speculative_tokens,
                 "enforce_eager": True}
 
+        tokenizer_directory = await asyncio.to_thread(tokenizer_path, self.config.model_path)
+        self.runtime_identity["tokenizer_path"] = str(tokenizer_directory)
         self.tokenizer = await asyncio.to_thread(
-            AutoTokenizer.from_pretrained, str(self.config.model_path), local_files_only=True)
+            AutoTokenizer.from_pretrained, str(tokenizer_directory), local_files_only=True)
         self.supports_thinking = "enable_thinking" in str(self.tokenizer.chat_template or "")
         self.runtime_identity["supports_thinking"] = self.supports_thinking
         graph_options = {}
@@ -71,6 +74,7 @@ class V1Engine:
             }
         args = AsyncEngineArgs(
             model=str(self.config.model_path.resolve()), dtype=self.config.dtype.value,
+            tokenizer=str(tokenizer_directory),
             quantization=report["quantization"],
             worker_cls="qwen_llm.engine.ascend_worker.BudgetedNPUWorker",
             max_model_len=self.config.max_input_tokens + self.config.max_output_tokens,

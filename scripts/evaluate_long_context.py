@@ -9,6 +9,7 @@ import httpx
 import typer
 
 from qwen_llm.evaluation import check_answer
+from qwen_llm.engine.tokenizer import tokenizer_path
 
 app = typer.Typer()
 
@@ -23,7 +24,7 @@ def main(
 ):
     from transformers import AutoTokenizer
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_path(model_path), local_files_only=True)
     if material not in {"repeated", "mixed"}:
         raise typer.BadParameter("material须为repeated或mixed")
     topics = [
