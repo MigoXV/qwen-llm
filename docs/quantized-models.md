@@ -64,13 +64,13 @@ W4A8的唯一能力题失分为正确数值使用了加粗的FINAL行，违反�
 
 | 配置名 | 精度 | KV/GiB | batch tokens | 图模式 | MTP步数 | 共享专家重叠 | 原始报告 |
 | --- | --- | ---: | ---: | --- | ---: | --- | --- |
-| qwen3.6-35b-a3b | W8A8 | 4 | 4096 | FULL_DECODE_ONLY | 0 | 开启 | [w8a8-overlap-b4096-kv4](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-overlap-b4096-kv4) |
-| qwen3.5-35b-a3b | W8A8 | 3 | 4096 | FULL_DECODE_ONLY | 0 | 关闭 | [w8a8-base-b4096-kv3](/home/qwen-models/reports/qwen3.5-35b-a3b/w8a8-base-b4096-kv3) |
-| qwen3-30b-a3b-instruct-2507 | W8A8 | 6.25 | 2048 | FULL | 0 | 关闭 | [w8a8-full-kv6p25](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w8a8-full-kv6p25) |
-| qwen3.5-9b | W8A8 | 3 | 4096 | FULL_DECODE_ONLY | 0 | 关闭 | [redhat-w8a8-base-b4096-kv3](/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-base-b4096-kv3) |
-| qwen3-30b-a3b-instruct-2507-w4a8 | W4A8 | 6.25 | 2048 | FULL | 0 | 关闭 | [w4a8-full-kv6p25](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w4a8-full-kv6p25) |
-| qwen3.6-35b-a3b-mtp2 | W8A8 | 3.75 | 8192 | FULL_DECODE_ONLY | 2 | 开启 | [w8a8-mtp2-overlap-b8192-kv3p75](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75) |
-| qwen3.5-35b-a3b-mtp2 | W8A8 | 3.75 | 8192 | FULL_DECODE_ONLY | 2 | 开启 | [w8a8-mtp2-overlap-b8192-kv3p75](/home/qwen-models/reports/qwen3.5-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75) |
+| qwen3.6-35b-a3b | W8A8 | 4 | 4096 | FULL_DECODE_ONLY | 0 | 开启 | [w8a8-overlap-b4096-kv4](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-overlap-b4096-kv4/short.json) |
+| qwen3.5-35b-a3b | W8A8 | 3 | 4096 | FULL_DECODE_ONLY | 0 | 关闭 | [w8a8-base-b4096-kv3](/home/qwen-models/reports/qwen3.5-35b-a3b/w8a8-base-b4096-kv3/short.json) |
+| qwen3-30b-a3b-instruct-2507 | W8A8 | 6.25 | 2048 | FULL | 0 | 关闭 | [w8a8-full-kv6p25](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w8a8-full-kv6p25/short.json) |
+| qwen3.5-9b | W8A8 | 3 | 4096 | FULL_DECODE_ONLY | 0 | 关闭 | [redhat-w8a8-base-b4096-kv3](/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-base-b4096-kv3/short.json) |
+| qwen3-30b-a3b-instruct-2507-w4a8 | W4A8 | 6.25 | 2048 | FULL | 0 | 关闭 | [w4a8-full-kv6p25](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w4a8-full-kv6p25/short.json) |
+| qwen3.6-35b-a3b-mtp2 | W8A8 | 3.75 | 8192 | FULL_DECODE_ONLY | 2 | 开启 | [w8a8-mtp2-overlap-b8192-kv3p75](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75/short.json) |
+| qwen3.5-35b-a3b-mtp2 | W8A8 | 3.75 | 8192 | FULL_DECODE_ONLY | 2 | 开启 | [w8a8-mtp2-overlap-b8192-kv3p75](/home/qwen-models/reports/qwen3.5-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75/short.json) |
 
 优化包含：量化权重和INT8激活；仅加载语言模型，省去视觉塔；按模型选FULL或FULL_DECODE_ONLY、异步调度、NPUGraphEx及实际图捕获验证；混合GDN模型调整预填充预算以避免2048对齐下的长请求近似串行；固定KV预算并核对真实容量；前缀缓存align；实测共享专家流重叠及0/1/2步MTP。没有收益或出现能力问题的配置不作为默认。
 
@@ -98,32 +98,31 @@ bash scripts/run_model.sh qwen3-30b-a3b-instruct-2507-w4a8
 
 | 原始目录 | 能力题 | TPS1 | TPS4 | HBM/GiB | 8K重复TPS | 检索重复/混合 | 退出码 |
 | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: |
-| [qwen3-30b-a3b-instruct-2507/w4a8-full-kv6p25](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w4a8-full-kv6p25) | 71/72 | 75.36 | 248.75 | 28.27 | 179.36 | 0/4 / 4/4 | 1 |
-| [qwen3-30b-a3b-instruct-2507/w8a8-eager-probe](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w8a8-eager-probe) | — | — | — | — | — | 0/4 / — | 1 |
-| [qwen3-30b-a3b-instruct-2507/w8a8-final-quality-kv6p25](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w8a8-final-quality-kv6p25) | 72/72 | — | — | — | — | — / — | 0 |
-| [qwen3-30b-a3b-instruct-2507/w8a8-full](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w8a8-full) | 72/72 | 78.41 | 287.37 | 43.81 | 194.07 | 0/4 / — | 1 |
-| [qwen3-30b-a3b-instruct-2507/w8a8-full-kv6p25](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w8a8-full-kv6p25) | — | 67.24 | 270.00 | 39.81 | 192.87 | 0/4 / 4/4 | 1 |
-| [qwen3.5-35b-a3b/w8a8-base-b4096-kv3](/home/qwen-models/reports/qwen3.5-35b-a3b/w8a8-base-b4096-kv3) | 72/72 | 62.62 | 184.73 | 42.18 | 106.69 | 4/4 / 4/4 | 0 |
-| [qwen3.5-35b-a3b/w8a8-base-b4096-kv3-steady](/home/qwen-models/reports/qwen3.5-35b-a3b/w8a8-base-b4096-kv3-steady) | — | — | — | 42.18 | 137.30 | — / — | 0 |
-| [qwen3.5-35b-a3b/w8a8-mtp1-overlap-b4096-kv3p75](/home/qwen-models/reports/qwen3.5-35b-a3b/w8a8-mtp1-overlap-b4096-kv3p75) | 71/72 | 61.12 | 181.46 | 45.59 | 70.19 | 4/4 / 4/4 | 0 |
-| [qwen3.5-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75](/home/qwen-models/reports/qwen3.5-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75) | 71/72 | 74.68 | 213.15 | 46.22 | 103.81 | 4/4 / 4/4 | 0 |
-| [qwen3.5-9b/redhat-w8a8-base-b4096-kv3](/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-base-b4096-kv3) | 71/72 | 75.50 | 243.38 | 19.38 | 167.98 | 4/4 / 4/4 | 0 |
-| [qwen3.5-9b/redhat-w8a8-base-b4096-kv8p5](/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-base-b4096-kv8p5) | — | — | — | — | — | — / — | 1 |
-| [qwen3.5-9b/redhat-w8a8-compat-b4096-kv8p5](/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-compat-b4096-kv8p5) | 71/72 | 74.67 | 241.32 | 24.87 | 177.26 | 4/4 / 4/4 | 0 |
-| [qwen3.5-9b/redhat-w8a8-mtp1-b4096-kv4p5](/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-mtp1-b4096-kv4p5) | 71/72 | 70.79 | 225.27 | 23.40 | 173.29 | 4/4 / 4/4 | 0 |
-| [qwen3.5-9b/redhat-w8a8-mtp2-b4096-kv5p5](/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-mtp2-b4096-kv5p5) | 70/72 | 87.31 | 265.11 | 24.32 | 166.42 | 4/4 / 4/4 | 0 |
-| [qwen3.5-9b/sogagaga-w8a8-base-b4096-kv8p5](/home/qwen-models/reports/qwen3.5-9b/sogagaga-w8a8-base-b4096-kv8p5) | 71/72 | 74.32 | 242.24 | 24.87 | 169.72 | 4/4 / 4/4 | 0 |
-| [qwen3.6-35b-a3b/w8a8-base](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-base) | — | — | — | — | — | — / — | 5 |
-| [qwen3.6-35b-a3b/w8a8-base-b4096-kv2p5](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-base-b4096-kv2p5) | 71/72 | 62.30 | 186.22 | 41.70 | 68.41 | 4/4 / 4/4 | 0 |
-| [qwen3.6-35b-a3b/w8a8-base-fixed](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-base-fixed) | 71/72 | 62.02 | 186.19 | 44.90 | 59.82 | 4/4 / 4/4 | 0 |
-| [qwen3.6-35b-a3b/w8a8-mtp1-b4096-kv3p75](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-mtp1-b4096-kv3p75) | 71/72 | 60.27 | 178.92 | 45.50 | 70.10 | 4/4 / 4/4 | 0 |
-| [qwen3.6-35b-a3b/w8a8-mtp2-kv3](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-mtp2-kv3) | — | — | — | — | — | — / — | 1 |
-| [qwen3.6-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75) | 71/72 | 71.83 | 209.78 | 46.22 | 104.19 | 4/4 / 4/4 | 0 |
-| [qwen3.6-35b-a3b/w8a8-overlap-b4096-kv4](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-overlap-b4096-kv4) | 71/72 | 63.13 | 188.25 | 43.31 | 138.83 | 4/4 / 4/4 | 0 |
+| [qwen3-30b-a3b-instruct-2507/w4a8-full-kv6p25](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w4a8-full-kv6p25/short.json) | 71/72 | 75.36 | 248.75 | 28.27 | 179.36 | 0/4 / 4/4 | 1 |
+| [qwen3-30b-a3b-instruct-2507/w8a8-eager-probe](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w8a8-eager-probe/retrieval.json) | — | — | — | — | — | 0/4 / — | 1 |
+| [qwen3-30b-a3b-instruct-2507/w8a8-final-quality-kv6p25](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w8a8-final-quality-kv6p25/quality.json) | 72/72 | — | — | — | — | — / — | 0 |
+| [qwen3-30b-a3b-instruct-2507/w8a8-full](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w8a8-full/short.json) | 72/72 | 78.41 | 287.37 | 43.81 | 194.07 | 0/4 / — | 1 |
+| [qwen3-30b-a3b-instruct-2507/w8a8-full-kv6p25](/home/qwen-models/reports/qwen3-30b-a3b-instruct-2507/w8a8-full-kv6p25/short.json) | — | 67.24 | 270.00 | 39.81 | 192.87 | 0/4 / 4/4 | 1 |
+| [qwen3.5-35b-a3b/w8a8-base-b4096-kv3](/home/qwen-models/reports/qwen3.5-35b-a3b/w8a8-base-b4096-kv3/short.json) | 72/72 | 62.62 | 184.73 | 42.18 | 106.69 | 4/4 / 4/4 | 0 |
+| [qwen3.5-35b-a3b/w8a8-base-b4096-kv3-steady](/home/qwen-models/reports/qwen3.5-35b-a3b/w8a8-base-b4096-kv3-steady/service.log) | — | — | — | 42.18 | 137.30 | — / — | 0 |
+| [qwen3.5-35b-a3b/w8a8-mtp1-overlap-b4096-kv3p75](/home/qwen-models/reports/qwen3.5-35b-a3b/w8a8-mtp1-overlap-b4096-kv3p75/short.json) | 71/72 | 61.12 | 181.46 | 45.59 | 70.19 | 4/4 / 4/4 | 0 |
+| [qwen3.5-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75](/home/qwen-models/reports/qwen3.5-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75/short.json) | 71/72 | 74.68 | 213.15 | 46.22 | 103.81 | 4/4 / 4/4 | 0 |
+| [qwen3.5-9b/redhat-w8a8-base-b4096-kv3](/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-base-b4096-kv3/short.json) | 71/72 | 75.50 | 243.38 | 19.38 | 167.98 | 4/4 / 4/4 | 0 |
+| [qwen3.5-9b/redhat-w8a8-base-b4096-kv8p5](/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-base-b4096-kv8p5/service.log) | — | — | — | — | — | — / — | 1 |
+| [qwen3.5-9b/redhat-w8a8-compat-b4096-kv8p5](/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-compat-b4096-kv8p5/short.json) | 71/72 | 74.67 | 241.32 | 24.87 | 177.26 | 4/4 / 4/4 | 0 |
+| [qwen3.5-9b/redhat-w8a8-mtp1-b4096-kv4p5](/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-mtp1-b4096-kv4p5/short.json) | 71/72 | 70.79 | 225.27 | 23.40 | 173.29 | 4/4 / 4/4 | 0 |
+| [qwen3.5-9b/redhat-w8a8-mtp2-b4096-kv5p5](/home/qwen-models/reports/qwen3.5-9b/redhat-w8a8-mtp2-b4096-kv5p5/short.json) | 70/72 | 87.31 | 265.11 | 24.32 | 166.42 | 4/4 / 4/4 | 0 |
+| [qwen3.5-9b/sogagaga-w8a8-base-b4096-kv8p5](/home/qwen-models/reports/qwen3.5-9b/sogagaga-w8a8-base-b4096-kv8p5/short.json) | 71/72 | 74.32 | 242.24 | 24.87 | 169.72 | 4/4 / 4/4 | 0 |
+| [qwen3.6-35b-a3b/w8a8-base](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-base/short.json) | — | — | — | — | — | — / — | 5 |
+| [qwen3.6-35b-a3b/w8a8-base-b4096-kv2p5](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-base-b4096-kv2p5/short.json) | 71/72 | 62.30 | 186.22 | 41.70 | 68.41 | 4/4 / 4/4 | 0 |
+| [qwen3.6-35b-a3b/w8a8-base-fixed](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-base-fixed/short.json) | 71/72 | 62.02 | 186.19 | 44.90 | 59.82 | 4/4 / 4/4 | 0 |
+| [qwen3.6-35b-a3b/w8a8-mtp1-b4096-kv3p75](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-mtp1-b4096-kv3p75/short.json) | 71/72 | 60.27 | 178.92 | 45.50 | 70.10 | 4/4 / 4/4 | 0 |
+| [qwen3.6-35b-a3b/w8a8-mtp2-kv3](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-mtp2-kv3/service.log) | — | — | — | — | — | — / — | 1 |
+| [qwen3.6-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75/short.json) | 71/72 | 71.83 | 209.78 | 46.22 | 104.19 | 4/4 / 4/4 | 0 |
+| [qwen3.6-35b-a3b/w8a8-overlap-b4096-kv4](/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-overlap-b4096-kv4/short.json) | 71/72 | 63.13 | 188.25 | 43.31 | 138.83 | 4/4 / 4/4 | 0 |
 
 初次35B首次请求崩溃、未适配的9B tokenizer、MTP2/KV3仅3.4路容量而被启动拒绝等记录都保留。退出码非零可能对应启动错误或指定检索压力项失败，不能将空TPS视为性能成绩。早期4轮长输入结果包含缓存过渡，最终默认3.5-35B的稳态结果单独补测7轮。
 
 另一份sogagaga 9B的来源元数据提到Base、说明有歧义；本机结果与RedHatAI接近，均71/72且两组8K检索通过。保留两份，默认选用来源说明更明确的RedHatAI。
 
 退出码0表示阶段正常执行；能力判定请同时查看逐题得分。新模型TPS均为独占结果，原有14B与ASR的共驻检查见环境升级报告。
-
