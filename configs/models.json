@@ -244,7 +244,7 @@
     "validation_status": "graph_smoke_verified",
     "validation_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375",
     "quality_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375/quality.json",
-    "limitations": "可选短输入加速：47.87/130.00 TPS，71/72；整卡HBM约40.25GiB；8K重复请求两路缓存未命中，49.57TPS低于默认85.72；FFN为INT4权重/BF16激活",
+    "limitations": "默认MTP2配置：47.87/130.00 TPS，71/72；整卡HBM约40.25GiB；8K重复请求两路缓存未命中，49.57TPS低于低显存配置85.72；FFN为INT4权重/BF16激活",
     "w4a8_linear_backend": "upstream",
     "long_context_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375/logs/long-steady-128.json"
   }
