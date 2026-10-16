@@ -2,7 +2,7 @@
 
 基于 vLLM **V1 AsyncLLM + vllm-ascend + torch_npu** 的无状态文本 Responses 服务。HTTP 接口由本项目实现，单 API worker、单 Engine Core 和单模型副本。
 
-已从 ModelScope 下载并通过 SHA256 校验的模型为 [aleoyang/Qwen3-14B-w8a8-MindIE](https://modelscope.cn/models/aleoyang/Qwen3-14B-w8a8-MindIE)，项目路径 `model-bin/Qwen3-14B-W8A8-Ascend`。实际数据位于 `/home/qwen-llm-build/models/Qwen3-14B-W8A8-Ascend`，项目目录通过符号链接访问，以避开根分区空间不足。权重约 20GB，未修改原始量化文件。
+初期使用的 14B 权重为 [aleoyang/Qwen3-14B-w8a8-MindIE](https://modelscope.cn/models/aleoyang/Qwen3-14B-w8a8-MindIE)，项目路径 `model-bin/Qwen3-14B-W8A8-Ascend`。实际数据位于 `/home/qwen-llm-build/models/Qwen3-14B-W8A8-Ascend`，项目目录通过符号链接访问，以避开根分区空间不足。权重约 20GB，未修改原始量化文件。当前默认使用下述 Qwen3.8-27B MTP2 配置。
 
 当前默认环境已升级为 **CANN 9.1.1、torch/torch-npu 2.9.1、源码 vLLM 0.18.0 + vLLM-Ascend 0.18.0**，实际由 `torch_npu` 在 Ascend910B4-1 上执行。原有 14B 服务与 ASR 的同负载对照均通过 20% 性能退化门槛，旧环境仍保留。版本、构建补丁、原始数据和回退方法见 [环境升级报告](docs/cann911-torch291.md)。历史配置记录见 [初期验证报告](docs/validation.md)。
 
@@ -17,7 +17,7 @@ bash scripts/install_ascend.sh
 bash scripts/run_ascend.sh
 # 显式加载同一环境后运行诊断或测试。
 source scripts/env_ascend_291.sh
-poetry run qwen-llm doctor --probe-runtime
+poetry run qwen-llm doctor --model-path /home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend --probe-runtime
 # 按模型目录选择配置。
 bash scripts/run_model.sh qwen3.6-35b-a3b
 # 回退原有 14B 环境。
@@ -40,6 +40,7 @@ NPU 兼容处理、能力验收和性能结果见 [27B W4 报告](docs/qwen38-w4
 `poetry run qwen-llm serve-model` 均默认选择 `qwen3.8-27b-mtp2`。
 `qwen-llm.service` 调用同一启动脚本，下次启动自动采用此配置。
 可用 `QWEN_MODEL_PROFILE` 或 `run_model.sh MODEL` 显式选择其他配置。
+已有能力成绩、量化类型与公开报告见 [模型能力汇总](docs/model-capabilities.md)。
 
 服务地址为 `http://127.0.0.1:8100`。原有 14B 别名 `qwen3-14b`，其他模型别名及配置见 `configs/models.json`，每次只启动一个 LLM 实例。启动脚本支持追加 CLI 参数。历史 14B 配置使用 FULL 图、捕获 1/2/4/64/128/256、异步调度、NPUGraphEx、前缀缓存、2048-token 分块预填充和 10.25GiB KV；混合 GDN 模型使用 FULL_DECODE_ONLY，并按测试结果选择 MTP。
 
@@ -57,11 +58,11 @@ NPU 兼容处理、能力验收和性能结果见 [27B W4 报告](docs/qwen38-w4
 ```bash
 curl http://127.0.0.1:8100/v1/responses \
   -H 'Content-Type: application/json' \
-  -d '{"model":"qwen3-14b","input":"你好","max_output_tokens":256}'
+  -d '{"model":"qwen3.8-27b-mtp2","input":"你好","max_output_tokens":256}'
 
 curl -N http://127.0.0.1:8100/v1/responses \
   -H 'Content-Type: application/json' \
-  -d '{"model":"qwen3-14b","input":"解释一下质数","stream":true,"reasoning":{"effort":"medium"},"max_output_tokens":1024}'
+  -d '{"model":"qwen3.8-27b-mtp2","input":"解释一下质数","stream":true,"reasoning":{"effort":"medium"},"max_output_tokens":1024}'
 ```
 
 支持 `model`、`input`、`instructions`、`stream`、`temperature`、`top_p`、`max_output_tokens`、`reasoning.effort` 和 `store:false`。`input` 为字符串或 message 列表，角色支持 user/assistant/system/developer，developer 按 system 处理；content 支持字符串及 input_text/output_text 文本片段。`instructions` 作为首条 system 消息。
@@ -76,7 +77,7 @@ SSE 包含 `event` 与递增 `sequence_number`；从 created/in_progress 开始�
 
 每路模板展开后的输入最多 **8192 tokens**，输出最多 **8192 tokens（含思考）**，总上下文 16384。四个活动名额，不额外排队，第五路返回 429；请求体上限 1MiB。超时默认 600 秒，断连和超时会 abort 并释放名额，关闭宽限期 30 秒。
 
-四路完整上下文的 BF16 KV 理论下限为：
+历史 14B 模型四路完整上下文的 BF16 KV 理论下限为：
 
 ```text
 2(K/V) × 40层 × 8 KV头 × 128维 × 2字节 × 16384 tokens × 4路 = 10GiB
@@ -84,11 +85,11 @@ SSE 包含 `event` 与递增 `sequence_number`；从 created/in_progress 开始�
 
 `--gpu-memory-utilization` 默认 0.82，是设备内存 profile 的上限比例；实际 KV 分配仍由 `--kv-cache-gib` 固定，不会按比例填满整卡。这样在 ASR 已运行时也可为 LLM 初始化保留余量。
 
-设置 10.25GiB 留少量块余量，实测 67072 个 KV tokens，最大 16384-token 请求并发容量 4.09。旧插件忽略上游 `kv_cache_memory_bytes`，因此项目 NPUWorker 子类在设备内存 profile 后显式应用预算，超出可用内存则报错；KV预算在项目worker子类中实现，源码兼容补丁单独记录于deploy/ascend-291。
+14B 设置 10.25GiB 留少量块余量，实测 67072 个 KV tokens，最大 16384-token 请求并发容量 4.09。当前 27B MTP2 使用 9.375GiB KV，包含混合 GDN 状态与草稿模型缓存，实测估算完整上下文容量 4.0 路；整卡占用约 40.25GiB。旧插件忽略上游 `kv_cache_memory_bytes`，因此项目 NPUWorker 子类在设备内存 profile 后显式应用预算，超出可用内存则报错；KV预算在项目worker子类中实现，源码兼容补丁单独记录于deploy/ascend-291。
 
 原环境 Eager 实测整卡 HBM 33695MiB，包含无模型时约 3404MiB 的设备基础占用；不能把 KV 预算当成整卡占用。四路 8192-token 输入已测试，模型可能自然结束，因此短输出测试不等于四路满 8192-token 输出实测。
 
-当前 14B 默认 FULL 图并包含短输入预填充形状；旧环境保留 PIECEWISE 配置。MLP 预取在旧配置中实测没有收益，默认关闭。前缀缓存收益需分别报告冷、热缓存。模型专用优化分别记录，MLA 和多卡通信优化不适用于当前单卡 Dense 配置。当前仅一个可见逻辑设备 **0**，对应物理 4；`ASCEND_RT_VISIBLE_DEVICES=4` 会使设备不可见。
+14B 已验证配置使用 FULL 图并包含短输入预填充形状；旧环境保留 PIECEWISE 配置。当前 27B MTP2 使用 FULL_DECODE_ONLY、异步调度、NPUGraphEx 和前缀缓存。MLP 预取在旧配置中实测没有收益，默认关闭。前缀缓存收益需分别报告冷、热缓存。模型专用优化分别记录，MLA 和多卡通信优化不适用于当前单卡 Dense 配置。当前仅一个可见逻辑设备 **0**，对应物理 4；`ASCEND_RT_VISIBLE_DEVICES=4` 会使设备不可见。
 
 ## 验证与测速
 
@@ -96,6 +97,7 @@ SSE 包含 `event` 与递增 `sequence_number`；从 created/in_progress 开始�
 poetry check
 poetry run pytest -q
 poetry run qwen-llm benchmark --base-url http://127.0.0.1:8100/v1 \
+  --model-name qwen3.8-27b-mtp2 \
   --prompt '请连续列出至少100个常见汉语成语，每个成语附一句简短解释，不要省略，不要提前结束。' \
   --output-tokens 128 --output outputs/benchmark.json
 ```
@@ -111,7 +113,7 @@ systemctl start qwen-asr-ascend.service
 systemctl is-active qwen-asr-ascend.service
 ```
 
-本机 LLM 的 systemd 单元模板为 `deploy/systemd/qwen-llm.service`，运行默认14B配置。API 的 `/health/ready` 返回成功后才表示模型就绪；`Type=simple` 单元可能在模型预热期间已显示 active。切换模型前先停止该实例，再启动目标配置；性能基准还需停止 ASR，保证独占 NPU。
+本机 LLM 的 systemd 单元模板为 `deploy/systemd/qwen-llm.service`，运行默认 27B MTP2 配置。API 的 `/health/ready` 返回成功后才表示模型就绪；`Type=simple` 单元可能在模型预热期间已显示 active。切换模型前先停止该实例，再启动目标配置；性能基准还需停止 ASR，保证独占 NPU。
 
 ```bash
 # 安装本机服务模板；启动后检查 API 就绪。

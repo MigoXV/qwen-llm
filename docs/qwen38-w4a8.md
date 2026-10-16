@@ -1,10 +1,10 @@
 # Qwen3.8-27B 自制 W4A8：量化、适配与本机验证
 
 2026-10-16，Asia/Shanghai。原始权重已完成校验与自量化，模型已接入本项目的
-V1 AsyncLLM 无状态 Responses 服务。当前通过完整验收的图配置：单路31.73 TPS、
-四路合计97.68 TPS，整卡HBM采样最大33.20 GiB。原生INT8激活后端已测完，
-速度与能力均未超过默认路径，保留为独立实验。可选MTP两步配置单路47.87 TPS、
-四路合计130.00 TPS，HBM约40.25 GiB，适合短输入加速；按用户选择，现已设为默认启动配置；低显存配置仍可显式选择。
+V1 AsyncLLM 无状态 Responses 服务。按用户选择，当前默认使用MTP两步配置：
+单路47.87 TPS、四路合计130.00 TPS，HBM约40.25 GiB。
+低显存图配置保留为显式选择：单路31.73 TPS、四路合计97.68 TPS，
+整卡HBM采样最大33.20 GiB。原生INT8激活后端已测完，保留为独立实验。
 
 ## 环境与权重
 
@@ -119,7 +119,7 @@ MTP2小缓存配置的唯一失分仍为同一盈利年份题；大缓存配置�
 | MTP2 / KV10.5 GiB | 47.35 | 75.38 | 127.65 | 41.36 |
 | MTP2 / KV9.375 GiB | 47.87 | 75.24 | 130.00 | 40.25 |
 
-默认图路径三轮范围：单路31.61～31.75、两路53.83～54.19、四路97.52～97.96 TPS。
+低显存图路径三轮范围：单路31.61～31.75、两路53.83～54.19、四路97.52～97.96 TPS。
 对应首token延迟样本中位数约399/779/809 ms；小样本不能代表生产尾延迟。
 单路与四路相对Eager分别提高约5.66倍、4.78倍。
 
@@ -132,7 +132,7 @@ MTP2小缓存配置的唯一失分仍为同一盈利年份题；大缓存配置�
 | MTP2 / KV10.5 GiB | 35.91 | 61.00 | 6144 / 6144 / 6144 / 0 |
 | MTP2 / KV9.375 GiB | 36.02 | 49.57 | 6144 / 6144 / 0 / 0 |
 
-默认路径重复末三轮85.55～85.82 TPS，命中模式稳定。首轮只有一个样本，与稳态统计区分。
+低显存图路径重复末三轮85.55～85.82 TPS，命中模式稳定。首轮只有一个样本，与稳态统计区分。
 HBM为整卡轮次采样最大值，包含约3.34 GiB驱动基础占用，不是连续瞬时峰值。
 
 Eager、普通图与GMM的共同参数：TP=1、8192输入/8192输出上限、4活动请求、4096-token分块预填充、
@@ -147,7 +147,7 @@ MTP组合配置使用两步推测、8192-token预填充与3/6/12捕获形状，�
 `AscendEagleProposer`。草稿权重保留BF16，不是加载整套BF16目标模型。
 10.5 GiB预算估算容量4.48路；根据真实块布局缩到9.375 GiB，实分配约9.31 GiB、容量4.0路。
 小缓存保留短输入收益，HBM减少约1.11 GiB，但重复8K缓存命中减少，吞吐也下降。
-因此把`qwen3.8-27b-mtp2`保留为可选加速配置，没有替换33.20 GiB的默认配置。
+用户选择`qwen3.8-27b-mtp2`作为默认启动配置；33.20 GiB的`qwen3.8-27b`保留为低显存选择。
 
 ## 复现与原始数据
 
@@ -167,9 +167,10 @@ poetry run python scripts/verify_w4_linear.py \
 poetry run python scripts/verify_w4_linear.py --backend gmm --prefill-tokens 4096 \
   --model-path /home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend \
   --output /home/qwen-quantize-20261016/reports/recheck-gmm.json
+# 默认MTP2，内存和长输入缓存取舍见上表：
+bash scripts/run_model.sh
+# 显式选择低显存配置：
 bash scripts/run_model.sh qwen3.8-27b
-# 短输入加速，内存和长输入缓存取舍见上表：
-bash scripts/run_model.sh qwen3.8-27b-mtp2
 # 保留的原生INT8激活实验，有已知算术错误：
 bash scripts/run_model.sh qwen3.8-27b-w4a8
 ```
@@ -180,16 +181,16 @@ bash scripts/run_model.sh qwen3.8-27b-w4a8
 停止已有实例后，可在新目录复测默认配置；脚本负责启动、测试和关闭：
 
 ```bash
-bash scripts/benchmark_quantized_model.sh qwen3.8-27b \
+bash scripts/benchmark_quantized_model.sh qwen3.8-27b-mtp2 \
   /home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend \
   /home/qwen-models/reports/qwen3.8-27b/recheck-default \
   --runner aclgraph --graph-mode FULL_DECODE_ONLY \
-  --batch-tokens 4096 --kv-cache-gib 6.5 --async-scheduling \
+  --batch-tokens 8192 --kv-cache-gib 9.375 --speculative-tokens 2 --async-scheduling \
   --npugraph-ex --prefix-caching --w4a8-linear-backend upstream
 ```
 
-MTP复测改用新输出目录，设置`--batch-tokens 8192 --kv-cache-gib 9.375 --speculative-tokens 2`。
-原生W4A8实验设置`--w4a8-linear-backend gmm`，其余沿用普通图参数。
+低显存复测改用新输出目录和别名`qwen3.8-27b`，设置`--batch-tokens 4096 --kv-cache-gib 6.5 --speculative-tokens 0`。
+原生W4A8实验设置`--w4a8-linear-backend gmm`，其余沿用低显存图参数。
 
 原始目录在`/home/qwen-models/reports/qwen3.8-27b/`，包含全部回答、SSE终态、
 TTFT、进程盘点、实际参数、服务日志和阶段退出码；失败配置同样保留。
@@ -202,7 +203,7 @@ TTFT、进程盘点、实际参数、服务日志和阶段退出码；失败配�
 | `w4a8-b4096-kv6p5-g128` | 图执行完整能力、检索、短/长输入测试通过 |
 | `w4a8-gmm-b4096-kv6p5` | 原生W4A8，70/72，有新增算术错误且较慢，保留未默认 |
 | `w4a8-mtp2-b8192-kv10p5` | 72/72，MTP两步，较大缓存对照 |
-| `w4a8-mtp2-b8192-kv9p375` | 71/72，四路容量4.0，低缓存MTP可选配置 |
+| `w4a8-mtp2-b8192-kv9p375` | 71/72，四路容量4.0，当前默认MTP配置 |
 
 版本化数值、参数和SHA256索引见[qwen38-w4a8-results.json](qwen38-w4a8-results.json)。
 数据盘汇总：`/home/qwen-models/reports/qwen3.8-27b-summary.json`。
