@@ -31,9 +31,14 @@ poetry run qwen-llm download-model OWNER/MODEL \
   --output-dir /home/qwen-models/weights/MODEL
 ```
 
+Qwen3.8-27B 的原始 BF16 和自制 W4 权重位于 `/home/model-bin/Qwen/`，量化方案、
+NPU 兼容处理、能力验收和性能结果见 [27B W4 报告](docs/qwen38-w4a8.md)。
+`qwen3.8-27b` 为低显存默认，`qwen3.8-27b-mtp2` 提供短输入加速；
+原生 INT8 激活实验 `qwen3.8-27b-w4a8` 有已知算术错误，保留供对照。
+
 服务地址为 `http://127.0.0.1:8100`。原有 14B 别名 `qwen3-14b`，其他模型别名及配置见 `configs/models.json`，每次只启动一个 LLM 实例。启动脚本支持追加 CLI 参数。默认 14B 使用 FULL 图、捕获 1/2/4/64/128/256、异步调度、NPUGraphEx、前缀缓存、2048-token 分块预填充和 10.25GiB KV；混合 GDN 模型使用 FULL_DECODE_ONLY，并按测试结果选择 MTP。
 
-`dtype=bfloat16` 指未量化层、残差和 KV 的计算类型；模型线性层使用量化权重及 INT8 激活，不会据此加载整套 BF16 权重。`deploy/ascend-291/constraints.txt` 固定推理依赖，`poetry.lock` 管理应用依赖。重新安装推理环境请运行完整安装脚本，单独 `poetry install` 可能覆盖运行时约束。
+`dtype=bfloat16` 指未量化层、残差和 KV 的计算类型，不会据此加载整套 BF16 权重。W8A8 线性层使用 INT8 激活；27B 的 W4 层在当前旧插件中使用 BF16 激活和 INT4 权重反量化算子，具体执行路径见对应报告。`deploy/ascend-291/constraints.txt` 固定推理依赖，`poetry.lock` 管理应用依赖。重新安装推理环境请运行完整安装脚本，单独 `poetry install` 可能覆盖运行时约束。
 
 诊断和测试前加载 `scripts/env_ascend_291.sh`；`doctor --probe-runtime` 不加载模型，`smoke` 会加载模型，应先关闭现有 LLM。VS Code 选择上述解释器，调试模块为 `qwen_llm.commands.app`，配置参考 `.env.example`；CLI 不自动读取 `.env`。
 
