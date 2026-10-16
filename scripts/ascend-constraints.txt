@@ -1,0 +1,12 @@
+# CANN 8.3.RC1 / vllm-ascend v0.11.0rc1 runtime baseline.
+torch==2.7.1
+torch-npu==2.7.1
+torchvision==0.22.1
+numpy==1.26.4
+transformers==4.57.1
+tokenizers==0.22.1
+huggingface-hub==0.36.0
+fastapi<0.124.0
+opencv-python-headless==4.11.0.86
+setuptools==79.0.1
+openai==3.31.0

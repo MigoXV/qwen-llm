@@ -10,6 +10,30 @@
       "justMyCode": false,
       "envFile": "${workspaceFolder}/.env",
       "args": []
+    },
+    {
+      "name": "Responses 服务",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "qwen_llm.commands.app",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "envFile": "${workspaceFolder}/.env",
+      "args": [
+        "serve"
+      ]
+    },
+    {
+      "name": "环境诊断",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "qwen_llm.commands.app",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "envFile": "${workspaceFolder}/.env",
+      "args": [
+        "doctor"
+      ]
     }
   ]
 }

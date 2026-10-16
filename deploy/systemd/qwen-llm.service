@@ -1,0 +1,24 @@
+[Unit]
+Description=Qwen V1 stateless Responses API on Ascend NPU
+After=network.target
+StartLimitIntervalSec=600
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/root/repositories/qwen-llm
+Environment=QWEN_RUNTIME=cann911
+EnvironmentFile=-/etc/qwen-llm.env
+ExecStart=/bin/bash /root/repositories/qwen-llm/scripts/run_ascend.sh
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=900
+TimeoutStopSec=45
+KillMode=control-group
+LimitNOFILE=65536
+TasksMax=4096
+
+[Install]
+WantedBy=multi-user.target

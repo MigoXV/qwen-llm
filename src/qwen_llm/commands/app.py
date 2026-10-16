@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
+import os
+from pathlib import Path
 from importlib.metadata import version
+import sys
 
 import typer
+
+from qwen_llm.config import GraphMode, ModelDType, Runner
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,6 +30,149 @@ def main() -> None:
 def show_version() -> None:
     """显示已安装的项目版本。"""
     typer.echo(version("qwen-llm"))
+
+
+@app.command("download-model")
+def download_model(
+    model_id: str = typer.Argument(..., envvar="QWEN_MODELSCOPE_ID"),
+    output_dir: Path = typer.Option(Path("model-bin/Qwen3-14B-W8A8-Ascend"), envvar="QWEN_DOWNLOAD_DIR"),
+    workers: int = typer.Option(4, min=1, max=8, envvar="QWEN_DOWNLOAD_WORKERS"),
+) -> None:
+    """从 ModelScope 下载并校验公开模型文件；支持断点续传。"""
+    from qwen_llm.modelscope import download_modelscope
+    download_modelscope(model_id, output_dir, workers)
+
+
+@app.command("serve-model", context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
+def serve_model(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., envvar="QWEN_MODEL_PROFILE"),
+    catalog: Path = typer.Option(Path(__file__).resolve().parents[3] / "configs/models.json",
+                                 exists=True, dir_okay=False, envvar="QWEN_MODEL_CATALOG"),
+) -> None:
+    """按模型配置选择权重与已验证参数；后面的serve选项可覆盖配置。"""
+    entries = json.loads(catalog.read_text())
+    row = next((item for item in entries if item["name"].casefold() == name.casefold()), None)
+    if row is None:
+        raise typer.BadParameter("未知模型；可选：" + ", ".join(item["name"] for item in entries))
+    for field, supported in (("max_input_tokens", 8192), ("max_output_tokens", 8192), ("max_concurrency", 4)):
+        if row.get(field, supported) != supported:
+            raise typer.BadParameter(f"模型目录中的 {field} 必须为 {supported}，容量变更需要重新验收")
+    if not row.get("language_model_only", True):
+        raise typer.BadParameter("当前服务只支持文本模型配置")
+    options = ["--model-name", row["name"], "--model-path", str(Path(row["path"]).resolve()),
+               "--dtype", row.get("dtype", "bfloat16"), "--runner", row.get("runner", "aclgraph"),
+               "--graph-mode", row.get("graph_mode", "FULL_DECODE_ONLY"),
+               "--batch-tokens", str(row.get("batch_tokens", 2048)),
+               "--kv-cache-gib", str(row["kv_cache_gib"]),
+               "--speculative-tokens", str(row.get("speculative_tokens", 0)),
+               "--prefix-caching" if row.get("prefix_caching", True) else "--no-prefix-caching",
+               "--async-scheduling" if row.get("async_scheduling", True) else "--no-async-scheduling",
+               "--npugraph-ex" if row.get("npugraph_ex", True) else "--no-npugraph-ex"]
+    if row.get("overlap_shared_expert", False):
+        options.append("--overlap-shared-expert")
+    os.execv(sys.executable, [sys.executable, "-m", "qwen_llm.commands.app", "serve", *options, *ctx.args])
+
+
+@app.command()
+def doctor(
+    model_path: Path = typer.Option(Path("model-bin/Qwen3-14B-W8A8-Ascend"), envvar="QWEN_MODEL_PATH"),
+    probe_runtime: bool = typer.Option(False, envvar="QWEN_PROBE_RUNTIME"),
+) -> None:
+    """检查安装与量化兼容性；不加载模型或占用 NPU。"""
+    from qwen_llm.engine.diagnostics import diagnose
+    report = diagnose(model_path, probe_runtime=probe_runtime)
+    typer.echo(json.dumps(report, ensure_ascii=False, indent=2))
+    if not report["ready"]:
+        raise typer.Exit(1)
+
+
+@app.command()
+def serve(
+    model_path: Path = typer.Option(Path("model-bin/Qwen3-14B-W8A8-Ascend"), envvar="QWEN_MODEL_PATH"),
+    model_name: str = typer.Option("qwen3-14b", envvar="QWEN_MODEL_NAME"),
+    dtype: ModelDType = typer.Option(ModelDType.BFLOAT16, envvar="QWEN_DTYPE"),
+    host: str = typer.Option("127.0.0.1", envvar="QWEN_HOST"),
+    port: int = typer.Option(8100, min=1, max=65535, envvar="QWEN_PORT"),
+    timeout: float = typer.Option(600, min=1, envvar="QWEN_TIMEOUT"),
+    batch_tokens: int = typer.Option(2048, min=4, envvar="QWEN_BATCH_TOKENS"),
+    runner: Runner = typer.Option(Runner.ACLGRAPH, envvar="QWEN_RUNNER"),
+    prefix_caching: bool = typer.Option(True, "--prefix-caching/--no-prefix-caching", envvar="QWEN_PREFIX_CACHING"),
+    kv_cache_gib: float = typer.Option(10.25, min=0.125, envvar="QWEN_KV_CACHE_GIB"),
+    gpu_memory_utilization: float = typer.Option(0.82, min=0.01, max=1, envvar="QWEN_GPU_MEMORY_UTILIZATION"),
+    graph_mode: GraphMode = typer.Option(GraphMode.PIECEWISE, envvar="QWEN_GRAPH_MODE"),
+    speculative_tokens: int = typer.Option(0, min=0, max=3, envvar="QWEN_SPECULATIVE_TOKENS"),
+    async_scheduling: bool | None = typer.Option(None, "--async-scheduling/--no-async-scheduling", envvar="QWEN_ASYNC_SCHEDULING"),
+    npugraph_ex: bool | None = typer.Option(None, "--npugraph-ex/--no-npugraph-ex", envvar="QWEN_NPUGRAPH_EX"),
+    overlap_shared_expert: bool = typer.Option(False, envvar="QWEN_OVERLAP_SHARED_EXPERT"),
+) -> None:
+    """启动单 worker V1 Responses 服务。"""
+    import uvicorn
+    from qwen_llm.config import ServingConfig
+    from qwen_llm.servicer.app import create_app
+    config = ServingConfig(model_path=model_path, model_name=model_name, dtype=dtype,
+                           timeout=timeout, batch_tokens=batch_tokens,
+                           runner=runner, prefix_caching=prefix_caching,
+                           kv_cache_bytes=int(kv_cache_gib * 1024**3),
+                           gpu_memory_utilization=gpu_memory_utilization,
+                           graph_mode=graph_mode, speculative_tokens=speculative_tokens,
+                           async_scheduling=async_scheduling, npugraph_ex=npugraph_ex,
+                           overlap_shared_expert=overlap_shared_expert)
+    uvicorn.run(create_app(config), host=host, port=port, workers=1,
+                timeout_graceful_shutdown=int(config.shutdown_grace))
+
+
+@app.command()
+def smoke(
+    model_path: Path = typer.Option(Path("model-bin/Qwen3-14B-W8A8-Ascend"), envvar="QWEN_MODEL_PATH"),
+) -> None:
+    """直接验证真实模型加载、生成与清理；失败返回非零。"""
+    from qwen_llm.config import ServingConfig
+    from qwen_llm.engine.vllm import V1Engine
+    async def run():
+        engine = V1Engine(ServingConfig(model_path=model_path))
+        try:
+            await engine.start()
+            prompt = await engine.prepare([{"role": "user", "content": "你好"}], False)
+            async for result in engine.generate(prompt, "smoke", max_tokens=16, temperature=0):
+                if result.finish_reason:
+                    typer.echo(result.text)
+        finally:
+            await engine.close()
+    try:
+        asyncio.run(run())
+    except Exception as exc:
+        logger.error("真实推理验证失败：%s", exc)
+        raise typer.Exit(1) from exc
+
+
+@app.command()
+def benchmark(
+    base_url: str = typer.Option("http://127.0.0.1:8100/v1", envvar="QWEN_BASE_URL"),
+    model_name: str = typer.Option("qwen3-14b", envvar="QWEN_MODEL_NAME"),
+    prompt: str = typer.Option("请介绍一下你自己。", envvar="QWEN_BENCH_PROMPT"),
+    output_tokens: int = typer.Option(128, min=1, max=8192, envvar="QWEN_BENCH_OUTPUT_TOKENS"),
+    output: Path = typer.Option(Path("outputs/benchmark.json"), envvar="QWEN_BENCH_OUTPUT"),
+) -> None:
+    """在独占设备上预热后测量 1/2/4/8 并发，各三轮；保存原始记录。"""
+    from qwen_llm.benchmark import run_benchmark
+    asyncio.run(run_benchmark(base_url, model_name, prompt, output_tokens, output))
+
+
+@app.command("evaluate")
+def evaluate_model(
+    base_url: str = typer.Option("http://127.0.0.1:8100/v1", envvar="QWEN_BASE_URL"),
+    model_name: str = typer.Option("qwen3-14b", envvar="QWEN_MODEL_NAME"),
+    output: Path = typer.Option(Path("outputs/quality.json"), envvar="QWEN_EVAL_OUTPUT"),
+    math_dataset: Path | None = typer.Option(None, exists=True, dir_okay=False, envvar="QWEN_EVAL_MATH_DATASET"),
+    math_samples: int = typer.Option(32, min=1, max=1319, envvar="QWEN_EVAL_MATH_SAMPLES"),
+) -> None:
+    """保存40道固定答案题的逐请求结果；不代替完整量化精度评估。"""
+    from qwen_llm.evaluation import evaluate
+    result = asyncio.run(evaluate(base_url, model_name, output, math_dataset, math_samples))
+    typer.echo(f"{result['passed']}/{result['total']} passed; execution errors={result['execution_errors']}")
+    if result["execution_errors"] or not result["instance_unchanged"]:
+        raise typer.Exit(1)
 
 
 if __name__ == "__main__":
