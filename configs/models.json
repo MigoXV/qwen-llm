@@ -175,7 +175,7 @@
     "repo_id": "Qwen/Qwen3.8-27B",
     "quantization": "ModelSlim progressive group256 FFN W4 with exact group128 scales; attention/GDN projections W8A8",
     "dtype": "bfloat16",
-    "runner": "eager",
+    "runner": "aclgraph",
     "language_model_only": true,
     "max_input_tokens": 8192,
     "max_output_tokens": 8192,
@@ -184,13 +184,14 @@
     "kv_cache_gib": 6.5,
     "download_root": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
     "async_scheduling": true,
-    "npugraph_ex": false,
+    "npugraph_ex": true,
     "speculative_tokens": 0,
     "graph_mode": "FULL_DECODE_ONLY",
     "prefix_caching": true,
-    "validation_status": "eager_smoke_verified",
-    "validation_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-eager-b4096-kv6p5-g128",
-    "quality_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-eager-b4096-kv6p5-g128/quality.json",
-    "limitations": "能力冒烟71/72、两类8K检索通过；无同模型BF16精度对照；旧版Dense W4算子以BF16激活反量化权重"
+    "validation_status": "graph_smoke_verified",
+    "validation_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-b4096-kv6p5-g128",
+    "quality_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-b4096-kv6p5-g128/quality.json",
+    "limitations": "能力冒烟71/72、两类8K检索通过；无同模型BF16精度对照；旧版Dense W4算子以BF16激活反量化权重",
+    "w4a8_linear_backend": "upstream"
   }
 ]
