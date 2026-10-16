@@ -13,7 +13,7 @@ Python 3.10、Poetry。当前解释器为 `/home/qwen-upgrade-20261015/virtualen
 ```bash
 # 本机已安装；重新构建需要数据盘 CANN 9.1.1 toolkit、910B ops 和 NNAL。
 bash scripts/install_ascend.sh
-# 默认启动原有 14B W8A8 服务。
+# 默认启动27B MTP2：8192 batch tokens、9.375GiB KV、两步推测。
 bash scripts/run_ascend.sh
 # 显式加载同一环境后运行诊断或测试。
 source scripts/env_ascend_291.sh
@@ -33,10 +33,15 @@ poetry run qwen-llm download-model OWNER/MODEL \
 
 Qwen3.8-27B 的原始 BF16 和自制 W4 权重位于 `/home/model-bin/Qwen/`，量化方案、
 NPU 兼容处理、能力验收和性能结果见 [27B W4 报告](docs/qwen38-w4a8.md)。
-`qwen3.8-27b` 为低显存默认，`qwen3.8-27b-mtp2` 提供短输入加速；
+`qwen3.8-27b-mtp2` 现为默认启动配置，`qwen3.8-27b` 保留为显式低显存选择；
 原生 INT8 激活实验 `qwen3.8-27b-w4a8` 有已知算术错误，保留供对照。
 
-服务地址为 `http://127.0.0.1:8100`。原有 14B 别名 `qwen3-14b`，其他模型别名及配置见 `configs/models.json`，每次只启动一个 LLM 实例。启动脚本支持追加 CLI 参数。默认 14B 使用 FULL 图、捕获 1/2/4/64/128/256、异步调度、NPUGraphEx、前缀缓存、2048-token 分块预填充和 10.25GiB KV；混合 GDN 模型使用 FULL_DECODE_ONLY，并按测试结果选择 MTP。
+`bash scripts/run_ascend.sh`、不带模型名的 `bash scripts/run_model.sh` 与
+`poetry run qwen-llm serve-model` 均默认选择 `qwen3.8-27b-mtp2`。
+`qwen-llm.service` 调用同一启动脚本，下次启动自动采用此配置。
+可用 `QWEN_MODEL_PROFILE` 或 `run_model.sh MODEL` 显式选择其他配置。
+
+服务地址为 `http://127.0.0.1:8100`。原有 14B 别名 `qwen3-14b`，其他模型别名及配置见 `configs/models.json`，每次只启动一个 LLM 实例。启动脚本支持追加 CLI 参数。历史 14B 配置使用 FULL 图、捕获 1/2/4/64/128/256、异步调度、NPUGraphEx、前缀缓存、2048-token 分块预填充和 10.25GiB KV；混合 GDN 模型使用 FULL_DECODE_ONLY，并按测试结果选择 MTP。
 
 `dtype=bfloat16` 指未量化层、残差和 KV 的计算类型，不会据此加载整套 BF16 权重。W8A8 线性层使用 INT8 激活；27B 的 W4 层在当前旧插件中使用 BF16 激活和 INT4 权重反量化算子，具体执行路径见对应报告。`deploy/ascend-291/constraints.txt` 固定推理依赖，`poetry.lock` 管理应用依赖。重新安装推理环境请运行完整安装脚本，单独 `poetry install` 可能覆盖运行时约束。
 

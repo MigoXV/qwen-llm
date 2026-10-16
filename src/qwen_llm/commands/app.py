@@ -46,7 +46,7 @@ def download_model(
 @app.command("serve-model", context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
 def serve_model(
     ctx: typer.Context,
-    name: str = typer.Argument(..., envvar="QWEN_MODEL_PROFILE"),
+    name: str = typer.Argument("qwen3.8-27b-mtp2", envvar="QWEN_MODEL_PROFILE"),
     catalog: Path = typer.Option(Path(__file__).resolve().parents[3] / "configs/models.json",
                                  exists=True, dir_okay=False, envvar="QWEN_MODEL_CATALOG"),
 ) -> None:
