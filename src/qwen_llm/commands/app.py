@@ -87,6 +87,23 @@ def doctor(
         raise typer.Exit(1)
 
 
+@app.command("quantize-w4a8")
+def quantize_w4a8(
+    model_path: Path = typer.Option(..., exists=True, file_okay=False, envvar="QWEN_QUANT_SOURCE"),
+    output_dir: Path = typer.Option(..., envvar="QWEN_QUANT_OUTPUT"),
+    source_manifest: Path = typer.Option(..., exists=True, dir_okay=False, envvar="QWEN_QUANT_SOURCE_MANIFEST"),
+    modelslim_root: Path = typer.Option(..., exists=True, file_okay=False, envvar="QWEN_MODELSLIM_ROOT"),
+    tool_dependencies: Path = typer.Option(..., exists=True, file_okay=False, envvar="QWEN_QUANT_DEPENDENCIES"),
+    w4_scope: str = typer.Option("mlp", envvar="QWEN_QUANT_W4_SCOPE", help="mlp保留注意力/GDN为W8；all扩大W4范围。"),
+    group_size: int = typer.Option(256, min=32, envvar="QWEN_QUANT_GROUP_SIZE"),
+    threads: int = typer.Option(16, min=1, envvar="QWEN_QUANT_THREADS"),
+):
+    """从已校验 BF16 原权重导出候选 W4A8；输出仍须真实能力和速度验证。"""
+    from qwen_llm.quantization import export_w4a8
+    export_w4a8(model_path, output_dir, source_manifest, modelslim_root,
+                tool_dependencies, w4_scope, group_size, threads)
+
+
 @app.command()
 def serve(
     model_path: Path = typer.Option(Path("model-bin/Qwen3-14B-W8A8-Ascend"), envvar="QWEN_MODEL_PATH"),
