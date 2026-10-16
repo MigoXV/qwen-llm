@@ -48,10 +48,13 @@ cleanup() {
 }
 trap cleanup EXIT
 systemctl reset-failed "$QWEN_SUITE_UNIT" 2>/dev/null || true
+# 固定原有基准起点，避免服务默认MTP2参数渗入其他模型；本轮参数仍在最后覆盖。
 systemd-run --unit="$QWEN_SUITE_UNIT" --property="WorkingDirectory=$QWEN_PROJECT_ROOT" \
     --property=KillMode=control-group --property=TimeoutStopSec=45 \
     /bin/bash "$QWEN_PROJECT_ROOT/scripts/run_ascend_291.sh" \
-    --model-name "$QWEN_SUITE_MODEL" --model-path "$QWEN_SUITE_MODEL_PATH" "$@"
+    --model-name "$QWEN_SUITE_MODEL" --model-path "$QWEN_SUITE_MODEL_PATH" \
+    --graph-mode FULL --async-scheduling --npugraph-ex --batch-tokens 2048 \
+    --kv-cache-gib 10.25 --speculative-tokens 0 "$@"
 QWEN_SUITE_OWNED=true
 QWEN_SUITE_READY=false
 for QWEN_WAIT_INDEX in $(seq 1 450); do

@@ -14,6 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 class BudgetedNPUWorker(NPUWorker):
+    def load_model(self):
+        backend = (getattr(self.vllm_config, 'additional_config', None) or {}).get('qwen_w4a8_linear_backend', 'upstream')
+        if backend == 'gmm':
+            from qwen_llm.engine.ascend_w4a8 import install_native_w4a8
+            install_native_w4a8()
+        super().load_model()
+
     def runtime_status(self) -> dict:
         """从真实 worker 返回图捕获、缓存容量与 NPU 内存，供启动验收。"""
         import torch
@@ -23,6 +30,8 @@ class BudgetedNPUWorker(NPUWorker):
         cache = self.model_runner.kv_cache_config
         drafter = getattr(self.model_runner, "drafter", None)
         speculative = self.vllm_config.speculative_config
+        schemes = [getattr(getattr(layer, 'quant_method', None), 'quant_method', None)
+                   for layer in self.model_runner.model.modules()]
         return {
             "worker": f"{type(self).__module__}.{type(self).__name__}",
             "device": str(self.device),
@@ -35,6 +44,10 @@ class BudgetedNPUWorker(NPUWorker):
             "full_context_capacity": get_max_concurrency_for_kv_cache_config(self.vllm_config, cache),
             "npu_allocated_bytes": torch.npu.memory_allocated(),
             "npu_reserved_bytes": torch.npu.memory_reserved(),
+            "w4a8_linear_backend": (self.vllm_config.additional_config or {}).get('qwen_w4a8_linear_backend', 'upstream'),
+            "native_w4a8_linear_layers": sum(type(s).__name__ == 'NativeW4A8LinearMethod' for s in schemes),
+            "native_w4a8_group_sizes": sorted({s.effective_group_size for s in schemes
+                                                if type(s).__name__ == 'NativeW4A8LinearMethod'}),
         }
 
     def determine_available_memory(self) -> int:

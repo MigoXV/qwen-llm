@@ -1,0 +1,2165 @@
+{
+  "created_at": "2026-10-16T06:11:41.004053+00:00",
+  "implementation_revision": "d957cba715d62f56568d1074c9ae887f14153b20",
+  "source_manifest": {
+    "path": "/home/qwen-quantize-20261016/reports/source-manifest.json",
+    "sha256": "603f3a0d969d4aaf2f4ae4c80430333d7084a3adad380145d62012162597f963",
+    "verified": true
+  },
+  "quantization_manifest": {
+    "path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend/quantization_manifest.json",
+    "sha256": "ca9f080d3d6e1f9fe25baeaa00ae4b0fcdaf8f1fc32c80995d631dfc517f07fe",
+    "source": "/home/model-bin/Qwen/Qwen3.8-27B",
+    "source_manifest": "/home/qwen-quantize-20261016/reports/source-manifest.json",
+    "source_manifest_sha256": "603f3a0d969d4aaf2f4ae4c80430333d7084a3adad380145d62012162597f963",
+    "modelslim_commit": "9e19c1bcfe217b63666921606fc0abc24bf0709a",
+    "w4_scope": "mlp",
+    "group_size": 128,
+    "method": "ModelSlim data-free symmetric progressive INT8 -> group INT4; dynamic activation schemes",
+    "calibration_dataset": null,
+    "validated_for_inference": true,
+    "created_at": "2026-10-16T05:00:38.824172+00:00",
+    "export_complete": true,
+    "elapsed_seconds": 353.91055054496974,
+    "tensor_bytes": 25852896736,
+    "scheme_counts": {
+      "W4A8_DYNAMIC": 192,
+      "W8A8_DYNAMIC": 160
+    },
+    "quantization_group_size": 256,
+    "runtime_group_size": 128,
+    "exact_scale_subdivision": true,
+    "derived_from": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend-group256-nd-only",
+    "validated_at": "2026-10-16T06:09:57.206384+00:00",
+    "recommended_backend": "upstream",
+    "inference_validation_scope": "W4 FFN weights with BF16 activations; native W4A8 GMM retained with a known arithmetic failure",
+    "inference_validation": {
+      "upstream": {
+        "report_directory": "/home/qwen-models/reports/qwen3.8-27b/w4a8-b4096-kv6p5-g128",
+        "passed": 71,
+        "total": 72,
+        "categories": {
+          "arithmetic": {
+            "passed": 20,
+            "total": 20
+          },
+          "format": {
+            "passed": 2,
+            "total": 2
+          },
+          "gsm8k": {
+            "passed": 31,
+            "total": 32
+          },
+          "knowledge_logic": {
+            "passed": 10,
+            "total": 10
+          },
+          "translation": {
+            "passed": 8,
+            "total": 8
+          }
+        },
+        "execution_errors": 0,
+        "accepted_as_default": true,
+        "known_failure_ids": [
+          "gsm8k-12"
+        ]
+      },
+      "gmm": {
+        "report_directory": "/home/qwen-models/reports/qwen3.8-27b/w4a8-gmm-b4096-kv6p5",
+        "passed": 70,
+        "total": 72,
+        "categories": {
+          "arithmetic": {
+            "passed": 19,
+            "total": 20
+          },
+          "format": {
+            "passed": 2,
+            "total": 2
+          },
+          "gsm8k": {
+            "passed": 31,
+            "total": 32
+          },
+          "knowledge_logic": {
+            "passed": 10,
+            "total": 10
+          },
+          "translation": {
+            "passed": 8,
+            "total": 8
+          }
+        },
+        "execution_errors": 0,
+        "accepted_as_default": false,
+        "known_failure_ids": [
+          8,
+          "gsm8k-12"
+        ]
+      },
+      "mtp2_kv10p5": {
+        "report_directory": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv10p5",
+        "passed": 72,
+        "total": 72,
+        "categories": {
+          "arithmetic": {
+            "passed": 20,
+            "total": 20
+          },
+          "format": {
+            "passed": 2,
+            "total": 2
+          },
+          "gsm8k": {
+            "passed": 32,
+            "total": 32
+          },
+          "knowledge_logic": {
+            "passed": 10,
+            "total": 10
+          },
+          "translation": {
+            "passed": 8,
+            "total": 8
+          }
+        },
+        "execution_errors": 0,
+        "accepted_as_default": false,
+        "known_failure_ids": []
+      },
+      "mtp2_kv9p375": {
+        "report_directory": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375",
+        "passed": 71,
+        "total": 72,
+        "categories": {
+          "arithmetic": {
+            "passed": 20,
+            "total": 20
+          },
+          "format": {
+            "passed": 2,
+            "total": 2
+          },
+          "gsm8k": {
+            "passed": 31,
+            "total": 32
+          },
+          "knowledge_logic": {
+            "passed": 10,
+            "total": 10
+          },
+          "translation": {
+            "passed": 8,
+            "total": 8
+          }
+        },
+        "execution_errors": 0,
+        "accepted_as_default": false,
+        "known_failure_ids": [
+          "gsm8k-12"
+        ]
+      }
+    }
+  },
+  "quantized_shards": [
+    {
+      "path": "quant_model_weights-00001-of-00018.safetensors",
+      "bytes": 2109868048,
+      "sha256": "7f968a960245e02713d1c2b7d65c9fefc2d9b8f7ccbc7a05989f136302682285"
+    },
+    {
+      "path": "quant_model_weights-00002-of-00018.safetensors",
+      "bytes": 1186218320,
+      "sha256": "825e3006f251381bd1677cadbdcc774beecc2934977f84d541211756b7bedd44"
+    },
+    {
+      "path": "quant_model_weights-00003-of-00018.safetensors",
+      "bytes": 2542796952,
+      "sha256": "2e1bf62cbcd406eaa64b60d10353e1f0ef4039d0976e56f05cabe953454f9968"
+    },
+    {
+      "path": "quant_model_weights-00004-of-00018.safetensors",
+      "bytes": 1548004432,
+      "sha256": "c4be58d6c9882cc05b7c51576afd92c6bc119d3bc2d385e855db6ef2e76e18e8"
+    },
+    {
+      "path": "quant_model_weights-00005-of-00018.safetensors",
+      "bytes": 826584784,
+      "sha256": "033f796c6a291247d60b32c6c4a4173b0a1f5f8ad9a5040e2dc2900f76874df6"
+    },
+    {
+      "path": "quant_model_weights-00006-of-00018.safetensors",
+      "bytes": 1579958544,
+      "sha256": "a9615b0bd5927ff5fbfe846982b8cf9e53ad1c53828d08f67a77fbf6775d5338"
+    },
+    {
+      "path": "quant_model_weights-00007-of-00018.safetensors",
+      "bytes": 794630736,
+      "sha256": "afb3edbb2338ca160f4ed99d7f74f56787b1d1d83552611c976a15803cfabddf"
+    },
+    {
+      "path": "quant_model_weights-00008-of-00018.safetensors",
+      "bytes": 1579958544,
+      "sha256": "e786f5f96ca4f79ea5ef5da6f674c1897e946490aa5c1115c0ba0ca0bdc92deb"
+    },
+    {
+      "path": "quant_model_weights-00009-of-00018.safetensors",
+      "bytes": 794630736,
+      "sha256": "487bf4c0cf09ba056d264e1b93330cd8956facfd3523bdfd5090b9627791f2f4"
+    },
+    {
+      "path": "quant_model_weights-00010-of-00018.safetensors",
+      "bytes": 1579958544,
+      "sha256": "9d20b252a55736d3ac3d5b9942f20f7055681f843400948edffaed9a06dd197e"
+    },
+    {
+      "path": "quant_model_weights-00011-of-00018.safetensors",
+      "bytes": 794630736,
+      "sha256": "42451b4926f1fc4a4454f0d61f3cb0357f0ea2ed3c91e8d60846e91d25c0e9b0"
+    },
+    {
+      "path": "quant_model_weights-00012-of-00018.safetensors",
+      "bytes": 1579958544,
+      "sha256": "1cc215d91ebe7120d873fac11539b8e3252fa2ee0d02169cc24d7ebec5e934d0"
+    },
+    {
+      "path": "quant_model_weights-00013-of-00018.safetensors",
+      "bytes": 794630736,
+      "sha256": "3aaa27bc9f4ce885e9cc4f037a72fe5a50dce64323073b8a0001c67a1909fed8"
+    },
+    {
+      "path": "quant_model_weights-00014-of-00018.safetensors",
+      "bytes": 1579958544,
+      "sha256": "c08812a433b6c4776b6eeba8d8835b0d4f6d7c53d0c983e5090c4358cee5906e"
+    },
+    {
+      "path": "quant_model_weights-00015-of-00018.safetensors",
+      "bytes": 794630736,
+      "sha256": "32137dbaa0f8a0d76500d3605eeada58c3c7e8a1302a0b4b571cc2d0f7b283fd"
+    },
+    {
+      "path": "quant_model_weights-00016-of-00018.safetensors",
+      "bytes": 1579968888,
+      "sha256": "d008ac151174b52b5901ee0a634c532482a7a70cb7f7a1df8d91fa76f726ac98"
+    },
+    {
+      "path": "quant_model_weights-00017-of-00018.safetensors",
+      "bytes": 794630736,
+      "sha256": "e31bbe00ce0c0b591256a8b19dd5ac91aca9ddd1ec0f0d7ae18a2dc525700f76"
+    },
+    {
+      "path": "quant_model_weights-00018-of-00018.safetensors",
+      "bytes": 3392197344,
+      "sha256": "1d3479509e21494658f9b64d317f5ea8e55c4025d28c702d6c4d0b356ce8ea06"
+    }
+  ],
+  "conformance": {
+    "lossless_layout": {
+      "passed": true,
+      "old_path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend-group256-nd-only",
+      "new_path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+      "unchanged_tensors": 2095,
+      "exactly_subdivided_scale_and_offset_tensors": 384,
+      "old_group": 256,
+      "new_group": 128,
+      "integer_weights_identical": true,
+      "dequantized_weights_identical": true
+    },
+    "upstream": {
+      "passed": true,
+      "relative_l2_limit": 0.01,
+      "upstream_method_exercised": true,
+      "rows": [
+        {
+          "projection": "gate_proj",
+          "shape": [
+            17408,
+            5120
+          ],
+          "batch": 1,
+          "weight_format": 29,
+          "runtime_group": 128,
+          "relative_l2": 0.0017100105760619044,
+          "max_abs": 0.008629560470581055
+        },
+        {
+          "projection": "gate_proj",
+          "shape": [
+            17408,
+            5120
+          ],
+          "batch": 4,
+          "weight_format": 29,
+          "runtime_group": 128,
+          "relative_l2": 0.0017308115493506193,
+          "max_abs": 0.010594844818115234
+        },
+        {
+          "projection": "gate_proj",
+          "shape": [
+            17408,
+            5120
+          ],
+          "batch": 128,
+          "weight_format": 29,
+          "runtime_group": 128,
+          "relative_l2": 0.002066196408122778,
+          "max_abs": 0.016215801239013672
+        },
+        {
+          "projection": "down_proj",
+          "shape": [
+            5120,
+            17408
+          ],
+          "batch": 1,
+          "weight_format": 29,
+          "runtime_group": 128,
+          "relative_l2": 0.0017281722975894809,
+          "max_abs": 0.01584339141845703
+        },
+        {
+          "projection": "down_proj",
+          "shape": [
+            5120,
+            17408
+          ],
+          "batch": 4,
+          "weight_format": 29,
+          "runtime_group": 128,
+          "relative_l2": 0.0017661668825894594,
+          "max_abs": 0.11112213134765625
+        },
+        {
+          "projection": "down_proj",
+          "shape": [
+            5120,
+            17408
+          ],
+          "batch": 128,
+          "weight_format": 29,
+          "runtime_group": 128,
+          "relative_l2": 0.002064888132736087,
+          "max_abs": 0.13317108154296875
+        }
+      ]
+    },
+    "native_w4a8": {
+      "passed": true,
+      "relative_l2_limit": 0.01,
+      "backend": "gmm",
+      "scheme": "NativeW4A8LinearMethod",
+      "rows": [
+        {
+          "projection": "gate_proj",
+          "shape": [
+            17408,
+            5120
+          ],
+          "batch": 1,
+          "weight_format": 29,
+          "runtime_group": 256,
+          "relative_l2": 0.0018334918422624469,
+          "max_abs": 0.00962209701538086
+        },
+        {
+          "projection": "gate_proj",
+          "shape": [
+            17408,
+            5120
+          ],
+          "batch": 4,
+          "weight_format": 29,
+          "runtime_group": 256,
+          "relative_l2": 0.0018156473524868488,
+          "max_abs": 0.011536121368408203
+        },
+        {
+          "projection": "gate_proj",
+          "shape": [
+            17408,
+            5120
+          ],
+          "batch": 128,
+          "weight_format": 29,
+          "runtime_group": 256,
+          "relative_l2": 0.001820614212192595,
+          "max_abs": 0.017451763153076172
+        },
+        {
+          "projection": "gate_proj",
+          "shape": [
+            17408,
+            5120
+          ],
+          "batch": 4096,
+          "weight_format": 29,
+          "runtime_group": 256,
+          "relative_l2": 0.001819461234845221,
+          "max_abs": 0.022676944732666016
+        },
+        {
+          "projection": "down_proj",
+          "shape": [
+            5120,
+            17408
+          ],
+          "batch": 1,
+          "weight_format": 29,
+          "runtime_group": 256,
+          "relative_l2": 0.0021246226970106363,
+          "max_abs": 0.017021656036376953
+        },
+        {
+          "projection": "down_proj",
+          "shape": [
+            5120,
+            17408
+          ],
+          "batch": 4,
+          "weight_format": 29,
+          "runtime_group": 256,
+          "relative_l2": 0.002115457784384489,
+          "max_abs": 0.022321701049804688
+        },
+        {
+          "projection": "down_proj",
+          "shape": [
+            5120,
+            17408
+          ],
+          "batch": 128,
+          "weight_format": 29,
+          "runtime_group": 256,
+          "relative_l2": 0.002128468593582511,
+          "max_abs": 0.12521743774414062
+        },
+        {
+          "projection": "down_proj",
+          "shape": [
+            5120,
+            17408
+          ],
+          "batch": 4096,
+          "weight_format": 29,
+          "runtime_group": 256,
+          "relative_l2": 0.0021228936966508627,
+          "max_abs": 0.22589874267578125
+        },
+        {
+          "projection": "gate_up_proj",
+          "shape": [
+            34816,
+            5120
+          ],
+          "batch": 1,
+          "weight_format": 29,
+          "runtime_group": 256,
+          "relative_l2": 0.0018370902398601174,
+          "max_abs": 0.010721921920776367
+        },
+        {
+          "projection": "gate_up_proj",
+          "shape": [
+            34816,
+            5120
+          ],
+          "batch": 4,
+          "weight_format": 29,
+          "runtime_group": 256,
+          "relative_l2": 0.0018229932757094502,
+          "max_abs": 0.011211872100830078
+        },
+        {
+          "projection": "gate_up_proj",
+          "shape": [
+            34816,
+            5120
+          ],
+          "batch": 128,
+          "weight_format": 29,
+          "runtime_group": 256,
+          "relative_l2": 0.001820934470742941,
+          "max_abs": 0.014559745788574219
+        },
+        {
+          "projection": "gate_up_proj",
+          "shape": [
+            34816,
+            5120
+          ],
+          "batch": 4096,
+          "weight_format": 29,
+          "runtime_group": 256,
+          "relative_l2": 0.0018214946612715721,
+          "max_abs": 0.020363807678222656
+        }
+      ]
+    }
+  },
+  "profiles": [
+    {
+      "name": "qwen3.8-27b",
+      "path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+      "source": "https://modelscope.cn/models/Qwen/Qwen3.8-27B",
+      "repo_id": "Qwen/Qwen3.8-27B",
+      "quantization": "ModelSlim progressive group256 FFN W4 with exact group128 scales; attention/GDN projections W8A8",
+      "dtype": "bfloat16",
+      "runner": "aclgraph",
+      "language_model_only": true,
+      "max_input_tokens": 8192,
+      "max_output_tokens": 8192,
+      "max_concurrency": 4,
+      "batch_tokens": 4096,
+      "kv_cache_gib": 6.5,
+      "download_root": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+      "async_scheduling": true,
+      "npugraph_ex": true,
+      "speculative_tokens": 0,
+      "graph_mode": "FULL_DECODE_ONLY",
+      "prefix_caching": true,
+      "validation_status": "graph_smoke_verified",
+      "validation_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-b4096-kv6p5-g128",
+      "quality_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-b4096-kv6p5-g128/quality.json",
+      "limitations": "能力冒烟71/72、两类8K检索通过；无同模型BF16精度对照；旧版Dense W4算子以BF16激活反量化权重",
+      "w4a8_linear_backend": "upstream",
+      "long_context_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-b4096-kv6p5-g128/logs/long-steady-128.json"
+    },
+    {
+      "name": "qwen3.8-27b-w4a8",
+      "path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+      "source": "https://modelscope.cn/models/Qwen/Qwen3.8-27B",
+      "repo_id": "Qwen/Qwen3.8-27B",
+      "quantization": "ModelSlim FFN W4A8 with actual INT8 dynamic activations; attention/GDN W8A8",
+      "dtype": "bfloat16",
+      "runner": "aclgraph",
+      "language_model_only": true,
+      "max_input_tokens": 8192,
+      "max_output_tokens": 8192,
+      "max_concurrency": 4,
+      "batch_tokens": 4096,
+      "kv_cache_gib": 6.5,
+      "download_root": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+      "async_scheduling": true,
+      "npugraph_ex": true,
+      "speculative_tokens": 0,
+      "graph_mode": "FULL_DECODE_ONLY",
+      "prefix_caching": true,
+      "validation_status": "retained_with_known_quality_failure",
+      "validation_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-gmm-b4096-kv6p5",
+      "quality_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-gmm-b4096-kv6p5/quality.json",
+      "limitations": "保留的原生W4A8实验：70/72；29×31答900而非899；单路27.84/四路93.10 TPS，低于默认路径，不推荐作为默认",
+      "w4a8_linear_backend": "gmm"
+    },
+    {
+      "name": "qwen3.8-27b-mtp2",
+      "path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+      "source": "https://modelscope.cn/models/Qwen/Qwen3.8-27B",
+      "repo_id": "Qwen/Qwen3.8-27B",
+      "quantization": "ModelSlim progressive group256 FFN W4 with exact group128 scales; attention/GDN projections W8A8",
+      "dtype": "bfloat16",
+      "runner": "aclgraph",
+      "language_model_only": true,
+      "max_input_tokens": 8192,
+      "max_output_tokens": 8192,
+      "max_concurrency": 4,
+      "batch_tokens": 8192,
+      "kv_cache_gib": 9.375,
+      "download_root": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+      "async_scheduling": true,
+      "npugraph_ex": true,
+      "speculative_tokens": 2,
+      "graph_mode": "FULL_DECODE_ONLY",
+      "prefix_caching": true,
+      "validation_status": "graph_smoke_verified",
+      "validation_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375",
+      "quality_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375/quality.json",
+      "limitations": "可选短输入加速：47.87/130.00 TPS，71/72；整卡HBM约40.25GiB；8K重复请求两路缓存未命中，49.57TPS低于默认85.72；FFN为INT4权重/BF16激活",
+      "w4a8_linear_backend": "upstream",
+      "long_context_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375/logs/long-steady-128.json"
+    }
+  ],
+  "checks": {
+    "pytest": {
+      "passed": true,
+      "total": 67,
+      "log": "/home/qwen-quantize-20261016/reports/tests-final.log"
+    },
+    "poetry_check": {
+      "passed": true,
+      "log": "/home/qwen-quantize-20261016/reports/poetry-check.log"
+    },
+    "pip_runtime": {
+      "passed": true,
+      "scope": "Poetry runtime, excluding CANN injected PYTHONPATH",
+      "log": "/home/qwen-quantize-20261016/reports/pip-check-runtime.log"
+    },
+    "pip_activated_cann": {
+      "passed": false,
+      "scope": "includes CANN bundled optional tools",
+      "log": "/home/qwen-quantize-20261016/reports/pip-check.log"
+    }
+  },
+  "runs": [
+    {
+      "directory": "/home/qwen-models/reports/qwen3.8-27b/w4a8-b4096-kv6p5-g128",
+      "parse_errors": [],
+      "health": {
+        "status": "ready",
+        "model": "qwen3.8-27b",
+        "engine": "v1",
+        "instance_id": "fa9813edc6a44536929cd071d08d604f",
+        "max_concurrency": 4,
+        "max_input_tokens": 8192,
+        "max_output_tokens": 8192,
+        "kv_cache_bytes": 6979321856,
+        "enforce_eager": false,
+        "gpu_memory_utilization": 0.82,
+        "requested_runner": "aclgraph",
+        "dtype": "bfloat16",
+        "prefix_caching": true,
+        "batch_tokens": 4096,
+        "graph_mode": "FULL_DECODE_ONLY",
+        "speculative_tokens": 0,
+        "requested_async_scheduling": true,
+        "requested_npugraph_ex": true,
+        "overlap_shared_expert": false,
+        "runtime": {
+          "packages": {
+            "vllm": "0.18.0+empty",
+            "vllm-ascend": "0.18.0+torch291.cann911",
+            "torch": "2.9.1",
+            "torch-npu": "2.9.1",
+            "transformers": "4.57.6",
+            "huggingface-hub": "0.36.0",
+            "setuptools": "79.0.1",
+            "openai": "3.31.0"
+          },
+          "cann_root": "/home/qwen-upgrade-20261015/cann/cann-9.1.1",
+          "quantization": "ascend",
+          "model_quant_type": "W4A8_DYNAMIC",
+          "tokenizer_path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+          "supports_thinking": true,
+          "async_scheduling": true,
+          "graph_mode": "FULL_DECODE_ONLY",
+          "graph_capture_sizes": [
+            1,
+            2,
+            4
+          ],
+          "workers": [
+            {
+              "worker": "qwen_llm.engine.ascend_worker.BudgetedNPUWorker",
+              "device": "npu:0",
+              "graph_mode": "FULL_DECODE_ONLY",
+              "graphs_captured": 3,
+              "drafter": null,
+              "speculative_tokens": 0,
+              "kv_cache_allocated_bytes": 6911950848,
+              "cache_block_sizes": [
+                1536
+              ],
+              "full_context_capacity": 4.0,
+              "npu_allocated_bytes": 30368219648,
+              "npu_reserved_bytes": 31010586624
+            }
+          ]
+        }
+      },
+      "suite_exit_code": 0,
+      "quality": {
+        "passed": 71,
+        "total": 72,
+        "execution_errors": 0,
+        "categories": {
+          "arithmetic": {
+            "passed": 20,
+            "total": 20
+          },
+          "format": {
+            "passed": 2,
+            "total": 2
+          },
+          "gsm8k": {
+            "passed": 31,
+            "total": 32
+          },
+          "knowledge_logic": {
+            "passed": 10,
+            "total": 10
+          },
+          "translation": {
+            "passed": 8,
+            "total": 8
+          }
+        },
+        "instance_unchanged": true,
+        "failures": [
+          {
+            "id": "gsm8k-12",
+            "category": "gsm8k",
+            "expected": "13",
+            "text": "To determine how many years it will take for Carlos to start earning money, we need to calculate the net profit per year and compare it to the initial investment.\n\n**Step 1: Calculate the annual revenue.**\nThe tree produces 7 lemons each year.\nEach lemon sells for $1.50.\n$$ \\text{Annual Revenue} = 7 \\times 1.50 = 10.50 \\text{ dollars} $$\n\n**Step 2: Calculate the annual net profit.**\nThe cost to water and feed the tree is $3.00 per year.\n$$ \\text{Annual Net Profit} = \\text{Annual Revenue} - \\text{Annual Maintenance Cost} $$\n$$ \\text{Annual Net Profit} = 10.50 - 3.00 = 7.50 \\text{ dollars} $$\n\n**Step 3: Determine the break-even point.**\nThe initial cost to plant the tree is $90. We need to find the number of years ($n$) such that the total accumulated net profit equals or exceeds the initial cost.\n$$ n \\times 7.50 \\ge 90 $$\n\nSolving for $n$:\n$$ n \\ge \\frac{90}{7.50} $$\n$$ n \\ge 12 $$\n\nLet's verify:\n- After 11 years: $11 \\times 7.50 = 82.50$. This is less than $90, so he is still in the red.\n- After 12 years: $12 \\times 7.50 = 90.00$. This exactly covers the initial cost.\n\nTherefore, it will take 12 years for him to recover his initial investment and start earning money (breaking even).\n\nFINAL: 12",
+            "error": null
+          }
+        ]
+      },
+      "retrieval": {
+        "passed": 4,
+        "total": 4,
+        "instance_unchanged": true
+      },
+      "retrieval_mixed": {
+        "passed": 4,
+        "total": 4,
+        "instance_unchanged": true
+      },
+      "short": {
+        "1": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 31.72958293970131
+        },
+        "2": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 54.12603191686302
+        },
+        "4": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 97.68433062880106
+        }
+      },
+      "long": {
+        "valid": true,
+        "round_count": 7,
+        "transition_rounds": 3,
+        "cold_tps": 29.91525879294966,
+        "repeat_tps_median": 85.71754639221797,
+        "last_three_tps": [
+          85.82345063341518,
+          85.71754639221797,
+          85.55477056744425
+        ],
+        "cache_stable": true,
+        "repeat_cache_patterns": [
+          [
+            7680,
+            7680,
+            7680,
+            7680
+          ],
+          [
+            7680,
+            7680,
+            7680,
+            7680
+          ],
+          [
+            7680,
+            7680,
+            7680,
+            7680
+          ]
+        ],
+        "repeat_cached_tokens": [
+          7680
+        ]
+      },
+      "hbm_sampled_max_mib": 34001,
+      "details": {
+        "short": {
+          "1": {
+            "tps_median": 31.72958293970131,
+            "tps_range": [
+              31.606928485815835,
+              31.746878864937795
+            ],
+            "ttft_median_ms": 399.0272720111534,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 4.033976053004153
+          },
+          "2": {
+            "tps_median": 54.12603191686302,
+            "tps_range": [
+              53.83039818377454,
+              54.189927597874004
+            ],
+            "ttft_median_ms": 779.2220630217344,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 4.726057664025575
+          },
+          "4": {
+            "tps_median": 97.68433062880106,
+            "tps_range": [
+              97.52066181680651,
+              97.96289127612786
+            ],
+            "ttft_median_ms": 808.959424495697,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 5.232103914488107
+          }
+        },
+        "long": {
+          "long": {
+            "tps_median": 85.71754639221797,
+            "tps_range": [
+              85.55477056744425,
+              85.82345063341518
+            ],
+            "ttft_median_ms": 1248.5827889759094,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              8192
+            ],
+            "cached_tokens": [
+              7680
+            ],
+            "latency_median_seconds": 5.966246981057338
+          }
+        }
+      },
+      "artifact_sha256": {
+        "doctor.json": "ab6ca44aada0340b46bb6b8159886aa26ca2c12db26e80543730e2847e2236a6",
+        "health.json": "01822364951182abe237a63501b968abb58fe2f6e1c67074861f7212985c931f",
+        "quality.json": "0498721d5dc0ab6f754ed24827273dac9d8bdb0fea46e085236404281b74a591",
+        "retrieval.json": "481915ff929b63f0b96ea88195cbb90c8bab67f5f929835e495c4a88503315e4",
+        "retrieval_mixed.json": "4d7d3861ee2870897a00040b959e10ced3cbe0a3c1a750315106599e0c065272",
+        "short.json": "0e529543be046aa383da2a1440c459e47e6ab64b20576ee19c7bbe4f777e8f16",
+        "logs/long-steady-128.json": "1845bc261cfbe03c91d96b021c4c09977ddd6e6eb8960771c5efcc7b388697c4",
+        "suite-exit-code.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      }
+    },
+    {
+      "directory": "/home/qwen-models/reports/qwen3.8-27b/w4a8-eager-b4096-kv6",
+      "parse_errors": [],
+      "health": null,
+      "suite_exit_code": 1,
+      "retrieval": null,
+      "retrieval_mixed": null,
+      "hbm_sampled_max_mib": null,
+      "artifact_sha256": {
+        "doctor.json": "ab6ca44aada0340b46bb6b8159886aa26ca2c12db26e80543730e2847e2236a6",
+        "suite-exit-code.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+      }
+    },
+    {
+      "directory": "/home/qwen-models/reports/qwen3.8-27b/w4a8-eager-b4096-kv6-g128",
+      "parse_errors": [],
+      "health": null,
+      "suite_exit_code": 1,
+      "retrieval": null,
+      "retrieval_mixed": null,
+      "hbm_sampled_max_mib": null,
+      "artifact_sha256": {
+        "doctor.json": "ab6ca44aada0340b46bb6b8159886aa26ca2c12db26e80543730e2847e2236a6",
+        "suite-exit-code.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+      }
+    },
+    {
+      "directory": "/home/qwen-models/reports/qwen3.8-27b/w4a8-eager-b4096-kv6p5-g128",
+      "parse_errors": [],
+      "health": {
+        "status": "ready",
+        "model": "qwen3.8-27b",
+        "engine": "v1",
+        "instance_id": "865d10cde6b94e54ad44cdd035da6974",
+        "max_concurrency": 4,
+        "max_input_tokens": 8192,
+        "max_output_tokens": 8192,
+        "kv_cache_bytes": 6979321856,
+        "enforce_eager": true,
+        "gpu_memory_utilization": 0.82,
+        "requested_runner": "eager",
+        "dtype": "bfloat16",
+        "prefix_caching": true,
+        "batch_tokens": 4096,
+        "graph_mode": "FULL",
+        "speculative_tokens": 0,
+        "requested_async_scheduling": true,
+        "requested_npugraph_ex": false,
+        "overlap_shared_expert": false,
+        "runtime": {
+          "packages": {
+            "vllm": "0.18.0+empty",
+            "vllm-ascend": "0.18.0+torch291.cann911",
+            "torch": "2.9.1",
+            "torch-npu": "2.9.1",
+            "transformers": "4.57.6",
+            "huggingface-hub": "0.36.0",
+            "setuptools": "79.0.1",
+            "openai": "3.31.0"
+          },
+          "cann_root": "/home/qwen-upgrade-20261015/cann/cann-9.1.1",
+          "quantization": "ascend",
+          "model_quant_type": "W4A8_DYNAMIC",
+          "tokenizer_path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+          "supports_thinking": true,
+          "async_scheduling": true,
+          "graph_mode": "NONE",
+          "graph_capture_sizes": [],
+          "workers": [
+            {
+              "worker": "qwen_llm.engine.ascend_worker.BudgetedNPUWorker",
+              "device": "npu:0",
+              "graph_mode": "NONE",
+              "graphs_captured": 0,
+              "drafter": null,
+              "speculative_tokens": 0,
+              "kv_cache_allocated_bytes": 6911950848,
+              "cache_block_sizes": [
+                1536
+              ],
+              "full_context_capacity": 4.0,
+              "npu_allocated_bytes": 30368209408,
+              "npu_reserved_bytes": 30565990400
+            }
+          ]
+        }
+      },
+      "suite_exit_code": 0,
+      "quality": {
+        "passed": 71,
+        "total": 72,
+        "execution_errors": 0,
+        "categories": {
+          "arithmetic": {
+            "passed": 20,
+            "total": 20
+          },
+          "format": {
+            "passed": 2,
+            "total": 2
+          },
+          "gsm8k": {
+            "passed": 31,
+            "total": 32
+          },
+          "knowledge_logic": {
+            "passed": 10,
+            "total": 10
+          },
+          "translation": {
+            "passed": 8,
+            "total": 8
+          }
+        },
+        "instance_unchanged": true,
+        "failures": [
+          {
+            "id": "gsm8k-12",
+            "category": "gsm8k",
+            "expected": "13",
+            "text": "To determine how many years it will take for Carlos to start earning money, we need to calculate the net profit per year and compare it to the initial investment.\n\n**Step 1: Calculate the annual revenue.**\nThe tree produces 7 lemons per year.\nEach lemon sells for $1.50.\n$$ \\text{Annual Revenue} = 7 \\times 1.50 = 10.50 \\text{ dollars} $$\n\n**Step 2: Calculate the annual cost.**\nThe cost to water and feed the tree is $3 per year.\n$$ \\text{Annual Cost} = 3.00 \\text{ dollars} $$\n\n**Step 3: Calculate the annual net profit.**\n$$ \\text{Annual Net Profit} = \\text{Annual Revenue} - \\text{Annual Cost} $$\n$$ \\text{Annual Net Profit} = 10.50 - 3.00 = 7.50 \\text{ dollars} $$\n\n**Step 4: Determine the break-even point.**\nThe initial cost to plant the tree is $90. We need to find the number of years ($n$) such that the total accumulated profit equals or exceeds the initial cost.\n$$ n \\times 7.50 \\ge 90 $$\n$$ n \\ge \\frac{90}{7.50} $$\n\nLet's perform the division:\n$$ \\frac{90}{7.5} = \\frac{900}{75} $$\nDivide both numerator and denominator by 25:\n$$ \\frac{900}{25} = 36 $$\n$$ \\frac{75}{25} = 3 $$\n$$ \\frac{36}{3} = 12 $$\n\nSo, it takes exactly 12 years to recover the initial $90 investment.\n\n**Verification:**\n- After 11 years: $11 \\times 7.50 = 82.50$. This is less than $90, so he is still in the red.\n- After 12 years: $12 \\times 7.50 = 90.00$. This equals the initial cost, meaning he has broken even. From the 13th year onwards, he starts earning a net profit. The question asks when he *starts* earning money, which implies the point where the investment is fully recovered and subsequent years yiel",
+            "error": null
+          }
+        ]
+      },
+      "retrieval": {
+        "passed": 4,
+        "total": 4,
+        "instance_unchanged": true
+      },
+      "retrieval_mixed": {
+        "passed": 4,
+        "total": 4,
+        "instance_unchanged": true
+      },
+      "short": {
+        "1": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 5.609299615139014
+        },
+        "2": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 10.329975443891486
+        },
+        "4": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 20.419446748135723
+        }
+      },
+      "hbm_sampled_max_mib": 33643,
+      "details": {
+        "short": {
+          "1": {
+            "tps_median": 5.609299615139014,
+            "tps_range": [
+              5.575503458983507,
+              5.6179272441419865
+            ],
+            "ttft_median_ms": 566.5010350057855,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 22.819121183012612
+          },
+          "2": {
+            "tps_median": 10.329975443891486,
+            "tps_range": [
+              10.299495120503634,
+              10.402852006003043
+            ],
+            "ttft_median_ms": 879.1053845197894,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 24.781230403052177
+          },
+          "4": {
+            "tps_median": 20.419446748135723,
+            "tps_range": [
+              20.37990970490344,
+              20.495262984660133
+            ],
+            "ttft_median_ms": 979.3665435281582,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 25.072312139032874
+          }
+        }
+      },
+      "artifact_sha256": {
+        "doctor.json": "ab6ca44aada0340b46bb6b8159886aa26ca2c12db26e80543730e2847e2236a6",
+        "health.json": "c4596e48a46ade7549b583e0b711ac32366b0756de4b7260a68a9062e68b4d1c",
+        "quality.json": "30774d02875841c135ab72eb51e7f710b81537dac1cb67c38d9e46b637521d5e",
+        "retrieval.json": "a45c1e1e9a9da06bec2665e89f773b570199839e823035a268f7bc79d742959c",
+        "retrieval_mixed.json": "a87ad50d1a64a7df20c88a43c4089ebe8366c18e5a3a40b7b21a0b81327dba91",
+        "short.json": "38949f469e8d5f65650ed3812111a285df172bd685b99adcc92a51dd237af483",
+        "suite-exit-code.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      }
+    },
+    {
+      "directory": "/home/qwen-models/reports/qwen3.8-27b/w4a8-gmm-b4096-kv6p5",
+      "parse_errors": [],
+      "health": {
+        "status": "ready",
+        "model": "qwen3.8-27b",
+        "engine": "v1",
+        "instance_id": "292ae6b031b34c098b0b26e51ea6d89a",
+        "max_concurrency": 4,
+        "max_input_tokens": 8192,
+        "max_output_tokens": 8192,
+        "kv_cache_bytes": 6979321856,
+        "enforce_eager": false,
+        "gpu_memory_utilization": 0.82,
+        "requested_runner": "aclgraph",
+        "dtype": "bfloat16",
+        "prefix_caching": true,
+        "batch_tokens": 4096,
+        "graph_mode": "FULL_DECODE_ONLY",
+        "speculative_tokens": 0,
+        "requested_async_scheduling": true,
+        "requested_npugraph_ex": true,
+        "overlap_shared_expert": false,
+        "w4a8_linear_backend": "gmm",
+        "runtime": {
+          "packages": {
+            "vllm": "0.18.0+empty",
+            "vllm-ascend": "0.18.0+torch291.cann911",
+            "torch": "2.9.1",
+            "torch-npu": "2.9.1",
+            "transformers": "4.57.6",
+            "huggingface-hub": "0.36.0",
+            "setuptools": "79.0.1",
+            "openai": "3.31.0"
+          },
+          "cann_root": "/home/qwen-upgrade-20261015/cann/cann-9.1.1",
+          "quantization": "ascend",
+          "model_quant_type": "W4A8_DYNAMIC",
+          "tokenizer_path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+          "supports_thinking": true,
+          "async_scheduling": true,
+          "graph_mode": "FULL_DECODE_ONLY",
+          "graph_capture_sizes": [
+            1,
+            2,
+            4
+          ],
+          "workers": [
+            {
+              "worker": "qwen_llm.engine.ascend_worker.BudgetedNPUWorker",
+              "device": "npu:0",
+              "graph_mode": "FULL_DECODE_ONLY",
+              "graphs_captured": 3,
+              "drafter": null,
+              "speculative_tokens": 0,
+              "kv_cache_allocated_bytes": 6911950848,
+              "cache_block_sizes": [
+                1536
+              ],
+              "full_context_capacity": 4.0,
+              "npu_allocated_bytes": 30065639936,
+              "npu_reserved_bytes": 31239176192,
+              "w4a8_linear_backend": "gmm",
+              "native_w4a8_linear_layers": 128,
+              "native_w4a8_group_sizes": [
+                256
+              ]
+            }
+          ]
+        }
+      },
+      "suite_exit_code": 0,
+      "quality": {
+        "passed": 70,
+        "total": 72,
+        "execution_errors": 0,
+        "categories": {
+          "arithmetic": {
+            "passed": 19,
+            "total": 20
+          },
+          "format": {
+            "passed": 2,
+            "total": 2
+          },
+          "gsm8k": {
+            "passed": 31,
+            "total": 32
+          },
+          "knowledge_logic": {
+            "passed": 10,
+            "total": 10
+          },
+          "translation": {
+            "passed": 8,
+            "total": 8
+          }
+        },
+        "instance_unchanged": true,
+        "failures": [
+          {
+            "id": 8,
+            "category": "arithmetic",
+            "expected": "899",
+            "text": "900",
+            "error": null
+          },
+          {
+            "id": "gsm8k-12",
+            "category": "gsm8k",
+            "expected": "13",
+            "text": "To determine how many years it will take for Carlos to start earning money, we need to calculate the net profit per year and compare it to the initial cost.\n\n**1. Calculate the annual revenue:**\nThe tree produces 7 lemons per year.\nEach lemon sells for $1.5.\n$$ \\text{Annual Revenue} = 7 \\times 1.5 = 10.5 \\text{ dollars} $$\n\n**2. Calculate the annual cost:**\nThe cost to water and feed the tree is $3 per year.\n$$ \\text{Annual Cost} = 3 \\text{ dollars} $$\n\n**3. Calculate the annual net profit:**\n$$ \\text{Annual Net Profit} = \\text{Annual Revenue} - \\text{Annual Cost} $$\n$$ \\text{Annual Net Profit} = 10.5 - 3 = 7.5 \\text{ dollars} $$\n\n**4. Determine the break-even point:**\nThe initial cost to plant the tree is $90. We need to find the number of years ($n$) such that the total accumulated net profit equals or exceeds the initial cost.\n\n$$ n \\times 7.5 \\ge 90 $$\n\nSolving for $n$:\n$$ n \\ge \\frac{90}{7.5} $$\n\nLet's perform the division:\n$$ \\frac{90}{7.5} = \\frac{900}{75} $$\n$$ \\frac{900}{75} = 12 $$\n\nSo, after exactly 12 years, the total profit will be:\n$$ 12 \\times 7.5 = 90 \\text{ dollars} $$\n\nThis means that at the end of the 12th year, he has recovered his initial $90 investment. Therefore, he starts earning money (breaking even) at the end of the 12th year.\n\nFINAL: 12",
+            "error": null
+          }
+        ]
+      },
+      "retrieval": {
+        "passed": 4,
+        "total": 4,
+        "instance_unchanged": true
+      },
+      "retrieval_mixed": {
+        "passed": 4,
+        "total": 4,
+        "instance_unchanged": true
+      },
+      "short": {
+        "1": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 27.838298238076842
+        },
+        "2": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 48.92749941766095
+        },
+        "4": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 93.09748617443451
+        }
+      },
+      "long": {
+        "valid": true,
+        "round_count": 7,
+        "transition_rounds": 3,
+        "cold_tps": 25.947609622601664,
+        "repeat_tps_median": 81.15353514158716,
+        "last_three_tps": [
+          81.15353514158716,
+          81.17556321145327,
+          81.1037552110323
+        ],
+        "cache_stable": true,
+        "repeat_cache_patterns": [
+          [
+            7680,
+            7680,
+            7680,
+            7680
+          ],
+          [
+            7680,
+            7680,
+            7680,
+            7680
+          ],
+          [
+            7680,
+            7680,
+            7680,
+            7680
+          ]
+        ],
+        "repeat_cached_tokens": [
+          7680
+        ]
+      },
+      "hbm_sampled_max_mib": 34163,
+      "details": {
+        "short": {
+          "1": {
+            "tps_median": 27.838298238076842,
+            "tps_range": [
+              27.835708369188634,
+              27.87846470719015
+            ],
+            "ttft_median_ms": 395.8758639637381,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 4.597869826946408
+          },
+          "2": {
+            "tps_median": 48.92749941766095,
+            "tps_range": [
+              48.75513292481691,
+              48.93308647341679
+            ],
+            "ttft_median_ms": 795.7915209699422,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 5.226532788481563
+          },
+          "4": {
+            "tps_median": 93.09748617443451,
+            "tps_range": [
+              93.02969397952303,
+              93.43476705797444
+            ],
+            "ttft_median_ms": 818.6588835669681,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 5.487967970024329
+          }
+        },
+        "long": {
+          "long": {
+            "tps_median": 81.15353514158716,
+            "tps_range": [
+              81.1037552110323,
+              81.17556321145327
+            ],
+            "ttft_median_ms": 1371.8028275179677,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              8192
+            ],
+            "cached_tokens": [
+              7680
+            ],
+            "latency_median_seconds": 6.305484357988462
+          }
+        }
+      },
+      "artifact_sha256": {
+        "doctor.json": "ab6ca44aada0340b46bb6b8159886aa26ca2c12db26e80543730e2847e2236a6",
+        "health.json": "01fccd14fa341d0567ab489694ba26dee6301434ccc05cd26ffd48a8139fe8cb",
+        "quality.json": "284595bb07e5bae855597d1aa4980c89b4d80c21b4d65c88606a0ce60c154557",
+        "retrieval.json": "5cf76aeb5562e38d9617431aafd3b8890357c1d64fedfd5da25d314a591c2730",
+        "retrieval_mixed.json": "84e757d5bf2a0355f6da6aeddc7807e20f43694f8b51f2b6e8fbe88f7781184b",
+        "short.json": "8481d627ba3637b17a8f619c732c622ebca7e32c7152fead3d9ef796facfb335",
+        "logs/long-steady-128.json": "979fd42a335b9924ec1b4671e00dd301550b1fd0a406d14b536b5af5e0c9d2ba",
+        "suite-exit-code.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      }
+    },
+    {
+      "directory": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv10p5",
+      "parse_errors": [],
+      "health": {
+        "status": "ready",
+        "model": "qwen3.8-27b",
+        "engine": "v1",
+        "instance_id": "50811919688d4407aed4229d27e7c109",
+        "max_concurrency": 4,
+        "max_input_tokens": 8192,
+        "max_output_tokens": 8192,
+        "kv_cache_bytes": 11274289152,
+        "enforce_eager": false,
+        "gpu_memory_utilization": 0.82,
+        "requested_runner": "aclgraph",
+        "dtype": "bfloat16",
+        "prefix_caching": true,
+        "batch_tokens": 8192,
+        "graph_mode": "FULL_DECODE_ONLY",
+        "speculative_tokens": 2,
+        "requested_async_scheduling": true,
+        "requested_npugraph_ex": true,
+        "overlap_shared_expert": false,
+        "w4a8_linear_backend": "upstream",
+        "runtime": {
+          "packages": {
+            "vllm": "0.18.0+empty",
+            "vllm-ascend": "0.18.0+torch291.cann911",
+            "torch": "2.9.1",
+            "torch-npu": "2.9.1",
+            "transformers": "4.57.6",
+            "huggingface-hub": "0.36.0",
+            "setuptools": "79.0.1",
+            "openai": "3.31.0"
+          },
+          "cann_root": "/home/qwen-upgrade-20261015/cann/cann-9.1.1",
+          "quantization": "ascend",
+          "model_quant_type": "W4A8_DYNAMIC",
+          "tokenizer_path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+          "supports_thinking": true,
+          "async_scheduling": true,
+          "graph_mode": "FULL_DECODE_ONLY",
+          "graph_capture_sizes": [
+            3,
+            6,
+            12
+          ],
+          "workers": [
+            {
+              "worker": "qwen_llm.engine.ascend_worker.BudgetedNPUWorker",
+              "device": "npu:0",
+              "graph_mode": "FULL_DECODE_ONLY",
+              "graphs_captured": 3,
+              "drafter": "AscendEagleProposer",
+              "speculative_tokens": 2,
+              "kv_cache_allocated_bytes": 11195641856,
+              "cache_block_sizes": [
+                1536
+              ],
+              "full_context_capacity": 4.478260869565218,
+              "npu_allocated_bytes": 38255579648,
+              "npu_reserved_bytes": 38960889856,
+              "w4a8_linear_backend": "upstream",
+              "native_w4a8_linear_layers": 0,
+              "native_w4a8_group_sizes": []
+            }
+          ]
+        }
+      },
+      "suite_exit_code": 0,
+      "quality": {
+        "passed": 72,
+        "total": 72,
+        "execution_errors": 0,
+        "categories": {
+          "arithmetic": {
+            "passed": 20,
+            "total": 20
+          },
+          "format": {
+            "passed": 2,
+            "total": 2
+          },
+          "gsm8k": {
+            "passed": 32,
+            "total": 32
+          },
+          "knowledge_logic": {
+            "passed": 10,
+            "total": 10
+          },
+          "translation": {
+            "passed": 8,
+            "total": 8
+          }
+        },
+        "instance_unchanged": true,
+        "failures": []
+      },
+      "retrieval": {
+        "passed": 4,
+        "total": 4,
+        "instance_unchanged": true
+      },
+      "retrieval_mixed": {
+        "passed": 4,
+        "total": 4,
+        "instance_unchanged": true
+      },
+      "short": {
+        "1": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 47.35376180485368
+        },
+        "2": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 75.38312496293929
+        },
+        "4": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 127.65270858420034
+        }
+      },
+      "long": {
+        "valid": true,
+        "round_count": 7,
+        "transition_rounds": 3,
+        "cold_tps": 35.90644943252888,
+        "repeat_tps_median": 60.997898157638076,
+        "last_three_tps": [
+          61.12580350158118,
+          60.997898157638076,
+          60.81605855705069
+        ],
+        "cache_stable": true,
+        "repeat_cache_patterns": [
+          [
+            6144,
+            6144,
+            6144,
+            0
+          ],
+          [
+            6144,
+            6144,
+            6144,
+            0
+          ],
+          [
+            6144,
+            6144,
+            6144,
+            0
+          ]
+        ],
+        "repeat_cached_tokens": [
+          0,
+          6144
+        ]
+      },
+      "hbm_sampled_max_mib": 42355,
+      "details": {
+        "short": {
+          "1": {
+            "tps_median": 47.35376180485368,
+            "tps_range": [
+              47.34987946145711,
+              47.93910084317323
+            ],
+            "ttft_median_ms": 446.4642850216478,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 2.702935465029441
+          },
+          "2": {
+            "tps_median": 75.38312496293929,
+            "tps_range": [
+              73.60917187901963,
+              75.45431823754708
+            ],
+            "ttft_median_ms": 887.4107339652255,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 3.3921926880721003
+          },
+          "4": {
+            "tps_median": 127.65270858420034,
+            "tps_range": [
+              125.97221040196118,
+              128.73763245661496
+            ],
+            "ttft_median_ms": 928.2848744769581,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 3.863624558027368
+          }
+        },
+        "long": {
+          "long": {
+            "tps_median": 60.997898157638076,
+            "tps_range": [
+              60.81605855705069,
+              61.12580350158118
+            ],
+            "ttft_median_ms": 4710.167391982395,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              8192
+            ],
+            "cached_tokens": [
+              0,
+              6144
+            ],
+            "latency_median_seconds": 8.327510792994872
+          }
+        }
+      },
+      "artifact_sha256": {
+        "doctor.json": "ab6ca44aada0340b46bb6b8159886aa26ca2c12db26e80543730e2847e2236a6",
+        "health.json": "863e9e4f0bf5a191618efb53ef827049eb2e761e7a467a317ee542b67bc590ca",
+        "quality.json": "1ddd1f26dd532298cb1c930c0468850359db86a8e30baf2aa608f7f6ab7703ba",
+        "retrieval.json": "a9202e60aa66bbe5ccaf70fbbf558e66051ff3a8ae6be410024c73fb8126a91e",
+        "retrieval_mixed.json": "96b10785cece9818b30f09bb2c83022116756db573de0efe65bff6bd4fe8a7f0",
+        "short.json": "014e2ebddd177d655f94c79d3e37d8dfbe1c6a16f0c572c5403998f3e2805c72",
+        "logs/long-steady-128.json": "38927605899d7dcc7900901925379b1ee1d8a6d81c26e72dadada6aac02c287f",
+        "suite-exit-code.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      }
+    },
+    {
+      "directory": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375",
+      "parse_errors": [],
+      "health": {
+        "status": "ready",
+        "model": "qwen3.8-27b",
+        "engine": "v1",
+        "instance_id": "ba2fd34d2c0140f7897f3599cdc34758",
+        "max_concurrency": 4,
+        "max_input_tokens": 8192,
+        "max_output_tokens": 8192,
+        "kv_cache_bytes": 10066329600,
+        "enforce_eager": false,
+        "gpu_memory_utilization": 0.82,
+        "requested_runner": "aclgraph",
+        "dtype": "bfloat16",
+        "prefix_caching": true,
+        "batch_tokens": 8192,
+        "graph_mode": "FULL_DECODE_ONLY",
+        "speculative_tokens": 2,
+        "requested_async_scheduling": true,
+        "requested_npugraph_ex": true,
+        "overlap_shared_expert": false,
+        "w4a8_linear_backend": "upstream",
+        "runtime": {
+          "packages": {
+            "vllm": "0.18.0+empty",
+            "vllm-ascend": "0.18.0+torch291.cann911",
+            "torch": "2.9.1",
+            "torch-npu": "2.9.1",
+            "transformers": "4.57.6",
+            "huggingface-hub": "0.36.0",
+            "setuptools": "79.0.1",
+            "openai": "3.31.0"
+          },
+          "cann_root": "/home/qwen-upgrade-20261015/cann/cann-9.1.1",
+          "quantization": "ascend",
+          "model_quant_type": "W4A8_DYNAMIC",
+          "tokenizer_path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+          "supports_thinking": true,
+          "async_scheduling": true,
+          "graph_mode": "FULL_DECODE_ONLY",
+          "graph_capture_sizes": [
+            3,
+            6,
+            12
+          ],
+          "workers": [
+            {
+              "worker": "qwen_llm.engine.ascend_worker.BudgetedNPUWorker",
+              "device": "npu:0",
+              "graph_mode": "FULL_DECODE_ONLY",
+              "graphs_captured": 3,
+              "drafter": "AscendEagleProposer",
+              "speculative_tokens": 2,
+              "kv_cache_allocated_bytes": 9999990784,
+              "cache_block_sizes": [
+                1536
+              ],
+              "full_context_capacity": 4.0,
+              "npu_allocated_bytes": 37059928576,
+              "npu_reserved_bytes": 37765513216,
+              "w4a8_linear_backend": "upstream",
+              "native_w4a8_linear_layers": 0,
+              "native_w4a8_group_sizes": []
+            }
+          ]
+        }
+      },
+      "suite_exit_code": 0,
+      "quality": {
+        "passed": 71,
+        "total": 72,
+        "execution_errors": 0,
+        "categories": {
+          "arithmetic": {
+            "passed": 20,
+            "total": 20
+          },
+          "format": {
+            "passed": 2,
+            "total": 2
+          },
+          "gsm8k": {
+            "passed": 31,
+            "total": 32
+          },
+          "knowledge_logic": {
+            "passed": 10,
+            "total": 10
+          },
+          "translation": {
+            "passed": 8,
+            "total": 8
+          }
+        },
+        "instance_unchanged": true,
+        "failures": [
+          {
+            "id": "gsm8k-12",
+            "category": "gsm8k",
+            "expected": "13",
+            "text": "To determine how many years it will take for Carlos to start earning money, we need to calculate the net profit per year and compare it to the initial investment.\n\n**Step 1: Calculate the annual revenue.**\nThe tree produces 7 lemons per year.\nEach lemon sells for $1.50.\n$$ \\text{Annual Revenue} = 7 \\times 1.50 = \\$10.50 $$\n\n**Step 2: Calculate the annual cost.**\nThe cost to water and feed the tree is $3.00 per year.\n$$ \\text{Annual Cost} = \\$3.00 $$\n\n**Step 3: Calculate the annual net profit.**\n$$ \\text{Annual Net Profit} = \\text{Annual Revenue} - \\text{Annual Cost} $$\n$$ \\text{Annual Net Profit} = 10.50 - 3.00 = \\$7.50 $$\n\n**Step 4: Determine the break-even point.**\nThe initial cost to plant the tree is $90. We need to find the number of years ($n$) such that the total accumulated profit equals or exceeds the initial cost.\n\n$$ n \\times 7.50 \\ge 90 $$\n\nSolving for $n$:\n$$ n \\ge \\frac{90}{7.50} $$\n\nLet's perform the division:\n$$ \\frac{90}{7.5} = \\frac{900}{75} $$\n$$ \\frac{900}{75} = 12 $$\n\nSo, after exactly 12 years, the total profit will be:\n$$ 12 \\times 7.50 = \\$90.00 $$\n\nThis means that at the end of the 12th year, he has recovered his initial investment. Therefore, it takes 12 years for him to break even and start earning money (meaning the cumulative profit becomes non-negative).\n\nFINAL: 12",
+            "error": null
+          }
+        ]
+      },
+      "retrieval": {
+        "passed": 4,
+        "total": 4,
+        "instance_unchanged": true
+      },
+      "retrieval_mixed": {
+        "passed": 4,
+        "total": 4,
+        "instance_unchanged": true
+      },
+      "short": {
+        "1": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 47.869552261650135
+        },
+        "2": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 75.24134259447288
+        },
+        "4": {
+          "valid": true,
+          "round_count": 3,
+          "tps_median": 129.99509959581474
+        }
+      },
+      "long": {
+        "valid": true,
+        "round_count": 7,
+        "transition_rounds": 3,
+        "cold_tps": 36.015378478888486,
+        "repeat_tps_median": 49.56826988573568,
+        "last_three_tps": [
+          49.59340025521729,
+          49.533264380211534,
+          49.56826988573568
+        ],
+        "cache_stable": true,
+        "repeat_cache_patterns": [
+          [
+            6144,
+            6144,
+            0,
+            0
+          ],
+          [
+            6144,
+            6144,
+            0,
+            0
+          ],
+          [
+            6144,
+            6144,
+            0,
+            0
+          ]
+        ],
+        "repeat_cached_tokens": [
+          0,
+          6144
+        ]
+      },
+      "hbm_sampled_max_mib": 41215,
+      "details": {
+        "short": {
+          "1": {
+            "tps_median": 47.869552261650135,
+            "tps_range": [
+              46.191030765107506,
+              48.61068180104332
+            ],
+            "ttft_median_ms": 450.9695810265839,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 2.673802530975081
+          },
+          "2": {
+            "tps_median": 75.24134259447288,
+            "tps_range": [
+              74.02537497382262,
+              75.3324797826563
+            ],
+            "ttft_median_ms": 897.6264065131545,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 3.3998197254841216
+          },
+          "4": {
+            "tps_median": 129.99509959581474,
+            "tps_range": [
+              128.07567741886947,
+              130.96065295216667
+            ],
+            "ttft_median_ms": 928.0065124621615,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              38
+            ],
+            "cached_tokens": [
+              0
+            ],
+            "latency_median_seconds": 3.852673612476792
+          }
+        },
+        "long": {
+          "long": {
+            "tps_median": 49.56826988573568,
+            "tps_range": [
+              49.533264380211534,
+              49.59340025521729
+            ],
+            "ttft_median_ms": 6859.663299983367,
+            "output_tokens": [
+              128
+            ],
+            "input_tokens": [
+              8192
+            ],
+            "cached_tokens": [
+              0,
+              6144
+            ],
+            "latency_median_seconds": 10.301767548546195
+          }
+        }
+      },
+      "artifact_sha256": {
+        "doctor.json": "ab6ca44aada0340b46bb6b8159886aa26ca2c12db26e80543730e2847e2236a6",
+        "health.json": "12dce584f21d2f6a125622c5c846866870d323d5367d2583a12c4b5244eb0f6c",
+        "quality.json": "a1f4c0b5e987f7f83c7c4643ebee053b774f004d34abf5f0f204ab43b76a7064",
+        "retrieval.json": "642df4d11fb54375d44b44892492a8c38b242996a2e17502b3ea7f5d3ade5c98",
+        "retrieval_mixed.json": "a7a44379106882b643df56bcdad3b0b026406ca716c33dcfa843f1bf2a168475",
+        "short.json": "c02a4e94e30fb5556887147602f836e56f01bb764a8a7fa17ad3de885b5d4ee3",
+        "logs/long-steady-128.json": "69142a48fbdb3e6947955a9c636e14218db273e6f47e10bcb8019fa166670e1b",
+        "suite-exit-code.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      }
+    }
+  ],
+  "notes": [
+    "TPS = successful output tokens / batch makespan; 4-way numbers are aggregate.",
+    "HBM is sampled whole-device usage including driver; not instantaneous peak.",
+    "72-case smoke is not full quantization accuracy evaluation; no same-model BF16 baseline.",
+    "Suite exit 0 means execution completed, not all capability answers correct.",
+    "upstream uses INT4 FFN weights and BF16 activations; gmm uses INT8 activations and is retained with known arithmetic error."
+  ],
+  "sdk_smoke": {
+    "health": {
+      "status": "ready",
+      "model": "qwen3.8-27b",
+      "engine": "v1",
+      "instance_id": "15ce1a108c224cdaba99fcc5dfc1cb2b",
+      "max_concurrency": 4,
+      "max_input_tokens": 8192,
+      "max_output_tokens": 8192,
+      "kv_cache_bytes": 6979321856,
+      "enforce_eager": false,
+      "gpu_memory_utilization": 0.82,
+      "requested_runner": "aclgraph",
+      "dtype": "bfloat16",
+      "prefix_caching": true,
+      "batch_tokens": 4096,
+      "graph_mode": "FULL_DECODE_ONLY",
+      "speculative_tokens": 0,
+      "requested_async_scheduling": true,
+      "requested_npugraph_ex": true,
+      "overlap_shared_expert": false,
+      "w4a8_linear_backend": "upstream",
+      "runtime": {
+        "packages": {
+          "vllm": "0.18.0+empty",
+          "vllm-ascend": "0.18.0+torch291.cann911",
+          "torch": "2.9.1",
+          "torch-npu": "2.9.1",
+          "transformers": "4.57.6",
+          "huggingface-hub": "0.36.0",
+          "setuptools": "79.0.1",
+          "openai": "3.31.0"
+        },
+        "cann_root": "/home/qwen-upgrade-20261015/cann/cann-9.1.1",
+        "quantization": "ascend",
+        "model_quant_type": "W4A8_DYNAMIC",
+        "tokenizer_path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+        "supports_thinking": true,
+        "async_scheduling": true,
+        "graph_mode": "FULL_DECODE_ONLY",
+        "graph_capture_sizes": [
+          1,
+          2,
+          4
+        ],
+        "workers": [
+          {
+            "worker": "qwen_llm.engine.ascend_worker.BudgetedNPUWorker",
+            "device": "npu:0",
+            "graph_mode": "FULL_DECODE_ONLY",
+            "graphs_captured": 3,
+            "drafter": null,
+            "speculative_tokens": 0,
+            "kv_cache_allocated_bytes": 6911950848,
+            "cache_block_sizes": [
+              1536
+            ],
+            "full_context_capacity": 4.0,
+            "npu_allocated_bytes": 30368219648,
+            "npu_reserved_bytes": 31010586624,
+            "w4a8_linear_backend": "upstream",
+            "native_w4a8_linear_layers": 0,
+            "native_w4a8_group_sizes": []
+          }
+        ]
+      }
+    },
+    "sdk_strict_response_validation": true,
+    "samples": [
+      {
+        "stream": false,
+        "seconds": 0.9862240949878469,
+        "response": {
+          "id": "resp_a78a9a54a4e64bf09f5c555274d51532",
+          "access_programs": null,
+          "created_at": 1792131034.0,
+          "error": null,
+          "incomplete_details": null,
+          "instructions": null,
+          "metadata": {},
+          "model": "qwen3.8-27b",
+          "object": "response",
+          "output": [
+            {
+              "id": "msg_b6c5f7f65fd840e3abeadd5c76b5a2ac",
+              "content": [
+                {
+                  "annotations": [],
+                  "text": "2",
+                  "type": "output_text",
+                  "logprobs": null
+                }
+              ],
+              "role": "assistant",
+              "status": "completed",
+              "type": "message",
+              "phase": null
+            }
+          ],
+          "parallel_tool_calls": false,
+          "temperature": 0.0,
+          "tool_choice": "none",
+          "tools": [],
+          "top_p": 0.95,
+          "background": false,
+          "completed_at": null,
+          "conversation": null,
+          "max_output_tokens": 64,
+          "max_tool_calls": null,
+          "moderation": null,
+          "previous_response_id": null,
+          "prompt": null,
+          "prompt_cache_diagnostics": null,
+          "prompt_cache_key": null,
+          "prompt_cache_options": null,
+          "prompt_cache_retention": null,
+          "reasoning": {
+            "context": null,
+            "effort": "none",
+            "generate_summary": null,
+            "mode": null,
+            "summary": null
+          },
+          "safety_identifier": null,
+          "service_tier": "default",
+          "status": "completed",
+          "text": {
+            "format": {
+              "type": "text"
+            },
+            "verbosity": null
+          },
+          "top_logprobs": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 22,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 2,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 24
+          },
+          "user": null,
+          "store": false
+        }
+      },
+      {
+        "stream": true,
+        "seconds": 0.438458584016189,
+        "events": [
+          "response.created",
+          "response.in_progress",
+          "response.output_item.added",
+          "response.content_part.added",
+          "response.output_text.delta",
+          "response.output_text.done",
+          "response.content_part.done",
+          "response.output_item.done",
+          "response.completed"
+        ],
+        "text": "好",
+        "response": {
+          "id": "resp_d909d506830b4aaa836896c0f7ded0ba",
+          "access_programs": null,
+          "created_at": 1792131035.0,
+          "error": null,
+          "incomplete_details": null,
+          "instructions": null,
+          "metadata": {},
+          "model": "qwen3.8-27b",
+          "object": "response",
+          "output": [
+            {
+              "id": "msg_6f8c599de3224252a7ed722de0b32e31",
+              "content": [
+                {
+                  "annotations": [],
+                  "text": "好",
+                  "type": "output_text",
+                  "logprobs": null
+                }
+              ],
+              "role": "assistant",
+              "status": "completed",
+              "type": "message",
+              "phase": null
+            }
+          ],
+          "parallel_tool_calls": false,
+          "temperature": 0.0,
+          "tool_choice": "none",
+          "tools": [],
+          "top_p": 0.95,
+          "background": false,
+          "completed_at": null,
+          "conversation": null,
+          "max_output_tokens": 64,
+          "max_tool_calls": null,
+          "moderation": null,
+          "previous_response_id": null,
+          "prompt": null,
+          "prompt_cache_diagnostics": null,
+          "prompt_cache_key": null,
+          "prompt_cache_options": null,
+          "prompt_cache_retention": null,
+          "reasoning": {
+            "context": null,
+            "effort": "none",
+            "generate_summary": null,
+            "mode": null,
+            "summary": null
+          },
+          "safety_identifier": null,
+          "service_tier": "default",
+          "status": "completed",
+          "text": {
+            "format": {
+              "type": "text"
+            },
+            "verbosity": null
+          },
+          "top_logprobs": null,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 22,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 2,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 24
+          },
+          "user": null,
+          "store": false
+        }
+      }
+    ],
+    "output_limit_rejection": {
+      "status_code": 400,
+      "body": {
+        "message": "[{'type': 'less_than_equal', 'loc': ('body', 'max_output_tokens'), 'msg': 'Input should be less than or equal to 8192', 'input': 8193, 'ctx': {'le': 8192}}]",
+        "type": "invalid_request_error",
+        "code": "invalid_request_error",
+        "param": null
+      }
+    },
+    "instance_unchanged": true,
+    "passed": true
+  },
+  "sdk_smoke_sha256": "8ff84772561ec27958b77ff8ff069a7a5251026308490bebd5b51ee73aa0fea1",
+  "lifecycle": {
+    "profile": "qwen3.8-27b",
+    "exit_code": 0,
+    "before": {
+      "npu": "+------------------------------------------------------------------------------------------------------------------+\n| npu-smi 26.1.1                              Version: 26.1.1                                                      |\n+---------------------------+---------------+----------------------------------------------------------------------+\n| NPU   Name                | Health        | Power(W)             Temp(C)                 Hugepages-Usage(page)   |\n| Chip                      | Bus-Id        | AICore(%)            Memory-Usage(MB)        HBM-Usage(MB)           |\n+===========================+===============+======================================================================+\n| 4     910B4-1             | OK            | 77.1                 57                      0    / 0                |\n| 0                         | 0000:01:00.0  | 0                    0    / 0                3415 / 65536            |\n+===========================+===============+======================================================================+\n+---------------------------+---------------+----------------------------------------------------------------------+\n| NPU     Chip              | Process id    | Process name       | Process memory(MB)    | Process id in container |\n+===========================+===============+======================================================================+\n| No running processes found in NPU 4                                                                              |\n+===========================+===============+======================================================================+\n",
+      "revision": "14a1a0d2b501f9a1e7c0b6289cb80c013bcc477a\n",
+      "worktree": " M .env.example\n M README.md\n?? docs/qwen38-w4a8.md\n?? tmp-workspce/\n",
+      "owners": [],
+      "isolated": false
+    },
+    "after": {
+      "npu": "+------------------------------------------------------------------------------------------------------------------+\n| npu-smi 26.1.1                              Version: 26.1.1                                                      |\n+---------------------------+---------------+----------------------------------------------------------------------+\n| NPU   Name                | Health        | Power(W)             Temp(C)                 Hugepages-Usage(page)   |\n| Chip                      | Bus-Id        | AICore(%)            Memory-Usage(MB)        HBM-Usage(MB)           |\n+===========================+===============+======================================================================+\n| 4     910B4-1             | OK            | 77.9                 58                      0    / 0                |\n| 0                         | 0000:01:00.0  | 0                    0    / 0                3416 / 65536            |\n+===========================+===============+======================================================================+\n+---------------------------+---------------+----------------------------------------------------------------------+\n| NPU     Chip              | Process id    | Process name       | Process memory(MB)    | Process id in container |\n+===========================+===============+======================================================================+\n| No running processes found in NPU 4                                                                              |\n+===========================+===============+======================================================================+\n",
+      "revision": "d957cba715d62f56568d1074c9ae887f14153b20\n",
+      "worktree": " M .env.example\n M README.md\n?? docs/qwen38-w4a8.md\n?? tmp-workspce/\n",
+      "owners": [],
+      "isolated": false
+    },
+    "port_8100_listeners_after": "",
+    "system_services_after": {
+      "qwen-llm.service": {
+        "status": "inactive",
+        "returncode": 3
+      },
+      "qwen-asr-ascend.service": {
+        "status": "inactive",
+        "returncode": 3
+      }
+    },
+    "passed": true,
+    "graceful_shutdown_verified": true
+  },
+  "lifecycle_sha256": "04da0d50201e4e00eb6ba314a996dadf033fdee9e64aa9dffd29255dbd78bd30"
+}
