@@ -1,9 +1,16 @@
 import json
 import os
 
+import pytest
 from typer.testing import CliRunner
 
 from qwen_llm.commands.app import app
+from qwen_llm.config import ServingConfig
+
+
+def test_native_w4_backend_rejects_unsupported_dtype_before_worker_start():
+    with pytest.raises(ValueError, match='BF16'):
+        ServingConfig(w4a8_linear_backend='gmm', dtype='float16')
 
 
 def test_profile_selects_matching_model_and_preserves_explicit_override(tmp_path, monkeypatch):
