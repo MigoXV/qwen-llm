@@ -86,7 +86,8 @@ def quantize_w4(weight, name: str, group_size: int, quantize):
         raise RuntimeError(f'ModelSlim 分阶段反量化校验失败：{name}')
     rmse = float(((dequantized - weight.float()).square().mean() / weight.float().square().mean().clamp_min(1e-20)).sqrt())
     # 当前 AscendV1 row-parallel 参数槽固定为16列；原生 TP=1 运行时不使用此 bias。
-    scale_bias = 8 * dequantized.reshape(rows, 16 if name.endswith('.down_proj.weight') else 1, -1).sum(-1)
+    row_parallel = name.endswith(('.down_proj.weight', '.o_proj.weight'))
+    scale_bias = 8 * dequantized.reshape(rows, 16 if row_parallel else 1, -1).sum(-1)
     prefix = name.removesuffix('.weight')
     tensors = {
         name: packed,

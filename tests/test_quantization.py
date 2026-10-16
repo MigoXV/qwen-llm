@@ -3,7 +3,7 @@ import pytest
 
 torch = pytest.importorskip('torch')
 
-from qwen_llm.quantization import pack_int4_rows, unpack_int4_rows, quantization_kind, adapt_group_scales, encode_w4a8_scales
+from qwen_llm.quantization import pack_int4_rows, unpack_int4_rows, quantization_kind, adapt_group_scales, encode_w4a8_scales, quantize_w4
 
 
 def test_signed_int4_storage_matches_ascend_output_axis_layout():
@@ -58,3 +58,18 @@ def test_quantization_preserves_recurrent_controls_and_auxiliary_towers():
         assert quantization_kind(prefix + name, 'all') == 'FLOAT'
     for name in ['lm_head.weight', 'mtp.layers.0.mlp.up_proj.weight', 'model.visual.blocks.0.attn.qkv.weight']:
         assert quantization_kind(name, 'all') == 'FLOAT'
+
+
+@pytest.mark.parametrize('module', ['mlp.down_proj', 'self_attn.o_proj'])
+def test_row_parallel_exports_match_ascend_sixteen_part_bias_contract(module):
+    weight = torch.ones(16, 256)
+
+    def exact_quantize(value, **kwargs):
+        first = torch.ones(16, 1)
+        second = torch.ones(16, 2)
+        return value, (first, second), value, (torch.zeros_like(first), torch.zeros_like(second))
+
+    prefix = 'model.language_model.layers.0.' + module
+    tensors, _ = quantize_w4(weight, prefix + '.weight', 128, exact_quantize)
+    assert tensors[prefix + '.scale_bias'].shape == (16, 16)
+    assert torch.equal(tensors[prefix + '.scale_bias'].sum(1), 8 * weight.sum(1))
