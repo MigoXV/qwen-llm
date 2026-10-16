@@ -192,7 +192,8 @@
     "validation_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-b4096-kv6p5-g128",
     "quality_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-b4096-kv6p5-g128/quality.json",
     "limitations": "能力冒烟71/72、两类8K检索通过；无同模型BF16精度对照；旧版Dense W4算子以BF16激活反量化权重",
-    "w4a8_linear_backend": "upstream"
+    "w4a8_linear_backend": "upstream",
+    "long_context_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-b4096-kv6p5-g128/logs/long-steady-128.json"
   },
   {
     "name": "qwen3.8-27b-w4a8",
@@ -219,5 +220,32 @@
     "quality_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-gmm-b4096-kv6p5/quality.json",
     "limitations": "保留的原生W4A8实验：70/72；29×31答900而非899；单路27.84/四路93.10 TPS，低于默认路径，不推荐作为默认",
     "w4a8_linear_backend": "gmm"
+  },
+  {
+    "name": "qwen3.8-27b-mtp2",
+    "path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+    "source": "https://modelscope.cn/models/Qwen/Qwen3.8-27B",
+    "repo_id": "Qwen/Qwen3.8-27B",
+    "quantization": "ModelSlim progressive group256 FFN W4 with exact group128 scales; attention/GDN projections W8A8",
+    "dtype": "bfloat16",
+    "runner": "aclgraph",
+    "language_model_only": true,
+    "max_input_tokens": 8192,
+    "max_output_tokens": 8192,
+    "max_concurrency": 4,
+    "batch_tokens": 8192,
+    "kv_cache_gib": 9.375,
+    "download_root": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+    "async_scheduling": true,
+    "npugraph_ex": true,
+    "speculative_tokens": 2,
+    "graph_mode": "FULL_DECODE_ONLY",
+    "prefix_caching": true,
+    "validation_status": "graph_smoke_verified",
+    "validation_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375",
+    "quality_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375/quality.json",
+    "limitations": "可选短输入加速：47.87/130.00 TPS，71/72；整卡HBM约40.25GiB；8K重复请求两路缓存未命中，49.57TPS低于默认85.72；FFN为INT4权重/BF16激活",
+    "w4a8_linear_backend": "upstream",
+    "long_context_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375/logs/long-steady-128.json"
   }
 ]
