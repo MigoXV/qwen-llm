@@ -3,7 +3,7 @@ import pytest
 
 torch = pytest.importorskip('torch')
 
-from qwen_llm.quantization import pack_int4_rows, unpack_int4_rows, quantization_kind
+from qwen_llm.quantization import pack_int4_rows, unpack_int4_rows, quantization_kind, adapt_group_scales
 
 
 def test_signed_int4_storage_matches_ascend_output_axis_layout():
@@ -19,6 +19,17 @@ def test_packing_rejects_silent_truncation_and_out_of_range():
         pack_int4_rows(torch.zeros(3, 8, dtype=torch.int8))
     with pytest.raises(ValueError):
         pack_int4_rows(torch.full((2, 8), 8, dtype=torch.int8))
+
+
+def test_runtime_scale_subdivision_preserves_dequantized_weights_exactly():
+    values = torch.arange(512).reshape(2, 256).float()
+    scales = torch.tensor([[0.5], [2.0]])
+    converted = adapt_group_scales({'layer.weight': values,
+                                    'layer.weight_scale_second': scales}, 256, 128)
+    reference = values * scales
+    actual = (values.reshape(2, 2, 128) * converted['layer.weight_scale_second'].unsqueeze(-1)).reshape(values.shape)
+    assert torch.equal(reference, actual)
+    assert converted['layer.weight'] is values
 
 
 def test_quantization_preserves_recurrent_controls_and_auxiliary_towers():

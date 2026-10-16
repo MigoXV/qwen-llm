@@ -113,6 +113,16 @@ def quantize_w8(weight, name: str):
             prefix + '.weight_offset': torch.zeros_like(scale)}, rmse
 
 
+def adapt_group_scales(tensors: dict, quantization_group: int, runtime_group: int) -> dict:
+    """将尺度组等值细分，兼容910B的NZ INT4组大小，不重新量化整数权重。"""
+    if quantization_group % runtime_group:
+        raise ValueError('运行时尺度组必须整除量化组')
+    factor = quantization_group // runtime_group
+    return {name: value.repeat_interleave(factor, dim=1)
+            if name.endswith(('.weight_scale_second', '.weight_offset_second')) else value
+            for name, value in tensors.items()}
+
+
 def export_w4a8(source: Path, output: Path, source_manifest: Path,
                 modelslim_root: Path, dependencies: Path, scope: str = 'mlp',
                 group_size: int = 256, threads: int = 16):
@@ -121,6 +131,9 @@ def export_w4a8(source: Path, output: Path, source_manifest: Path,
     from safetensors.torch import save_file
 
     source, output = source.resolve(), output.resolve()
+    if group_size not in {64, 128, 256}:
+        raise ValueError('当前910B导出只接受64/128/256量化组，NZ运行时尺度组最大128')
+    runtime_group = min(128, group_size)
     if output == source or source in output.parents or output in source.parents:
         raise ValueError('量化目录必须与原权重完全分开')
     if output.exists() and any(output.iterdir()):
@@ -144,12 +157,13 @@ def export_w4a8(source: Path, output: Path, source_manifest: Path,
     record = {
         'source': str(source), 'source_manifest': str(source_manifest),
         'source_manifest_sha256': hashlib.sha256(source_manifest.read_bytes()).hexdigest(),
-        'modelslim_commit': modelslim_sha, 'w4_scope': scope, 'group_size': group_size,
+        'modelslim_commit': modelslim_sha, 'w4_scope': scope, 'group_size': runtime_group,
+        'quantization_group_size': group_size, 'runtime_group_size': runtime_group,
         'method': 'ModelSlim data-free symmetric progressive INT8 -> group INT4; dynamic activation schemes',
         'calibration_dataset': None, 'validated_for_inference': False,
         'created_at': datetime.now(timezone.utc).isoformat(), 'layers': [], 'files': [],
     }
-    description = {'version': '1.0.0', 'model_quant_type': 'W4A8_DYNAMIC', 'group_size': group_size}
+    description = {'version': '1.0.0', 'model_quant_type': 'W4A8_DYNAMIC', 'group_size': runtime_group}
     weight_map, total_size = {}, 0
     shards = sorted(set(index.values()))
     started = time.perf_counter()
@@ -162,6 +176,7 @@ def export_w4a8(source: Path, output: Path, source_manifest: Path,
                 kind = quantization_kind(name, scope)
                 if kind == 'W4A8_DYNAMIC':
                     tensors, rmse = quantize_w4(weight, name, group_size, quantize)
+                    tensors = adapt_group_scales(tensors, group_size, runtime_group)
                 elif kind == 'W8A8_DYNAMIC':
                     tensors, rmse = quantize_w8(weight, name)
                 else:
