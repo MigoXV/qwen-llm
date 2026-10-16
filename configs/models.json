@@ -167,5 +167,30 @@
     "overlap_shared_expert": true,
     "limitations": "可选短输入加速；本次能力题71/72，基线72/72；显存更高，长输入重复请求表现见报告",
     "quality_report": "/home/qwen-models/reports/qwen3.5-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75/quality.json"
+  },
+  {
+    "name": "qwen3.8-27b",
+    "path": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+    "source": "https://modelscope.cn/models/Qwen/Qwen3.8-27B",
+    "repo_id": "Qwen/Qwen3.8-27B",
+    "quantization": "ModelSlim progressive group256 FFN W4 with exact group128 scales; attention/GDN projections W8A8",
+    "dtype": "bfloat16",
+    "runner": "eager",
+    "language_model_only": true,
+    "max_input_tokens": 8192,
+    "max_output_tokens": 8192,
+    "max_concurrency": 4,
+    "batch_tokens": 4096,
+    "kv_cache_gib": 6.5,
+    "download_root": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
+    "async_scheduling": true,
+    "npugraph_ex": false,
+    "speculative_tokens": 0,
+    "graph_mode": "FULL_DECODE_ONLY",
+    "prefix_caching": true,
+    "validation_status": "eager_smoke_verified",
+    "validation_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-eager-b4096-kv6p5-g128",
+    "quality_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-eager-b4096-kv6p5-g128/quality.json",
+    "limitations": "能力冒烟71/72、两类8K检索通过；无同模型BF16精度对照；旧版Dense W4算子以BF16激活反量化权重"
   }
 ]
