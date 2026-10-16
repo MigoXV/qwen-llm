@@ -3,7 +3,7 @@ import pytest
 
 torch = pytest.importorskip('torch')
 
-from qwen_llm.quantization import pack_int4_rows, unpack_int4_rows, quantization_kind, adapt_group_scales
+from qwen_llm.quantization import pack_int4_rows, unpack_int4_rows, quantization_kind, adapt_group_scales, encode_w4a8_scales
 
 
 def test_signed_int4_storage_matches_ascend_output_axis_layout():
@@ -30,6 +30,22 @@ def test_runtime_scale_subdivision_preserves_dequantized_weights_exactly():
     actual = (values.reshape(2, 2, 128) * converted['layer.weight_scale_second'].unsqueeze(-1)).reshape(values.shape)
     assert torch.equal(reference, actual)
     assert converted['layer.weight'] is values
+
+
+def test_native_scales_decode_to_fp16_products_and_only_merge_equal_groups():
+    first = torch.tensor([[0.001234], [0.007654]])
+    second = torch.tensor([[17.0, 17.0, 13.0, 13.0], [15.0, 15.0, 19.0, 19.0]])
+    encoded = encode_w4a8_scales(first, second)
+    decoded = encoded.to(torch.int32).view(torch.float32).squeeze(0).t()
+    assert encoded.dtype == torch.int64
+    assert torch.equal(decoded.repeat_interleave(2, dim=1), (first * second).half().float())
+    second[0, 1] += 1
+    encoded = encode_w4a8_scales(first, second)
+    assert encoded.shape == (1, 4, 2)
+    decoded = encoded.to(torch.int32).view(torch.float32).squeeze(0).t()
+    assert torch.equal(decoded, (first * second).half().float())
+    with pytest.raises(ValueError):
+        encode_w4a8_scales(first, -second)
 
 
 def test_quantization_preserves_recurrent_controls_and_auxiliary_towers():

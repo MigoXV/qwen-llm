@@ -123,6 +123,22 @@ def adapt_group_scales(tensors: dict, quantization_group: int, runtime_group: in
             for name, value in tensors.items()}
 
 
+def encode_w4a8_scales(first, second, coalesce: bool = True):
+    """按上游MoE约定将FP16组尺度编码为低32位浮点位模式的int64。
+
+    输入保留FP32，避免先舍入BF16；等值的相邻128组可合并回256组。
+    """
+    import torch
+
+    first, second = first.cpu().float(), second.cpu().float()
+    if coalesce and second.shape[1] % 2 == 0 and torch.equal(second[:, 0::2], second[:, 1::2]):
+        second = second[:, 0::2]
+    scale = (first * second).half().float().t().contiguous()
+    if not torch.isfinite(scale).all() or torch.any(scale < 0):
+        raise ValueError('原生W4A8组尺度必须为有限非负数')
+    return scale.view(torch.int32).to(torch.int64).unsqueeze(0).contiguous()
+
+
 def export_w4a8(source: Path, output: Path, source_manifest: Path,
                 modelslim_root: Path, dependencies: Path, scope: str = 'mlp',
                 group_size: int = 256, threads: int = 16):

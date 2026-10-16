@@ -10,7 +10,7 @@ import sys
 
 import typer
 
-from qwen_llm.config import GraphMode, ModelDType, Runner
+from qwen_llm.config import GraphMode, ModelDType, Runner, W4A8LinearBackend
 
 logging.basicConfig(
     level=logging.INFO,
@@ -68,7 +68,8 @@ def serve_model(
                "--speculative-tokens", str(row.get("speculative_tokens", 0)),
                "--prefix-caching" if row.get("prefix_caching", True) else "--no-prefix-caching",
                "--async-scheduling" if row.get("async_scheduling", True) else "--no-async-scheduling",
-               "--npugraph-ex" if row.get("npugraph_ex", True) else "--no-npugraph-ex"]
+               "--npugraph-ex" if row.get("npugraph_ex", True) else "--no-npugraph-ex",
+               "--w4a8-linear-backend", row.get("w4a8_linear_backend", "upstream")]
     if row.get("overlap_shared_expert", False):
         options.append("--overlap-shared-expert")
     os.execv(sys.executable, [sys.executable, "-m", "qwen_llm.commands.app", "serve", *options, *ctx.args])
@@ -122,6 +123,7 @@ def serve(
     async_scheduling: bool | None = typer.Option(None, "--async-scheduling/--no-async-scheduling", envvar="QWEN_ASYNC_SCHEDULING"),
     npugraph_ex: bool | None = typer.Option(None, "--npugraph-ex/--no-npugraph-ex", envvar="QWEN_NPUGRAPH_EX"),
     overlap_shared_expert: bool = typer.Option(False, envvar="QWEN_OVERLAP_SHARED_EXPERT"),
+    w4a8_linear_backend: W4A8LinearBackend = typer.Option(W4A8LinearBackend.UPSTREAM, envvar="QWEN_W4A8_LINEAR_BACKEND"),
 ) -> None:
     """启动单 worker V1 Responses 服务。"""
     import uvicorn
@@ -134,7 +136,8 @@ def serve(
                            gpu_memory_utilization=gpu_memory_utilization,
                            graph_mode=graph_mode, speculative_tokens=speculative_tokens,
                            async_scheduling=async_scheduling, npugraph_ex=npugraph_ex,
-                           overlap_shared_expert=overlap_shared_expert)
+                           overlap_shared_expert=overlap_shared_expert,
+                           w4a8_linear_backend=w4a8_linear_backend)
     uvicorn.run(create_app(config), host=host, port=port, workers=1,
                 timeout_graceful_shutdown=int(config.shutdown_grace))
 

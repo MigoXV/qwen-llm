@@ -3,7 +3,7 @@ import logging
 import json
 import os
 
-from qwen_llm.config import GraphMode, Runner, ServingConfig
+from qwen_llm.config import GraphMode, Runner, ServingConfig, W4A8LinearBackend
 from qwen_llm.engine.base import Generation
 from qwen_llm.engine.diagnostics import diagnose
 from qwen_llm.engine.tokenizer import tokenizer_path
@@ -34,11 +34,15 @@ class V1Engine:
         model_config = json.loads((self.config.model_path / "config.json").read_text())
         hybrid = model_config.get("model_type") in {"qwen3_5", "qwen3_5_moe"}
         modern_options = {"language_model_only": True} if modern else {}
+        if self.config.w4a8_linear_backend is W4A8LinearBackend.GMM:
+            if not modern or report['model_quant_type'] != 'W4A8_DYNAMIC':
+                raise ValueError('原生Dense W4A8后端仅支持新版vLLM和ModelSlim W4A8_DYNAMIC权重')
+            modern_options['additional_config'] = {'qwen_w4a8_linear_backend': 'gmm'}
         if modern and self.config.async_scheduling is not None:
             modern_options["async_scheduling"] = self.config.async_scheduling
         if modern and self.config.npugraph_ex is not None:
-            modern_options["additional_config"] = {
-                "ascend_compilation_config": {"enable_npugraph_ex": self.config.npugraph_ex}}
+            modern_options.setdefault("additional_config", {})['ascend_compilation_config'] = {
+                "enable_npugraph_ex": self.config.npugraph_ex}
         if self.config.overlap_shared_expert:
             if not modern or model_config.get("model_type") != "qwen3_5_moe":
                 raise ValueError("共享专家流重叠仅用于新版 Qwen3.5 MoE 架构")
@@ -104,6 +108,10 @@ class V1Engine:
                 raise ValueError("实际 KV 缓存不足以容纳配置的四路完整上下文")
             if self.config.runner is Runner.ACLGRAPH and any(row["graphs_captured"] == 0 for row in workers):
                 raise RuntimeError("请求 ACL Graph，但真实 worker 未捕获执行图")
+            if self.config.w4a8_linear_backend is W4A8LinearBackend.GMM and any(
+                row['native_w4a8_linear_layers'] == 0 for row in workers
+            ):
+                raise RuntimeError('请求原生Dense W4A8，但真实worker中没有对应线性层')
         logger.info("V1 ready: %s", self.config)
 
     async def health(self):
