@@ -20,7 +20,7 @@
       "justMyCode": false,
       "envFile": "${workspaceFolder}/.env",
       "args": [
-        "serve"
+        "serve-model"
       ]
     },
     {

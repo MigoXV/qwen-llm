@@ -39,6 +39,14 @@ def test_config_rejects_zero():
     with pytest.raises(ValueError): ServingConfig(max_concurrency=0)
 
 
+def test_incomplete_local_quantization_is_rejected_before_engine_start(tmp_path):
+    (tmp_path / '.quantization.incomplete').touch()
+    (tmp_path / 'quantization_manifest.json').write_text(json.dumps({'export_complete': False}))
+    report = diagnose(tmp_path)
+    assert any('拒绝加载中间权重' in reason for reason in report['blockers'])
+    assert any('尚未标记导出完成' in reason for reason in report['blockers'])
+
+
 @pytest.mark.parametrize("quant_type", ["W8A8", "W8A8_DYNAMIC", "W4A8_DYNAMIC"])
 def test_ascend_quantized_index_is_recognized(tmp_path, quant_type):
     (tmp_path/'config.json').write_text(json.dumps({'architectures':['Qwen3ForCausalLM']}))

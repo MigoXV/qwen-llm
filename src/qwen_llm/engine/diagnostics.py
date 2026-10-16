@@ -16,6 +16,8 @@ def diagnose(model: Path, probe_runtime: bool = False) -> dict:
         except importlib.metadata.PackageNotFoundError:
             packages[name] = None
     blockers = []
+    if (model / '.quantization.incomplete').exists():
+        blockers.append('本地量化尚未完成，拒绝加载中间权重')
     config = {}
     model_quant_type = None
     weight_files = set()
@@ -42,6 +44,9 @@ def diagnose(model: Path, probe_runtime: bool = False) -> dict:
         manifest = model / ".modelscope-manifest.json"
         if manifest.exists() and not json.loads(manifest.read_text()).get("verified"):
             blockers.append("ModelScope 下载尚未完成 SHA256 校验")
+        local_manifest = model / 'quantization_manifest.json'
+        if local_manifest.exists() and not json.loads(local_manifest.read_text()).get('export_complete'):
+            blockers.append('本地量化清单尚未标记导出完成')
     except (OSError, ValueError, KeyError) as exc:
         blockers.append(f"模型文件不完整：{exc}")
     quant = config.get("quantization_config", {}).get("quant_method")
