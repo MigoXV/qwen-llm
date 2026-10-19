@@ -9,6 +9,7 @@ Type=simple
 User=root
 Group=root
 WorkingDirectory=/root/repositories/qwen-llm
+Environment=PATH=/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin
 Environment=QWEN_RUNTIME=cann911
 EnvironmentFile=-/etc/qwen-llm.env
 ExecStart=/bin/bash /root/repositories/qwen-llm/scripts/run_ascend.sh

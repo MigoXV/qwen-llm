@@ -6,6 +6,7 @@ import json
 import logging
 import time
 import uuid
+from jsonschema import Draft202012Validator, ValidationError
 
 import anyio
 
@@ -22,6 +23,10 @@ from qwen_llm.inferencers.text import split_thinking
 from qwen_llm.servicer.schema import ResponseRequest
 
 logger = logging.getLogger(__name__)
+
+
+class StructuredOutputError(ValueError):
+    """格式失败属于本次请求，不使整个模型实例失效。"""
 
 
 def error(message, status=400, code="invalid_request_error"):
@@ -171,7 +176,7 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
                         "temperature": body.temperature, "top_p": body.top_p,
                         "max_output_tokens": body.max_output_tokens,
                         "reasoning": {"effort": body.reasoning.effort, "summary": None},
-                        "text": {"format": {"type": "text"}}, "truncation": "disabled",
+                        "text": body.text.model_dump(by_alias=True, exclude_none=True), "truncation": "disabled",
                         "user": None, "background": False, "service_tier": "default"}
             items = {}
             texts = {"reasoning": "", "message": ""}
@@ -220,7 +225,10 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
                 yield event("response.created", response=response)
                 yield event("response.in_progress", response=response)
                 iterator = engine.generate(prompt, rid, max_tokens=body.max_output_tokens,
-                                           temperature=body.temperature, top_p=body.top_p, thinking=thinking).__aiter__()
+                                           temperature=body.temperature, top_p=body.top_p, thinking=thinking,
+                                           **({"json_schema": body.text.format.json_schema} if body.text.format.type == "json_schema" else {}),
+                                           **({"json_object": True} if body.text.format.type == "json_object" else {}),
+                                           **({"seed": body.seed} if body.seed is not None else {})).__aiter__()
                 while True:
                     if app.state.failed:
                         raise RuntimeError("engine marked failed")
@@ -244,6 +252,15 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
                         yield item
                 if final is None or final.finish_reason is None:
                     raise RuntimeError("engine stream ended without final result")
+                if final.finish_reason != "length" and body.text.format.type != "text":
+                    try:
+                        value = json.loads(split_thinking(final.text, thinking, final=True)[1])
+                        if body.text.format.type == "json_object" and not isinstance(value, dict):
+                            raise StructuredOutputError("expected JSON object")
+                        if body.text.format.type == "json_schema":
+                            Draft202012Validator(body.text.format.json_schema).validate(value)
+                    except (ValueError, ValidationError) as exc:
+                        raise StructuredOutputError("structured output does not match request") from exc
                 for item in changes(*split_thinking(final.text, thinking, final=True)):
                     yield item
                 for kind, (idx, item, part) in items.items():
@@ -270,13 +287,14 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
                 raise
             except Exception as exc:
                 timeout = isinstance(exc, asyncio.TimeoutError)
-                if not timeout:
+                invalid_output = isinstance(exc, StructuredOutputError)
+                if not timeout and not invalid_output:
                     app.state.ready = False
                     app.state.failed = True
                     logger.exception("generation failed: %s", rid)
-                code = "request_timeout" if timeout else "engine_error"
+                code = "request_timeout" if timeout else "structured_output_invalid" if invalid_output else "engine_error"
                 requests.labels(code).inc()
-                response.update(status="failed", error={"code": code, "message": "请求超时" if timeout else "引擎生成失败"})
+                response.update(status="failed", error={"code": code, "message": "请求超时" if timeout else "结构化输出不符合请求" if invalid_output else "引擎生成失败"})
                 yield event("response.failed", response=response)
             finally:
                 # Starlette disconnect uses a level-triggered AnyIO cancel scope.

@@ -127,11 +127,11 @@
     "dtype": "bfloat16",
     "runner": "aclgraph",
     "language_model_only": true,
-    "max_input_tokens": 8192,
+    "max_input_tokens": 57344,
     "max_output_tokens": 8192,
     "max_concurrency": 4,
     "batch_tokens": 8192,
-    "kv_cache_gib": 3.75,
+    "kv_cache_gib": 8.25,
     "download_root": "/home/qwen-models/weights/Qwen3.6-35B-A3B-W8A8",
     "async_scheduling": true,
     "npugraph_ex": true,
@@ -141,7 +141,9 @@
     "validation_report": "/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75",
     "overlap_shared_expert": true,
     "limitations": "短输入吞吐更高；整卡HBM约46.2GiB；本次8K重复材料未命中缓存，重复请求TPS低于平衡配置",
-    "quality_report": "/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75/quality.json"
+    "quality_report": "/home/qwen-models/reports/qwen3.6-35b-a3b/w8a8-mtp2-overlap-b8192-kv3p75/quality.json",
+    "meeting_test_context_tokens": 65536,
+    "meeting_test_context_validation": "passed_37919_input_tokens_64k_cache_four_full_contexts"
   },
   {
     "name": "qwen3.5-35b-a3b-mtp2",
@@ -230,11 +232,11 @@
     "dtype": "bfloat16",
     "runner": "aclgraph",
     "language_model_only": true,
-    "max_input_tokens": 8192,
+    "max_input_tokens": 57344,
     "max_output_tokens": 8192,
     "max_concurrency": 4,
     "batch_tokens": 8192,
-    "kv_cache_gib": 9.375,
+    "kv_cache_gib": 12.5,
     "download_root": "/home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend",
     "async_scheduling": true,
     "npugraph_ex": true,
@@ -246,6 +248,8 @@
     "quality_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375/quality.json",
     "limitations": "默认MTP2配置：47.87/130.00 TPS，71/72；整卡HBM约40.25GiB；8K重复请求两路缓存未命中，49.57TPS低于低显存配置85.72；FFN为INT4权重/BF16激活",
     "w4a8_linear_backend": "upstream",
-    "long_context_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375/logs/long-steady-128.json"
+    "long_context_report": "/home/qwen-models/reports/qwen3.8-27b/w4a8-mtp2-b8192-kv9p375/logs/long-steady-128.json",
+    "meeting_test_context_tokens": 65536,
+    "meeting_test_context_validation": "pending_64k_original_application_fulltext"
   }
 ]
