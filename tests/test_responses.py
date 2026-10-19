@@ -199,6 +199,16 @@ def test_boundary_8192_tokens():
         assert client.post('/responses',json=payload()).status_code==200
 
 
+@pytest.mark.parametrize('input_length,status', [(8490, 200), (24576, 200), (24577, 400)])
+def test_configured_long_context_boundary(input_length, status):
+    config = ServingConfig(max_input_tokens=24576)
+    with TestClient(create_app(config, engine=FakeEngine(input_length=input_length))) as client:
+        health = client.get('/health/ready').json()
+        assert health['max_input_tokens'] == 24576
+        assert health['max_output_tokens'] == 8192
+        assert client.post('/responses', json=payload()).status_code == status
+
+
 def test_cancelled_handler_aborts_and_frees_slot():
     import httpx
     async def run():

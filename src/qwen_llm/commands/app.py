@@ -55,13 +55,17 @@ def serve_model(
     row = next((item for item in entries if item["name"].casefold() == name.casefold()), None)
     if row is None:
         raise typer.BadParameter("未知模型；可选：" + ", ".join(item["name"] for item in entries))
-    for field, supported in (("max_input_tokens", 8192), ("max_output_tokens", 8192), ("max_concurrency", 4)):
+    for field, supported in (("max_output_tokens", 8192), ("max_concurrency", 4)):
         if row.get(field, supported) != supported:
             raise typer.BadParameter(f"模型目录中的 {field} 必须为 {supported}，容量变更需要重新验收")
+    max_input = row.get("max_input_tokens", 8192)
+    if type(max_input) is not int or max_input <= 0:
+        raise typer.BadParameter("模型目录中的 max_input_tokens 必须是正整数")
     if not row.get("language_model_only", True):
         raise typer.BadParameter("当前服务只支持文本模型配置")
     options = ["--model-name", row["name"], "--model-path", str(Path(row["path"]).resolve()),
                "--dtype", row.get("dtype", "bfloat16"), "--runner", row.get("runner", "aclgraph"),
+               "--max-input-tokens", str(max_input),
                "--graph-mode", row.get("graph_mode", "FULL_DECODE_ONLY"),
                "--batch-tokens", str(row.get("batch_tokens", 2048)),
                "--kv-cache-gib", str(row["kv_cache_gib"]),
@@ -113,6 +117,7 @@ def serve(
     host: str = typer.Option("127.0.0.1", envvar="QWEN_HOST"),
     port: int = typer.Option(8100, min=1, max=65535, envvar="QWEN_PORT"),
     timeout: float = typer.Option(600, min=1, envvar="QWEN_TIMEOUT"),
+    max_input_tokens: int = typer.Option(8192, min=1, envvar="QWEN_MAX_INPUT_TOKENS"),
     batch_tokens: int = typer.Option(2048, min=4, envvar="QWEN_BATCH_TOKENS"),
     runner: Runner = typer.Option(Runner.ACLGRAPH, envvar="QWEN_RUNNER"),
     prefix_caching: bool = typer.Option(True, "--prefix-caching/--no-prefix-caching", envvar="QWEN_PREFIX_CACHING"),
@@ -130,6 +135,7 @@ def serve(
     from qwen_llm.config import ServingConfig
     from qwen_llm.servicer.app import create_app
     config = ServingConfig(model_path=model_path, model_name=model_name, dtype=dtype,
+                           max_input_tokens=max_input_tokens,
                            timeout=timeout, batch_tokens=batch_tokens,
                            runner=runner, prefix_caching=prefix_caching,
                            kv_cache_bytes=int(kv_cache_gib * 1024**3),

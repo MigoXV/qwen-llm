@@ -67,7 +67,7 @@ curl -N http://127.0.0.1:8100/v1/responses \
 
 支持 `model`、`input`、`instructions`、`stream`、`temperature`、`top_p`、`max_output_tokens`、`reasoning.effort` 和 `store:false`。`input` 为字符串或 message 列表，角色支持 user/assistant/system/developer，developer 按 system 处理；content 支持字符串及 input_text/output_text 文本片段。`instructions` 作为首条 system 消息。
 
-多轮对话每次发送完整 message 历史。响应的 `store` 固定为 false，不提供读取、删除、后台任务、`previous_response_id` 或 conversation 接口。首版不支持 tools、图片、文件、结构化输出或 reasoning 历史项；未知参数及不支持的内容返回 400，不默默忽略。
+多轮对话每次发送完整 message 历史。响应的 `store` 固定为 false，不提供读取、删除、后台任务、`previous_response_id` 或 conversation 接口。不支持 tools、图片、文件或 reasoning 历史项；结构化输出支持情况见下文。未知参数及不支持的内容返回 400，不默默忽略。
 
 默认关闭思考；`reasoning.effort=none` 关闭，low/medium/high 均启用 Qwen3 原生思考，不承诺不同档位具有不同计算深度。思考与正文分别返回 reasoning/message 输出项，流式为 `response.reasoning_text.delta` / `response.output_text.delta`；标签不会作为正文输出。usage 的总输出数量来自实际生成 token IDs，思考计数包含思考区间内生成的控制 token。
 
@@ -75,7 +75,7 @@ SSE 包含 `event` 与递增 `sequence_number`；从 created/in_progress 开始�
 
 ## 容量与显存
 
-每路模板展开后的输入最多 **8192 tokens**，输出最多 **8192 tokens（含思考）**，总上下文 16384。四个活动名额，不额外排队，第五路返回 429；请求体上限 1MiB。超时默认 600 秒，断连和超时会 abort 并释放名额，关闭宽限期 30 秒。
+默认每路模板展开后的输入最多 **8192 tokens**，输出最多 **8192 tokens（含思考）**，总上下文 16384。模型目录中的 `max_input_tokens` 会实际传入启动参数 `--max-input-tokens`；也可在 `serve` 中用该选项或 `QWEN_MAX_INPUT_TOKENS` 配置。2026-10-18 会议测试将 Qwen3.6 与 Qwen3.8 MTP2 配置统一为 57344 输入加 8192 输出，总上下文 65536，以保留原应用一次提交全文关键词的行为；MeetNote 内部仍使用 32768 预算；Qwen3.6 KV 为 8.25GiB，Qwen3.8 为 12.5GiB。四个活动名额，不额外排队，第五路返回 429；请求体上限 1MiB。超时默认 600 秒，断连和超时会 abort 并释放名额，关闭宽限期 30 秒。
 
 历史 14B 模型四路完整上下文的 BF16 KV 理论下限为：
 
@@ -85,7 +85,7 @@ SSE 包含 `event` 与递增 `sequence_number`；从 created/in_progress 开始�
 
 `--gpu-memory-utilization` 默认 0.82，是设备内存 profile 的上限比例；实际 KV 分配仍由 `--kv-cache-gib` 固定，不会按比例填满整卡。这样在 ASR 已运行时也可为 LLM 初始化保留余量。
 
-14B 设置 10.25GiB 留少量块余量，实测 67072 个 KV tokens，最大 16384-token 请求并发容量 4.09。当前 27B MTP2 使用 9.375GiB KV，包含混合 GDN 状态与草稿模型缓存，实测估算完整上下文容量 4.0 路；整卡占用约 40.25GiB。旧插件忽略上游 `kv_cache_memory_bytes`，因此项目 NPUWorker 子类在设备内存 profile 后显式应用预算，超出可用内存则报错；KV预算在项目worker子类中实现，源码兼容补丁单独记录于deploy/ascend-291。
+14B 设置 10.25GiB 留少量块余量，实测 67072 个 KV tokens，最大 16384-token 请求并发容量 4.09。此前 27B MTP2 的 16K 配置使用 9.375GiB KV，包含混合 GDN 状态与草稿模型缓存，实测估算完整上下文容量 4.0 路；当时整卡占用约 40.25GiB。32K 配置的实际缓存容量以 ready 返回的 worker 观测及新验收结果为准。旧插件忽略上游 `kv_cache_memory_bytes`，因此项目 NPUWorker 子类在设备内存 profile 后显式应用预算，超出可用内存则报错；KV预算在项目worker子类中实现，源码兼容补丁单独记录于deploy/ascend-291。
 
 原环境 Eager 实测整卡 HBM 33695MiB，包含无模型时约 3404MiB 的设备基础占用；不能把 KV 预算当成整卡占用。四路 8192-token 输入已测试，模型可能自然结束，因此短输出测试不等于四路满 8192-token 输出实测。
 
@@ -125,3 +125,32 @@ curl --fail http://127.0.0.1:8100/health/ready
 systemctl stop qwen-llm.service
 bash scripts/run_model.sh qwen3.6-35b-a3b
 ```
+
+### 摘要引擎兼容参数
+
+Responses API 接受 `chat_template_kwargs: {"enable_thinking": false}`，
+作为 `reasoning.effort="none"` 的兼容写法；设置为 true 对应 medium。
+同时显式提供且互相矛盾时返回参数错误。只允许 `enable_thinking` 布尔字段。
+可选 `seed` 传递给 vLLM 的 SamplingParams，用于调用方指定采样种子。
+系统服务补充 Poetry 所需 PATH；默认仍运行 qwen3.8-27b-mtp2 的 NPU 配置。
+
+
+## 会议摘要引擎请求兼容
+
+`/v1/responses` 支持当前 MeetNote 原有的 `enable_thinking` 和 `text.format` 请求，不改动会议应用与摘要引擎合同。`enable_thinking` 与原有 `chat_template_kwargs.enable_thinking`、`reasoning.effort` 必须一致，冲突返回 400。
+
+`text.format.type=json_schema` 使用 vLLM 原生结构化采样，传入完整 JSON Schema；`json_object` 使用原生 JSON 模式。完成生成后再次验证输出，格式失败返回 `structured_output_invalid`，释放请求容量并保持模型健康。结构化输出目前只接受非思考模式。未指定格式的调用保持原有行为。
+
+请求所带 JSON Schema 同时投影到模型系统消息，保留字段说明及长度等约束。结构化采样负责限制输出形状，模型仍需读取说明才能理解字段含义；服务不另写业务 Prompt，不改写调用方原有指令和输入。
+
+此变更在 hz01 的 vLLM 0.18 / Ascend 环境运行，Responses、采样转接、SDK 及断连相关共 39 项测试通过；Qwen3.8-27B MTP2 已完成真实结构化推理。命令为 `source scripts/env_ascend_291.sh` 后执行 `poetry run pytest -q tests/test_responses.py tests/test_structured_responses.py tests/test_structured_sampling.py tests/test_sdk.py tests/test_disconnect.py`。
+
+### 32K 输入容量验收
+
+模型配置、CLI 透传、实际 serve 配置和 Responses 输入边界的相关测试共 51 项通过（包含此前结构化输出、SDK、断连用例）。命令在 `source scripts/env_ascend_291.sh` 后执行：
+
+```bash
+poetry run pytest -q tests/test_model_profile.py tests/test_responses.py tests/test_structured_responses.py tests/test_structured_sampling.py tests/test_sdk.py tests/test_disconnect.py
+```
+
+Qwen3.6 32K 模型已实际接受 18,068 token 的真实会议转写输入并完成结构化响应；worker 报告 KV 实分配约 5.74GiB，完整上下文并发容量约 4.68。Qwen3.8 的 32K 实际模型验收随最终同文比较执行，尚未将配置就绪视为模型验收通过。公开 Responses 字段保持原样，默认输入边界仍由配置决定。

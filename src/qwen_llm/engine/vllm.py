@@ -131,9 +131,15 @@ class V1Engine:
 
     async def generate(self, prompt, request_id, **sampling):
         thinking = sampling.pop("thinking", False)
+        schema = sampling.pop("json_schema", None)
+        json_object = sampling.pop("json_object", False)
         close_think = self.tokenizer.convert_tokens_to_ids("</think>")
         from vllm import SamplingParams
         from vllm.inputs import TokensPrompt
+        if schema is not None or json_object:
+            from vllm.sampling_params import StructuredOutputsParams
+            sampling["structured_outputs"] = StructuredOutputsParams(
+                json=schema, json_object=True if json_object else None)
         async for result in self.llm.generate(
             TokensPrompt(prompt_token_ids=prompt), SamplingParams(**sampling), request_id):
             item = result.outputs[0]
