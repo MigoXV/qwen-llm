@@ -1,6 +1,6 @@
 import pytest
 
-from qwen_llm.comparison import metric
+from tests.performance.qwen38.comparison import metric
 
 
 @pytest.mark.parametrize("new,higher,over", [(80, True, False), (79.9, True, True),

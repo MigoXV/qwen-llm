@@ -67,7 +67,7 @@
 Eager各轮总耗时13.54/12.54/12.51秒；PIECEWISE为8.17/7.91/7.97秒。部分请求自然EOS，且不同执行策略或轮次可能改变尾部生成，因此不能把这一组吞吐作为完全等长输出的严格加速比。可重放：
 
 ```bash
-QWEN_LONG_TAG=check poetry run python scripts/benchmark_long_context.py
+QWEN_LONG_TAG=check poetry run python -m tests.performance.qwen38.benchmark_long_context
 ```
 
 该脚本默认三轮，QWEN_LONG_OUTPUT可调整输出预算；不设置ignore_eos，不承诺强制生成到预算。四路各8192输入已实际完成，四路同时生成满8192输出尚未实测；容量4.09来自实际KV块数。

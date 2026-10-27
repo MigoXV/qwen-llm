@@ -56,7 +56,7 @@ Python3.10.22、torch/torch-npu2.9.1、源码vLLM0.18.0、vLLM-Ascend0.18.0、Tr
 | `gmm` | `npu_dynamic_quant`→单专家`npu_grouped_matmul`，权重保持INT4打包 | INT8、逐token动态尺度 | BF16 |
 
 旧插件的`W4A8_DYNAMIC`名称不代表其Dense默认实现使用INT8激活。
-本项目显式提供`--w4a8-linear-backend gmm`，沿用上游MoE的尺度与补偿偏置约定，
+独立测试入口提供`--w4a8-linear-backend gmm`，沿用上游MoE的尺度与补偿偏置约定，
 让Dense FFN实际使用INT8激活接口。模型仍是Dense，只复用单专家GMM算子。
 
 GMM保留FP32导入尺度，再按算子约定编码；等值的相邻128组可合并回256组，
@@ -100,7 +100,7 @@ Eager的32道数学题全部正常完成，共11574输出tokens，单题最长66
 
 原生W4A8另将`29×31`答为900，正确答案899，没有达到预先设定的基础题40/40门槛。
 原生算子数值检查通过不等于端到端能力没有变化。因此保留该路径，未设为默认，
-别名为`qwen3.8-27b-w4a8`；`qwen3.8-27b`及默认MTP2配置的FFN使用INT4权重与BF16激活。
+历史别名`qwen3.8-27b-w4a8`现仅位于测试区catalog；`qwen3.8-27b`及默认MTP2配置的FFN使用INT4权重与BF16激活。
 MTP2小缓存配置的唯一失分仍为同一盈利年份题；大缓存配置该题答对。
 这类小样本结果不用于推断能力全面提高，也没有把答案差异归因为缓存预算。
 
@@ -153,7 +153,7 @@ MTP组合配置使用两步推测、8192-token预填充与3/6/12捕获形状，�
 
 ```bash
 source scripts/env_ascend_291.sh
-poetry run qwen-llm quantize-w4a8 \
+poetry run python -m tests.performance.qwen38.cli quantize-w4a8 \
   --model-path /home/model-bin/Qwen/Qwen3.8-27B \
   --output-dir /home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend \
   --source-manifest /home/qwen-quantize-20261016/reports/source-manifest.json \
@@ -161,10 +161,10 @@ poetry run qwen-llm quantize-w4a8 \
   --tool-dependencies /home/qwen-quantize-20261016/dependencies \
   --w4-scope mlp --group-size 256 --threads 16
 # 输出目录必须为空；已有候选保留，重新导出时指定新目录。
-poetry run python scripts/verify_w4_linear.py \
+poetry run python -m tests.performance.qwen38.verify_w4_linear \
   --model-path /home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend \
   --output /home/qwen-quantize-20261016/reports/recheck-upstream.json
-poetry run python scripts/verify_w4_linear.py --backend gmm --prefill-tokens 4096 \
+poetry run python -m tests.performance.qwen38.verify_w4_linear --backend gmm --prefill-tokens 4096 \
   --model-path /home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend \
   --output /home/qwen-quantize-20261016/reports/recheck-gmm.json
 # 默认MTP2，内存和长输入缓存取舍见上表：
@@ -172,7 +172,9 @@ bash scripts/run_model.sh
 # 显式选择低显存配置：
 bash scripts/run_model.sh qwen3.8-27b
 # 保留的原生INT8激活实验，有已知算术错误：
-bash scripts/run_model.sh qwen3.8-27b-w4a8
+poetry run python -m tests.performance.qwen38.cli profile --model-name qwen3.8-27b-w4a8 \
+  --suite comparison --no-capture --max-input-tokens 8192 --kv-cache-gib 6.5 \
+  --output-dir /home/qwen-models/reports/qwen3.8-27b/FRESH_GMM
 ```
 
 组件检查和服务均占用NPU，应在独占设备下分别运行。导出期间带有
@@ -181,16 +183,16 @@ bash scripts/run_model.sh qwen3.8-27b-w4a8
 停止已有实例后，可在新目录复测默认配置；脚本负责启动、测试和关闭：
 
 ```bash
-bash scripts/benchmark_quantized_model.sh qwen3.8-27b-mtp2 \
+bash tests/performance/qwen38/benchmark_quantized_model.sh qwen3.8-27b-mtp2 \
   /home/model-bin/Qwen/Qwen3.8-27B-W4A8-Ascend \
   /home/qwen-models/reports/qwen3.8-27b/recheck-default \
   --runner aclgraph --graph-mode FULL_DECODE_ONLY \
   --batch-tokens 8192 --kv-cache-gib 9.375 --speculative-tokens 2 --async-scheduling \
-  --npugraph-ex --prefix-caching --w4a8-linear-backend upstream
+  --npugraph-ex --prefix-caching
 ```
 
 低显存复测改用新输出目录和别名`qwen3.8-27b`，设置`--batch-tokens 4096 --kv-cache-gib 6.5 --speculative-tokens 0`。
-原生W4A8实验设置`--w4a8-linear-backend gmm`，其余沿用低显存图参数。
+原生W4A8实验现通过测试区profile入口设置`--w4a8-linear-backend gmm`，其余沿用低显存图参数；生产serve入口已移除该实验选项。
 
 原始目录在`/home/qwen-models/reports/qwen3.8-27b/`，包含全部回答、SSE终态、
 TTFT、进程盘点、实际参数、服务日志和阶段退出码；失败配置同样保留。

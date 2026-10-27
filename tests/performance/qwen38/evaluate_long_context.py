@@ -8,7 +8,7 @@ from urllib.parse import urlsplit
 import httpx
 import typer
 
-from qwen_llm.evaluation import check_answer
+from tests.performance.qwen38.evaluation import check_answer
 from qwen_llm.engine.tokenizer import tokenizer_path
 
 app = typer.Typer()

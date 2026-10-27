@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from qwen_llm import benchmark
+from tests.performance.qwen38 import benchmark
 
 
 def test_contaminated_device_never_reports_valid_benchmark(monkeypatch,tmp_path):

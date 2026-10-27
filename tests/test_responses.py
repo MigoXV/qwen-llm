@@ -25,8 +25,8 @@ class FakeEngine:
     async def close(self): self.closed = True
     async def health(self):
         if not self.started: raise RuntimeError("not ready")
-    async def prepare(self, messages, thinking):
-        self.prepared.append((messages, thinking))
+    async def prepare(self, messages, effort):
+        self.prepared.append((messages, effort))
         return [1] * self.input_length
     def count_tokens(self, text): return len(text)
     async def abort(self, request_id): self.aborted.append(request_id)

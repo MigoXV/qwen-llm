@@ -28,7 +28,7 @@ def test_meetnote_request_honors_schema_and_thinking_fields(stream):
         assert result['text']['format'] == FORMAT
         assert json.loads(result['output'][0]['content'][0]['text']) == {'text': '纪要'}
         assert engine.sampling['json_schema'] == SCHEMA
-        assert engine.prepared[0][1] is False
+        assert engine.prepared[0][1] == 'none'
         assert json.dumps(SCHEMA, ensure_ascii=False, separators=(',', ':')) in engine.prepared[0][0][0]['content']
         assert engine.prepared[0][0][-1] == {'role':'user','content':'你好'}
 

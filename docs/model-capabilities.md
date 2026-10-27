@@ -1,6 +1,6 @@
 # 已有模型能力成绩
 
-2026-10-16。仅查阅既有报告和权重发布者说明，没有新增模型评测。
+2026-10-16历史记录。仅查阅当时已有报告和权重发布者说明，没有新增模型评测。当前容量以`configs/models.json`及[热点报告](qwen38-hotspots.md)为准；原生INT8激活实验及其别名现已迁入`tests/performance/qwen38/`，不属于生产入口。下列配置和成绩保留当时口径。
 服务默认选择 `qwen3.8-27b-mtp2`：两步MTP、8192 batch tokens、9.375 GiB KV、
 FULL_DECODE_ONLY、异步调度、NPUGraphEx、前缀缓存，`upstream` W4线性后端。
 8K输入、8K输出上限和4路活动请求保持原有配置。

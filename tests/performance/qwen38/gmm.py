@@ -6,7 +6,7 @@ import torch_npu
 from vllm_ascend.quantization.methods.w4a8 import AscendW4A8DynamicLinearMethod
 from vllm_ascend.utils import maybe_trans_nz
 
-from qwen_llm.quantization import encode_w4a8_scales
+from tests.performance.qwen38.quantization import encode_w4a8_scales
 
 logger = logging.getLogger(__name__)
 

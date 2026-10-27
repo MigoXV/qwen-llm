@@ -3,7 +3,7 @@ import logging
 import json
 import os
 
-from qwen_llm.config import GraphMode, Runner, ServingConfig, W4A8LinearBackend
+from qwen_llm.config import GraphMode, ModelAdaptation, ReasoningEffort, Runner, ServingConfig
 from qwen_llm.engine.base import Generation
 from qwen_llm.engine.diagnostics import diagnose
 from qwen_llm.engine.tokenizer import tokenizer_path
@@ -18,12 +18,21 @@ class V1Engine:
         self.tokenizer = None
         self.runtime_identity = {}
         self.supports_thinking = True
+        self.supports_reasoning_effort = False
+        self.supports_tools = False
 
     async def start(self):
         report = diagnose(self.config.model_path)
         if report["blockers"]:
             raise RuntimeError("; ".join(report["blockers"]))
         self.runtime_identity = {key: report.get(key) for key in ("packages", "cann_root", "quantization", "model_quant_type")}
+        worker_cls = "qwen_llm.engine.ascend_worker.BudgetedNPUWorker"
+        adaptation_options = {}
+        if self.config.model_adaptation is ModelAdaptation.QWEN38_910B_V1:
+            from qwen_llm.engine.qwen38 import serving_options
+            adaptation_options, identity = serving_options(self.config, report["packages"])
+            self.runtime_identity["model_adaptation"] = identity
+            worker_cls = "qwen_llm.engine.qwen38_worker.Qwen38NPUWorker"
         os.environ["VLLM_USE_V1"] = "1"
         os.environ["VLLM_WORKER_MULTIPROC_METHOD"] = "spawn"
         from transformers import AutoTokenizer
@@ -34,10 +43,6 @@ class V1Engine:
         model_config = json.loads((self.config.model_path / "config.json").read_text())
         hybrid = model_config.get("model_type") in {"qwen3_5", "qwen3_5_moe"}
         modern_options = {"language_model_only": True} if modern else {}
-        if self.config.w4a8_linear_backend is W4A8LinearBackend.GMM:
-            if not modern or report['model_quant_type'] != 'W4A8_DYNAMIC':
-                raise ValueError('原生Dense W4A8后端仅支持新版vLLM和ModelSlim W4A8_DYNAMIC权重')
-            modern_options['additional_config'] = {'qwen_w4a8_linear_backend': 'gmm'}
         if modern and self.config.async_scheduling is not None:
             modern_options["async_scheduling"] = self.config.async_scheduling
         if modern and self.config.npugraph_ex is not None:
@@ -56,13 +61,23 @@ class V1Engine:
             modern_options["speculative_config"] = {
                 "method": "qwen3_5_mtp", "num_speculative_tokens": self.config.speculative_tokens,
                 "enforce_eager": True}
+        if adaptation_options:
+            modern_options.setdefault("additional_config", {}).update(adaptation_options.pop("additional_config"))
+            modern_options.update(adaptation_options)
 
         tokenizer_directory = await asyncio.to_thread(tokenizer_path, self.config.model_path)
         self.runtime_identity["tokenizer_path"] = str(tokenizer_directory)
         self.tokenizer = await asyncio.to_thread(
             AutoTokenizer.from_pretrained, str(tokenizer_directory), local_files_only=True)
-        self.supports_thinking = "enable_thinking" in str(self.tokenizer.chat_template or "")
+        template = self.tokenizer.get_chat_template()
+        self.supports_thinking = "enable_thinking" in template
+        self.supports_reasoning_effort = "reasoning_effort" in template
+        self.supports_tools = all(marker in template for marker in ('<tool_call>', '<function=', '<parameter=', 'message.tool_calls', '<tool_response>'))
         self.runtime_identity["supports_thinking"] = self.supports_thinking
+        self.runtime_identity["supports_reasoning_effort"] = self.supports_reasoning_effort
+        self.runtime_identity["supports_tools"] = self.supports_tools
+        self.runtime_identity["reasoning_efforts"] = (
+            [effort.value for effort in ReasoningEffort] if self.supports_reasoning_effort else [])
         graph_options = {}
         if self.config.runner is Runner.ACLGRAPH:
             graph_multiplier = self.config.speculative_tokens + 1
@@ -80,7 +95,7 @@ class V1Engine:
             model=str(self.config.model_path.resolve()), dtype=self.config.dtype.value,
             tokenizer=str(tokenizer_directory),
             quantization=report["quantization"],
-            worker_cls="qwen_llm.engine.ascend_worker.BudgetedNPUWorker",
+            worker_cls=worker_cls,
             max_model_len=self.config.max_input_tokens + self.config.max_output_tokens,
             max_num_seqs=self.config.max_concurrency,
             max_num_batched_tokens=self.config.batch_tokens,
@@ -108,10 +123,12 @@ class V1Engine:
                 raise ValueError("实际 KV 缓存不足以容纳配置的四路完整上下文")
             if self.config.runner is Runner.ACLGRAPH and any(row["graphs_captured"] == 0 for row in workers):
                 raise RuntimeError("请求 ACL Graph，但真实 worker 未捕获执行图")
-            if self.config.w4a8_linear_backend is W4A8LinearBackend.GMM and any(
-                row['native_w4a8_linear_layers'] == 0 for row in workers
-            ):
-                raise RuntimeError('请求原生Dense W4A8，但真实worker中没有对应线性层')
+            adaptation = self.runtime_identity.get("model_adaptation")
+            if adaptation and (not workers or any(
+                row.get("model_adaptation", {}).get(key) != adaptation[key]
+                for row in workers for key in ("name", "recipe", "manifest_sha256")
+            )):
+                raise RuntimeError("真实Worker没有启用匹配的模型专项适配")
         logger.info("V1 ready: %s", self.config)
 
     async def health(self):
@@ -124,10 +141,18 @@ class V1Engine:
             self.llm.shutdown()
             self.llm = None
 
-    async def prepare(self, messages, thinking):
+    async def prepare(self, messages: list[dict], effort: ReasoningEffort, *, tools: list[dict] | None = None) -> list[int]:
+        effort = ReasoningEffort(effort)
+        kwargs = {"enable_thinking": effort is not ReasoningEffort.NONE}
+        if self.supports_reasoning_effort and effort is not ReasoningEffort.NONE:
+            kwargs["reasoning_effort"] = effort.value
+        if tools:
+            if not self.supports_tools:
+                raise ValueError("当前模型模板不支持工具调用")
+            kwargs["tools"] = tools
         return await asyncio.to_thread(
             self.tokenizer.apply_chat_template, messages, tokenize=True,
-            add_generation_prompt=True, enable_thinking=thinking)
+            add_generation_prompt=True, **kwargs)
 
     async def generate(self, prompt, request_id, **sampling):
         thinking = sampling.pop("thinking", False)

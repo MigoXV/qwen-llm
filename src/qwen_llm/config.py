@@ -3,6 +3,13 @@ from pathlib import Path
 from enum import Enum
 
 
+class ReasoningEffort(str, Enum):
+    NONE = "none"
+    LOW = "low"
+    MEDIUM = "medium"
+    XHIGH = "xhigh"
+
+
 class Runner(str, Enum):
     EAGER = "eager"
     ACLGRAPH = "aclgraph"
@@ -19,9 +26,9 @@ class GraphMode(str, Enum):
     FULL = "FULL"
 
 
-class W4A8LinearBackend(str, Enum):
-    UPSTREAM = "upstream"
-    GMM = "gmm"
+class ModelAdaptation(str, Enum):
+    NONE = "none"
+    QWEN38_910B_V1 = "qwen38-910b-v1"
 
 
 @dataclass(frozen=True)
@@ -44,15 +51,13 @@ class ServingConfig:
     async_scheduling: bool | None = None
     npugraph_ex: bool | None = None
     overlap_shared_expert: bool = False
-    w4a8_linear_backend: W4A8LinearBackend = W4A8LinearBackend.UPSTREAM
+    model_adaptation: ModelAdaptation = ModelAdaptation.NONE
 
     def __post_init__(self):
         object.__setattr__(self, "runner", Runner(self.runner))
         object.__setattr__(self, "dtype", ModelDType(self.dtype))
         object.__setattr__(self, "graph_mode", GraphMode(self.graph_mode))
-        object.__setattr__(self, "w4a8_linear_backend", W4A8LinearBackend(self.w4a8_linear_backend))
-        if self.w4a8_linear_backend is W4A8LinearBackend.GMM and self.dtype is not ModelDType.BFLOAT16:
-            raise ValueError('原生Dense W4A8后端只验证了BF16残差计算类型')
+        object.__setattr__(self, "model_adaptation", ModelAdaptation(self.model_adaptation))
         if self.speculative_tokens not in (0, 1, 2, 3):
             raise ValueError("MTP token 数须为 0 到 3")
         if not 0 < self.gpu_memory_utilization <= 1:
