@@ -5,20 +5,12 @@ import pytest
 from typer.testing import CliRunner
 
 from qwen_llm.commands.app import app
-from qwen_llm.config import ServingConfig
-
-
-def test_native_w4_backend_rejects_unsupported_dtype_before_worker_start():
-    with pytest.raises(ValueError, match='BF16'):
-        ServingConfig(w4a8_linear_backend='gmm', dtype='float16')
-
-
 def test_profile_selects_matching_model_and_preserves_explicit_override(tmp_path, monkeypatch):
     catalog = tmp_path / 'models.json'
     catalog.write_text(json.dumps([{
         'name': 'qwen3.5-9b', 'path': '/models/verified-W8A8',
         'kv_cache_gib': 8.5, 'graph_mode': 'FULL_DECODE_ONLY', 'speculative_tokens': 2,
-        'w4a8_linear_backend': 'gmm',
+        'runner': 'eager',
     }]))
     invoked = []
     monkeypatch.setattr(os, 'execv', lambda executable, args: invoked.extend(args))
@@ -28,7 +20,8 @@ def test_profile_selects_matching_model_and_preserves_explicit_override(tmp_path
     assert invoked[invoked.index('--model-path')+1] == '/models/verified-W8A8'
     assert invoked[invoked.index('--model-name')+1] == 'qwen3.5-9b'
     assert invoked[invoked.index('--speculative-tokens')+1] == '2'
-    assert invoked[invoked.index('--w4a8-linear-backend')+1] == 'gmm'
+    assert '--w4a8-linear-backend' not in invoked
+    assert '--model-adaptation' not in invoked
     assert invoked[-2:] == ['--kv-cache-gib', '2.5']
 
 
@@ -81,3 +74,43 @@ def test_serve_uses_configured_input_capacity_without_loading_model(monkeypatch)
     assert result.exit_code == 0, result.output
     assert configs[0].max_input_tokens == 24576
     assert configs[0].max_output_tokens == 8192
+
+
+def test_model_adaptation_is_opt_in_and_config_rejects_unknown_values():
+    from qwen_llm.config import ModelAdaptation, ServingConfig
+    assert ServingConfig().model_adaptation is ModelAdaptation.NONE
+    assert ServingConfig(model_adaptation='qwen38-910b-v1').model_adaptation is ModelAdaptation.QWEN38_910B_V1
+    with pytest.raises(ValueError):
+        ServingConfig(model_adaptation='arbitrary')
+
+
+def test_catalog_forwards_model_adaptation_and_keeps_overrides(tmp_path, monkeypatch):
+    catalog = tmp_path / 'models.json'
+    catalog.write_text(json.dumps([{'name': 'specialized', 'path': '/models/independent',
+                                    'kv_cache_gib': 22.5, 'model_adaptation': 'qwen38-910b-v1'}]))
+    invoked = []
+    monkeypatch.setattr(os, 'execv', lambda executable, args: invoked.extend(args))
+    result = CliRunner().invoke(app, ['serve-model', 'specialized', '--catalog', str(catalog),
+                                     '--model-adaptation', 'none'])
+    assert result.exit_code == 0, result.output
+    assert invoked[invoked.index('--model-adaptation') + 1] == 'qwen38-910b-v1'
+    assert invoked[-2:] == ['--model-adaptation', 'none']
+
+
+def test_serve_passes_typed_model_adaptation_without_loading_model(monkeypatch):
+    import uvicorn
+    import qwen_llm.servicer.app as service
+    from qwen_llm.config import ModelAdaptation
+    configs = []
+    monkeypatch.setattr(service, 'create_app', lambda config: configs.append(config) or object())
+    monkeypatch.setattr(uvicorn, 'run', lambda *args, **kwargs: None)
+    result = CliRunner().invoke(app, ['serve', '--model-adaptation', 'qwen38-910b-v1'])
+    assert result.exit_code == 0, result.output
+    assert configs[0].model_adaptation is ModelAdaptation.QWEN38_910B_V1
+
+
+def test_production_commands_exclude_experiment_entry_points():
+    result = CliRunner().invoke(app, ['--help'], color=False)
+    assert result.exit_code == 0
+    for name in ('benchmark', 'evaluate', 'profile-report', 'quantize-w4a8', 'smoke'):
+        assert name not in result.output

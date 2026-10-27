@@ -92,7 +92,7 @@ bash scripts/run_model.sh qwen3.6-35b-a3b-mtp2
 bash scripts/run_model.sh qwen3-30b-a3b-instruct-2507-w4a8
 ```
 
-每次只运行一个LLM实例。基准需先停止LLM与ASR，使用 `scripts/benchmark_quantized_model.sh MODEL_NAME MODEL_PATH FRESH_OUTPUT_DIR [serve参数]`。最后用 `poetry run python scripts/summarize_quantized_reports.py` 生成 `/home/qwen-models/reports/summary.json`。全部原始SSE、TTFT、能力答案、设备进程盘点、参数、服务日志和阶段退出码均保留。
+每次只运行一个LLM实例。基准需先停止LLM与ASR，使用 `tests/performance/qwen38/benchmark_quantized_model.sh MODEL_NAME MODEL_PATH FRESH_OUTPUT_DIR [serve参数]`。最后用 `poetry run python -m tests.performance.qwen38.summarize_quantized_reports` 生成 `/home/qwen-models/reports/summary.json`。全部原始SSE、TTFT、能力答案、设备进程盘点、参数、服务日志和阶段退出码均保留。
 
 ## 全部配置记录
 

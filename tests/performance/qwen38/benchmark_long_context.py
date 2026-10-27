@@ -8,7 +8,7 @@ import time
 import httpx
 from transformers import AutoTokenizer
 
-from qwen_llm.benchmark import inventory
+from tests.performance.qwen38.benchmark import inventory
 from qwen_llm.engine.tokenizer import tokenizer_path
 
 root=Path(os.getenv('QWEN_BUILD_ROOT','/home/qwen-llm-build'))

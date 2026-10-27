@@ -3,7 +3,7 @@ import pytest
 
 torch = pytest.importorskip('torch')
 
-from qwen_llm.quantization import pack_int4_rows, unpack_int4_rows, quantization_kind, adapt_group_scales, encode_w4a8_scales, quantize_w4
+from tests.performance.qwen38.quantization import pack_int4_rows, unpack_int4_rows, quantization_kind, adapt_group_scales, encode_w4a8_scales, quantize_w4
 
 
 def test_signed_int4_storage_matches_ascend_output_axis_layout():

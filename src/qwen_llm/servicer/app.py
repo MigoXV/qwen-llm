@@ -21,6 +21,7 @@ from qwen_llm.engine.base import Engine
 from qwen_llm.engine.vllm import V1Engine
 from qwen_llm.inferencers.text import split_thinking
 from qwen_llm.servicer.schema import ResponseRequest
+from qwen_llm.servicer.chat import ChatRequest, PreparedChat, ToolOutputError, project
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +99,7 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
                 "requested_async_scheduling": config.async_scheduling,
                 "requested_npugraph_ex": config.npugraph_ex,
                 "overlap_shared_expert": config.overlap_shared_expert,
-                "w4a8_linear_backend": config.w4a8_linear_backend.value,
+                "requested_model_adaptation": config.model_adaptation.value,
                 "runtime": getattr(engine, "runtime_identity", {})}
 
     @app.get("/metrics")
@@ -112,6 +113,9 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
     @app.post("/responses")
     @app.post("/v1/responses")
     async def responses(body: ResponseRequest, request: Request):
+        return await generate_response(body, request)
+
+    async def generate_response(body, request):
         if not app.state.ready:
             return error("引擎未就绪", 503, "engine_unavailable")
         if body.model != config.model_name:
@@ -120,6 +124,8 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
             return error("超出服务输出 token 上限")
         if body.reasoning.effort != "none" and not getattr(engine, "supports_thinking", True):
             return error("当前模型只支持非思考模式，请设置reasoning.effort=none", code="unsupported_parameter")
+        if isinstance(body, PreparedChat) and (body.tools or any(m.get('tool_calls') or m['role'] == 'tool' for m in body.messages())) and not getattr(engine, 'supports_tools', False):
+            return error("当前模型模板不支持工具调用", code="unsupported_parameter")
         if len(active) >= config.max_concurrency:
             requests.labels("overloaded").inc()
             return error("四路活动请求已满", 429, "rate_limit_exceeded")
@@ -148,7 +154,8 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
 
         thinking = body.reasoning.effort != "none"
         try:
-            prompt = await asyncio.wait_for(engine.prepare(body.messages(), thinking), timeout=config.timeout)
+            tools = body.tools if isinstance(body, PreparedChat) else None
+            prompt = await asyncio.wait_for(engine.prepare(body.messages(), body.reasoning.effort, **({'tools': tools} if tools else {})), timeout=config.timeout)
             if len(prompt) > config.max_input_tokens:
                 release()
                 return error("模板展开后输入超过 8192 tokens", code="context_length_exceeded")
@@ -324,5 +331,70 @@ def create_app(config: ServingConfig | None = None, engine: Engine | None = None
             return JSONResponse(result)
         finally:
             release()
+
+    @app.post('/v1/chat/completions')
+    async def chat_completions(body: ChatRequest, request: Request):
+        try:
+            prepared = body.prepare()
+        except ValueError as exc:
+            return error(str(exc))
+        result = await generate_response(prepared, request)
+        if not body.stream:
+            if result.status_code != 200:
+                return result
+            response = json.loads(result.body)
+            try:
+                return JSONResponse(project(response, body))
+            except ToolOutputError as exc:
+                return error(str(exc), 502, 'invalid_tool_output')
+        if not isinstance(result, StreamingResponse):
+            return result
+
+        async def chat_sse():
+            chat_id = 'chatcmpl_' + uuid.uuid4().hex
+            created = int(time.time())
+            def chunk(delta, finish=None):
+                return {'id': chat_id, 'object': 'chat.completion.chunk', 'created': created,
+                        'model': body.model, 'choices': [{'index': 0, 'delta': delta, 'finish_reason': finish}]}
+            def data(value):
+                return 'data: ' + json.dumps(value, ensure_ascii=False) + '\n\n'
+            iterator = result.body_iterator
+            try:
+                started = False
+                async for raw in iterator:
+                    if not started:
+                        started = True
+                        yield data(chunk({'role': 'assistant', 'content': ''}))
+                    line = next((line[6:] for line in raw.splitlines() if line.startswith('data: ')), None)
+                    if line is None:
+                        continue
+                    event = json.loads(line)
+                    kind = event['type']
+                    if kind == 'response.reasoning_text.delta':
+                        yield data(chunk({'reasoning_content': event['delta']}))
+                    elif kind == 'response.output_text.delta' and not prepared.tools:
+                        yield data(chunk({'content': event['delta']}))
+                    elif kind in ('response.completed', 'response.incomplete'):
+                        try:
+                            projected = project(event['response'], body, chat_id, created)
+                        except ToolOutputError as exc:
+                            yield data({'error': {'message': str(exc), 'type': 'invalid_tool_output', 'code': 'invalid_tool_output'}})
+                            return
+                        message = projected['choices'][0]['message']
+                        if prepared.tools and message['content']:
+                            yield data(chunk({'content': message['content']}))
+                        for index, call in enumerate(message.get('tool_calls', [])):
+                            yield data(chunk({'tool_calls': [{'index': index, **call}]}))
+                        yield data(chunk({}, projected['choices'][0]['finish_reason']))
+                        if body.stream_options and body.stream_options.get('include_usage'):
+                            yield data({'id': chat_id, 'object': 'chat.completion.chunk', 'created': created,
+                                        'model': body.model, 'choices': [], 'usage': projected['usage']})
+                        yield 'data: [DONE]\n\n'
+                    elif kind == 'response.failed':
+                        yield data({'error': event['response']['error']})
+                        return
+            finally:
+                await iterator.aclose()
+        return StreamingResponse(chat_sse(), media_type='text/event-stream', headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 
     return app

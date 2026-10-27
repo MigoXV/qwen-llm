@@ -1,4 +1,4 @@
-from qwen_llm.evaluation import check_answer
+from tests.performance.qwen38.evaluation import check_answer
 
 
 def test_mentioned_correct_number_does_not_hide_wrong_answer():

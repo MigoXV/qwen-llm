@@ -7,7 +7,7 @@ import torch
 import torch_npu
 from safetensors import safe_open
 
-from qwen_llm.quantization import unpack_int4_rows
+from tests.performance.qwen38.quantization import unpack_int4_rows
 from vllm_ascend.quantization.methods.w4a8 import AscendW4A8DynamicLinearMethod
 
 
@@ -54,7 +54,7 @@ def main():
                 layer.register_parameter(name, torch.nn.Parameter(value.npu(), requires_grad=False))
             scheme_type = AscendW4A8DynamicLinearMethod
             if args.backend == 'gmm':
-                from qwen_llm.engine.ascend_w4a8 import NativeW4A8LinearMethod
+                from tests.performance.qwen38.gmm import NativeW4A8LinearMethod
                 scheme_type = NativeW4A8LinearMethod
             scheme = scheme_type.__new__(scheme_type)
             scheme.group_size, scheme.new_quant_version, scheme.tp_size = group, True, 1
