@@ -131,5 +131,41 @@ def serve(
                 timeout_graceful_shutdown=int(config.shutdown_grace))
 
 
+@app.command("serve-nvidia")
+def serve_nvidia(
+    model_path: Path = typer.Option(..., exists=True, envvar="QWEN_MODEL_PATH"),
+    model_name: str = typer.Option("qwen38-nvidia", envvar="QWEN_MODEL_NAME"),
+    host: str = typer.Option("0.0.0.0", envvar="QWEN_HOST"),
+    port: int = typer.Option(8120, min=1, max=65535, envvar="QWEN_PORT"),
+    tensor_parallel_size: int = typer.Option(2, min=1, envvar="QWEN_TP"),
+    max_model_len: int = typer.Option(16384, min=2, envvar="QWEN_MAX_MODEL_LEN"),
+    max_output_tokens: int = typer.Option(8192, min=1, envvar="QWEN_MAX_OUTPUT_TOKENS"),
+    max_concurrency: int = typer.Option(4, min=1, envvar="QWEN_MAX_CONCURRENCY"),
+    kv_cache_gib: float | None = typer.Option(None, min=0.125, envvar="QWEN_KV_CACHE_GIB", help="每张卡的 KV 预算；未指定时由实际 profile 决定。"),
+    batch_tokens: int = typer.Option(2048, min=16, envvar="QWEN_BATCH_TOKENS"),
+    gpu_memory_utilization: float = typer.Option(0.9, min=0.1, max=0.98, envvar="QWEN_GPU_MEMORY_UTILIZATION"),
+    cuda_graph: bool = typer.Option(False, envvar="QWEN_CUDA_GRAPH"),
+    prefix_caching: bool = typer.Option(False, envvar="QWEN_PREFIX_CACHING"),
+    timeout: float = typer.Option(3600, min=1, envvar="QWEN_TIMEOUT"),
+) -> None:
+    """CUDA vLLM TP 服务；须显式设置 CUDA_VISIBLE_DEVICES。"""
+    import uvicorn
+    from qwen_llm.engine.nvidia import NvidiaConfig, NvidiaEngine
+    from qwen_llm.servicer.app import create_app
+    if max_model_len <= max_output_tokens:
+        raise typer.BadParameter("总上下文必须大于最大输出长度")
+    config = NvidiaConfig(
+        model_path=model_path, model_name=model_name,
+        max_input_tokens=max_model_len - max_output_tokens, max_output_tokens=max_output_tokens,
+        max_concurrency=max_concurrency, batch_tokens=batch_tokens, timeout=timeout,
+        kv_cache_bytes=int(kv_cache_gib * 1024**3) if kv_cache_gib is not None else None,
+        gpu_memory_utilization=gpu_memory_utilization,
+        tensor_parallel_size=tensor_parallel_size, runner=Runner.CUDAGRAPH if cuda_graph else Runner.EAGER,
+        prefix_caching=prefix_caching,
+    )
+    uvicorn.run(create_app(config, NvidiaEngine(config), max_body_bytes=16 * 1024**2),
+                host=host, port=port, workers=1, timeout_graceful_shutdown=int(config.shutdown_grace))
+
+
 if __name__ == "__main__":
     app()

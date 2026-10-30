@@ -2,7 +2,9 @@
 import random
 import pytest
 
-pytest.importorskip('vllm')
+vllm = pytest.importorskip('vllm')
+if vllm.__version__.split('+')[0] != '0.18.0':
+    pytest.skip('Ascend 专项缓存算法固定使用 vLLM 0.18.0；不适用于 CUDA 0.32 API', allow_module_level=True)
 from vllm.v1.core.block_pool import BlockPool
 from vllm.v1.core.kv_cache_utils import BlockHash,make_block_hash_with_group_id
 from .cache import FreeFirstBlockPool, CheckpointBlockPool

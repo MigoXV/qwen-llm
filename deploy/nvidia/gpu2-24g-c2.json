@@ -1,0 +1,16 @@
+{
+  "label": "gpu2-24g-c2",
+  "gpu": 2,
+  "context": 131072,
+  "max_output_tokens": 32768,
+  "concurrency": 2,
+  "utilization": 0.6,
+  "cache": "vocab4-service-c2-20261029",
+  "force_length": false,
+  "batch_tokens": 512,
+  "kv_gib": 8.75,
+  "model_path": "/workspace/model-bin/windowsxp811203/Qwen3.8-27B-Abliterated-W4A16-AWQ-GPTQ-VOCAB4-NVIDIA",
+  "run_dir": "/workspace/opusi/qwen-llm/outputs/services/gpu2-24g-c2-prefix-20261029",
+  "host": "0.0.0.0",
+  "prefix_caching": true
+}

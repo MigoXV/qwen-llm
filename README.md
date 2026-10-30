@@ -1,6 +1,10 @@
 # qwen-llm
 
-基于 vLLM **V1 AsyncLLM + vllm-ascend + torch_npu** 的无状态文本服务，提供 Responses 和 Chat Completions 接口。HTTP 接口由本项目实现，单 API worker、单 Engine Core 和单模型副本。
+基于 vLLM **V1 AsyncLLM** 的无状态文本服务，提供 Responses 和 Chat Completions 接口。Ascend 使用 vllm-ascend + torch_npu，NVIDIA 使用独立 CUDA 引擎与环境。HTTP 接口由本项目实现，每个实例使用单 API worker、单 Engine Core 和单模型副本。
+
+NVIDIA 的安装、量化、双卡启动及单卡 FP8 KV 实验见 [NVIDIA 测试说明](tests/performance/nvidia/README.md)，A100 的 1–4 路 TPS、长上下文容量与质量结果见 [实测报告](docs/nvidia-w4a16.md)，平台职责见 [架构审查](docs/nvidia-architecture.md)。现有 Ascend 命令、模型别名和专属执行逻辑继续沿用。
+
+单卡限制 24 GiB 的词表量化、TPS、质量与 256K 长输入验证见 [显存压缩与容量报告](docs/nvidia-24g-hotspots.md)。当前 [GPU 2 两路服务](docs/nvidia-gpu2-service.md)使用 vLLM 原生 Marlin。
 
 初期使用的 14B 权重为 [aleoyang/Qwen3-14B-w8a8-MindIE](https://modelscope.cn/models/aleoyang/Qwen3-14B-w8a8-MindIE)，项目路径 `model-bin/Qwen3-14B-W8A8-Ascend`。实际数据位于 `/home/qwen-llm-build/models/Qwen3-14B-W8A8-Ascend`，项目目录通过符号链接访问，以避开根分区空间不足。权重约 20GB，未修改原始量化文件。当前默认使用下述 Qwen3.8-27B MTP2 配置。
 
@@ -93,7 +97,7 @@ reply = client.chat.completions.create(
 # 根据 reply.choices[0].message.tool_calls 在应用中执行函数，并将结果作为 tool 消息回传。
 ```
 
-支持 Qwen 原生工具模板的 `tools` 函数调用、`tool_choice`（`auto`、`none`、`required` 或指定函数）、`parallel_tool_calls` 和工具结果历史；工具由调用方执行，再以 `role=tool`、`tool_call_id` 回传。`required` 和指定函数通过提示和结果校验实现：模型不满足要求时返回错误。流式工具调用在完整解析后发送，不暴露模型的工具标记。无工具能力的模板拒绝工具请求，可通过 `/health/ready` 的 `runtime.supports_tools` 查看。
+支持 Qwen 原生工具模板的 `tools` 函数调用、`tool_choice`（`auto`、`none`、`required` 或指定函数）、`parallel_tool_calls` 和工具结果历史；工具由调用方执行，再以 `role=tool`、`tool_call_id` 回传。`required` 和指定函数通过提示和结果校验实现：模型不满足要求时返回错误。NVIDIA 使用 vLLM 原生 Qwen 解析器逐步发送正文和工具参数，完整校验后才确认调用完成；Ascend 保留原有的完整解析后发送行为。模型工具标记不作为正文输出。无工具能力的模板拒绝工具请求，可通过 `/health/ready` 的 `runtime.supports_tools` 查看。
 
 支持 `reasoning_effort`（`none`、`low`、`medium`、`high`、`xhigh`）、`enable_thinking`、`chat_template_kwargs`；思考内容在扩展字段 `reasoning_content` 中返回。支持 `response_format` 的 `text`、`json_object`、`json_schema`，结构化输出和工具调用不能同时启用。图片、文件及未知参数返回 400。
 
@@ -116,9 +120,11 @@ curl -N http://127.0.0.1:8100/v1/responses \
   -d '{"model":"qwen3.8-27b-mtp2","input":"解释一下质数","stream":true,"reasoning":{"effort":"medium"},"max_output_tokens":1024}'
 ```
 
-支持 `model`、`input`、`instructions`、`stream`、`temperature`、`top_p`、`max_output_tokens`、`reasoning.effort` 和 `store:false`。`input` 为字符串或 message 列表，角色支持 user/assistant/system/developer，developer 按 system 处理；content 支持字符串及 input_text/output_text 文本片段。`instructions` 作为首条 system 消息。
+支持 `model`、`input`、`instructions`、`stream`、`temperature`、`top_p`、`max_output_tokens`、`reasoning.effort`、`prompt_cache_key` 和 `store:false`。输出上限由实例配置决定，以 `/health/ready` 为准；Ascend 仍按原配置限制，当前 NVIDIA 两路实例允许 32768 输出 token。`input` 为字符串或历史项列表，message 角色支持 user/assistant/system/developer，developer 按 system 处理；content 支持字符串及 input_text/output_text 文本片段。`instructions` 作为首条 system 消息。
 
-多轮对话每次发送完整 message 历史。响应的 `store` 固定为 false，不提供读取、删除、后台任务、`previous_response_id` 或 conversation 接口。不支持 tools、图片、文件或 reasoning 历史项；结构化输出支持情况见下文。未知参数及不支持的内容返回 400，不默默忽略。
+支持 Responses 的扁平函数定义 `tools:[{type:"function",name,description,parameters,strict}]`，以及 `tool_choice`（`auto`、`none`、`required` 或 `{type:"function",name}`）和 `parallel_tool_calls`。与 Chat Completions 共享调用策略和参数校验；模型返回标准 `function_call`，工具由调用方执行，再以 `function_call_output` 携带相同 `call_id` 回传。NVIDIA 在生成期间发送 `response.output_item.added`、正文及 `response.function_call_arguments.delta`；校验通过后发送参数 `done` 和完成的输出项。增量参数不能提前执行，截断调用标记为 `incomplete`，格式或 schema 错误以 `response.failed` 结束，仅影响本次请求。Ascend 保留原有缓冲与解析路径。协议字段与事件参考 [OpenAI 函数调用文档](https://developers.openai.com/api/docs/guides/function-calling)和[流式事件定义](https://developers.openai.com/api/reference/resources/responses/streaming-events)。
+
+多轮对话每次发送完整历史，可直接附上上一轮 `response.output` 和对应的 `function_call_output`，包括本服务返回的明文 reasoning 项。`prompt_cache_key` 作为兼容提示接收并回显，不参与本单实例的缓存匹配或会话恢复。缓存由实例配置控制，当前 GPU 2 已开启 vLLM 前缀缓存，实际命中数见 `usage.input_tokens_details.cached_tokens`，验证数据见 [Responses 与缓存报告](docs/nvidia-responses-cache.md)。响应的 `store` 固定为 false，不提供读取、删除、后台任务、`previous_response_id` 或 conversation 接口。不支持内置工具、图片、文件或加密 reasoning 历史；未知参数及不支持的内容返回 400。
 
 默认关闭思考。Qwen3.8-27B 支持原生 `low`、`medium`、`xhigh` 三档，运行时把档位直接传给原始聊天模板；`none` 关闭思考。`high` 保留为 `xhigh` 的兼容别名，响应 `reasoning.effort` 回显规范化后的实际档位。原生能力见 [官方模型卡](https://huggingface.co/Qwen/Qwen3.8-27B)及[官方模板](https://huggingface.co/Qwen/Qwen3.8-27B/blob/main/chat_template.jinja)。
 
@@ -247,3 +253,7 @@ poetry run pytest -q tests/test_model_profile.py tests/test_responses.py tests/t
 ```
 
 Qwen3.6 32K 模型已实际接受 18,068 token 的真实会议转写输入并完成结构化响应；worker 报告 KV 实分配约 5.74GiB，完整上下文并发容量约 4.68。Qwen3.8 的 32K 实际模型验收随最终同文比较执行，尚未将配置就绪视为模型验收通过。公开 Responses 字段保持原样，默认输入边界仍由配置决定。
+
+### Responses 推理字段兼容
+
+`POST /v1/responses` 接受 `reasoning.summary`（`auto`、`concise`、`detailed` 或 `null`）和 `include: ["reasoning.encrypted_content"]`；`include` 也可为空列表或 `null`。这两个选项仅用于兼容调用方，不生成额外摘要或加密内容，不改变 `reasoning.effort`。思考模式仍返回明文 `reasoning_text`，摘要列表保持为空，响应的 `reasoning.summary` 为 `null`，不返回 `encrypted_content`。多轮调用应回传明文推理历史；输入加密推理历史仍会明确报错。其他未知字段和非法选项仍被拒绝。

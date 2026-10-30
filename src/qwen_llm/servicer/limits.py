@@ -17,7 +17,7 @@ class BodyLimitMiddleware:
             body.extend(message.get('body', b''))
             if len(body) > self.max_bytes:
                 data = json.dumps({'error': {'type': 'invalid_request_error',
-                    'code': 'request_too_large', 'message': '请求体超过 1MiB', 'param': None}}).encode()
+                    'code': 'request_too_large', 'message': f'请求体超过 {self.max_bytes / 1024**2:g}MiB', 'param': None}}).encode()
                 await send({'type': 'http.response.start', 'status': 413,
                             'headers': [(b'content-type', b'application/json')]})
                 return await send({'type': 'http.response.body', 'body': data})

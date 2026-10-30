@@ -1,0 +1,392 @@
+{
+  "date": "2026-10-29",
+  "code_revision": "fb8b639a0c9ed4274d7f8dea713d438fffddd580",
+  "hardware": "NVIDIA A100 PCIe 40 GB; TP=1; GPU 2 and 3 used for distinct experiments",
+  "limit": "24 GiB total physical GPU NVML memory; polled every 0.1 seconds, not a hardware memory partition",
+  "serving_common": {
+    "kv_dtype": "fp8_e4m3",
+    "attention": "FLASHINFER",
+    "graph": "FULL_DECODE_ONLY",
+    "batch_tokens": 512,
+    "prefix_caching": false,
+    "mtp_tokens": 0,
+    "tps_output_tokens": 512,
+    "tps_rounds_per_concurrency": 3,
+    "quality_math_samples": 32
+  },
+  "original": {
+    "gpu": "3",
+    "instance_id": "4c754087953e465c8b5c43fe6675a7dd",
+    "configured_context": 172032,
+    "configured_kv_bytes": 5905580032,
+    "allocated_kv_bytes": 5857345536,
+    "peak_nvml_bytes": 25691684864,
+    "peak_nvml_gib": 23.92724609375,
+    "pool_estimated_max_context": {
+      "1": 172032,
+      "2": 83968,
+      "3": 54272,
+      "4": 38912
+    },
+    "tps": [
+      {
+        "concurrency": 1,
+        "mean_total_tps": 63.05516118432987,
+        "round_total_tps": [
+          63.11787333057732,
+          63.07659505847959,
+          62.97101516393269
+        ],
+        "mean_ttft_ms": 93.3495635787646,
+        "mean_request_decode_tps": 63.665332997487454
+      },
+      {
+        "concurrency": 2,
+        "mean_total_tps": 120.84807775313729,
+        "round_total_tps": [
+          120.84180827897345,
+          121.0108657854198,
+          120.69155919501861
+        ],
+        "mean_ttft_ms": 145.88464827587208,
+        "mean_request_decode_tps": 61.46308035403035
+      },
+      {
+        "concurrency": 3,
+        "mean_total_tps": 176.8259488361094,
+        "round_total_tps": [
+          177.05458111177376,
+          176.64264874686924,
+          176.78061664968524
+        ],
+        "mean_ttft_ms": 162.7309008811911,
+        "mean_request_decode_tps": 60.03975969685551
+      },
+      {
+        "concurrency": 4,
+        "mean_total_tps": 231.75378340153114,
+        "round_total_tps": [
+          231.78494979209205,
+          231.6070603903775,
+          231.86934002212388
+        ],
+        "mean_ttft_ms": 168.06338060026368,
+        "mean_request_decode_tps": 59.02306945394249
+      }
+    ],
+    "long_smoke": {
+      "input_tokens": 163840,
+      "output_tokens": 12,
+      "retrieval_passed": true,
+      "ttft_seconds": 111.21321672666818,
+      "preemptions_delta": 0.0
+    },
+    "resources_released": true
+  },
+  "vocabulary_int4": {
+    "gpu": "2",
+    "instance_id": "57b69605f5d94042ae714e40ea942e04",
+    "configured_context": 262144,
+    "configured_kv_bytes": 9126805504,
+    "allocated_kv_bytes": 9094299648,
+    "peak_nvml_bytes": 25146359808,
+    "peak_nvml_gib": 23.41937255859375,
+    "pool_estimated_max_context": {
+      "1": 262144,
+      "2": 133120,
+      "3": 87040,
+      "4": 63488
+    },
+    "tps": [
+      {
+        "concurrency": 1,
+        "mean_total_tps": 67.32682685020826,
+        "round_total_tps": [
+          67.33357436011705,
+          67.33653239162541,
+          67.31037379888232
+        ],
+        "mean_ttft_ms": 90.97446873784065,
+        "mean_request_decode_tps": 68.01075824267637
+      },
+      {
+        "concurrency": 2,
+        "mean_total_tps": 129.91052148372987,
+        "round_total_tps": [
+          129.86462840230757,
+          129.96076437556397,
+          129.90617167331803
+        ],
+        "mean_ttft_ms": 134.73080843687057,
+        "mean_request_decode_tps": 66.06207557704978
+      },
+      {
+        "concurrency": 3,
+        "mean_total_tps": 190.17394296701397,
+        "round_total_tps": [
+          190.42275031062132,
+          190.4613312314259,
+          189.63774735899466
+        ],
+        "mean_ttft_ms": 162.1230189791984,
+        "mean_request_decode_tps": 64.65966604803587
+      },
+      {
+        "concurrency": 4,
+        "mean_total_tps": 249.54008024119537,
+        "round_total_tps": [
+          249.88673515466314,
+          249.15605096185965,
+          249.57745460706334
+        ],
+        "mean_ttft_ms": 169.3252616096288,
+        "mean_request_decode_tps": 63.65755932090338
+      }
+    ],
+    "long_smoke": {
+      "input_tokens": 253952,
+      "output_tokens": 11,
+      "retrieval_passed": true,
+      "ttft_seconds": 224.38971732743084,
+      "preemptions_delta": 0.0
+    },
+    "resources_released": true
+  },
+  "quality_comparison": {
+    "source": "outputs/nvidia-20261028/awq-single-fp8-quality.json",
+    "new": "outputs/nvidia-24g-20261029/vocab4-final/quality.json",
+    "same_dataset": true,
+    "same_code_checker": true,
+    "old_passed": 135,
+    "new_passed": 135,
+    "total": 136,
+    "changes": [],
+    "historical_baseline": true
+  },
+  "behavior": {
+    "prompts": 20,
+    "refusal_hints": 0,
+    "manual_review": "Contains factual errors and confused arguments; no refusal is not a correctness score. Historical models also show such errors; this smoke does not attribute them to quantization."
+  },
+  "startup_trials": [
+    {
+      "label": "bootstrap55",
+      "reason": "startup_failed",
+      "returncode": 3,
+      "over_budget": false,
+      "peak_used_bytes": 22218735616,
+      "serving_peak_used_bytes": null,
+      "samples": 1735,
+      "sample_interval_seconds": 0.1,
+      "owned_pids_released": [
+        664631
+      ],
+      "gpu_compute_processes_after": []
+    },
+    {
+      "label": "final55",
+      "reason": "requested_stop",
+      "returncode": -15,
+      "over_budget": false,
+      "peak_used_bytes": 25691684864,
+      "serving_peak_used_bytes": 25691684864,
+      "samples": 6703,
+      "sample_interval_seconds": 0.1,
+      "owned_pids_released": [
+        666089,
+        666053,
+        665981
+      ],
+      "gpu_compute_processes_after": []
+    },
+    {
+      "label": "fixed425-cold",
+      "reason": "over_budget",
+      "returncode": -15,
+      "over_budget": true,
+      "peak_used_bytes": 27021213696,
+      "serving_peak_used_bytes": null,
+      "samples": 1773,
+      "sample_interval_seconds": 0.1,
+      "owned_pids_released": [
+        660688
+      ],
+      "gpu_compute_processes_after": []
+    },
+    {
+      "label": "fixed475-b512-clean-cold",
+      "reason": "over_budget",
+      "returncode": -15,
+      "over_budget": true,
+      "peak_used_bytes": 27113488384,
+      "serving_peak_used_bytes": null,
+      "samples": 1754,
+      "sample_interval_seconds": 0.1,
+      "owned_pids_released": [
+        662835
+      ],
+      "gpu_compute_processes_after": []
+    },
+    {
+      "label": "fixed475-b512-cold",
+      "reason": "over_budget",
+      "returncode": -15,
+      "over_budget": true,
+      "peak_used_bytes": 27165917184,
+      "serving_peak_used_bytes": null,
+      "samples": 1774,
+      "sample_interval_seconds": 0.1,
+      "owned_pids_released": [
+        661691
+      ],
+      "gpu_compute_processes_after": []
+    },
+    {
+      "label": "fixed475-b512-warm",
+      "reason": "requested_stop",
+      "returncode": -15,
+      "over_budget": false,
+      "peak_used_bytes": 24808718336,
+      "serving_peak_used_bytes": 24758386688,
+      "samples": 1645,
+      "sample_interval_seconds": 0.1,
+      "owned_pids_released": [
+        664009,
+        663969,
+        663886
+      ],
+      "gpu_compute_processes_after": []
+    },
+    {
+      "label": "pilot-auto-24g",
+      "reason": "startup_failed",
+      "returncode": 3,
+      "over_budget": false,
+      "peak_used_bytes": 22327787520,
+      "serving_peak_used_bytes": null,
+      "samples": 1734,
+      "sample_interval_seconds": 0.1,
+      "owned_pids_released": [
+        659622
+      ],
+      "gpu_compute_processes_after": []
+    },
+    {
+      "label": "vocab4-bootstrap",
+      "reason": "startup_failed",
+      "returncode": 3,
+      "over_budget": false,
+      "peak_used_bytes": 17315594240,
+      "serving_peak_used_bytes": null,
+      "samples": 479,
+      "sample_interval_seconds": 0.1,
+      "owned_pids_released": [
+        667985
+      ],
+      "gpu_compute_processes_after": []
+    },
+    {
+      "label": "vocab4-bootstrap-patched",
+      "reason": "startup_failed",
+      "returncode": 3,
+      "over_budget": false,
+      "peak_used_bytes": 18448056320,
+      "serving_peak_used_bytes": null,
+      "samples": 1773,
+      "sample_interval_seconds": 0.1,
+      "owned_pids_released": [
+        668607
+      ],
+      "gpu_compute_processes_after": []
+    },
+    {
+      "label": "vocab4-final",
+      "reason": "requested_stop",
+      "returncode": -15,
+      "over_budget": false,
+      "peak_used_bytes": 25146359808,
+      "serving_peak_used_bytes": 25146359808,
+      "samples": 4573,
+      "sample_interval_seconds": 0.1,
+      "owned_pids_released": [
+        669859,
+        669824,
+        669759
+      ],
+      "gpu_compute_processes_after": []
+    }
+  ],
+  "evidence": [
+    {
+      "path": "/workspace/opusi/qwen-llm/outputs/nvidia-24g-20261029/final55/ready.json",
+      "sha256": "157093c15398735b4db06b8b43ed977f6b1f439b593af5cd6e4bf29924c4384d",
+      "bytes": 25165
+    },
+    {
+      "path": "/workspace/opusi/qwen-llm/outputs/nvidia-24g-20261029/final55/short-tps.json",
+      "sha256": "33e1c816b3c02b6b9790d63226d6f96738f5435baada801cebbaffdc1fca1365",
+      "bytes": 189991
+    },
+    {
+      "path": "/workspace/opusi/qwen-llm/outputs/nvidia-24g-20261029/final55/long-smoke.json",
+      "sha256": "058b25da2aa2ba5bcb3f6d6c9bced13138aac23bdfd83c0aa83ca4fa3c25af58",
+      "bytes": 28682
+    },
+    {
+      "path": "/workspace/opusi/qwen-llm/outputs/nvidia-24g-20261029/final55/complete.json",
+      "sha256": "2a2df090ffa7d4d04f5c902da1dc830de73b183cdb85ff3d93336d47f2c1dac1",
+      "bytes": 311
+    },
+    {
+      "path": "/workspace/opusi/qwen-llm/outputs/nvidia-24g-20261029/final55/process.json",
+      "sha256": "4c68ba5fb973b38a7c830eae5086dd17d7c6c50d53bf2b424ecd0f783f3ea4b9",
+      "bytes": 1259
+    },
+    {
+      "path": "/workspace/opusi/qwen-llm/outputs/nvidia-24g-20261029/vocab4-final/ready.json",
+      "sha256": "e720e06ff3636f94e1aeddd4d84c3d7ebcb625328a1b01780f337f2a8167a155",
+      "bytes": 29279
+    },
+    {
+      "path": "/workspace/opusi/qwen-llm/outputs/nvidia-24g-20261029/vocab4-final/short-tps.json",
+      "sha256": "eb5b40bc76d7671c03efe9cbd933419f17c59035df7373227468af9c813a4d29",
+      "bytes": 195320
+    },
+    {
+      "path": "/workspace/opusi/qwen-llm/outputs/nvidia-24g-20261029/vocab4-final/long-smoke.json",
+      "sha256": "8f1def853b10a31ba62df1d68a4b1eeff71e9c922dd35bfddb3fa6a9ddbbd83c",
+      "bytes": 32881
+    },
+    {
+      "path": "/workspace/opusi/qwen-llm/outputs/nvidia-24g-20261029/vocab4-final/complete.json",
+      "sha256": "74eb2989d454c8df45d6ca5205d28c705dd964fd56a9dfb5c65a85803fafaa57",
+      "bytes": 311
+    },
+    {
+      "path": "/workspace/opusi/qwen-llm/outputs/nvidia-24g-20261029/vocab4-final/process.json",
+      "sha256": "46b2484a72beb299e453e10e902e1ceb5b4ee066095e134c647ff69f1ec3a297",
+      "bytes": 1210
+    },
+    {
+      "path": "/workspace/opusi/qwen-llm/outputs/nvidia-24g-20261029/vocab4-final/quality.json",
+      "sha256": "4d723f003a85642c0f188954c8d58b7b1f1d17c82fc60e5da5c4bbee490e86c4",
+      "bytes": 409376
+    },
+    {
+      "path": "/workspace/opusi/qwen-llm/outputs/nvidia-24g-20261029/vocab4-final/quality-comparison.json",
+      "sha256": "d5853d718ce3b9483693dd41096f4db8e7bf02cc8136085bcd3649f54df754e1",
+      "bytes": 294
+    },
+    {
+      "path": "/workspace/opusi/qwen-llm/outputs/nvidia-24g-20261029/vocab4-final/behavior.json",
+      "sha256": "059e53c52b4189d45915b3d0f422f43b091ea56fe3a62bd6d25a54d3a98bf39d",
+      "bytes": 79883
+    }
+  ],
+  "limitations": [
+    "Simple tests only: no full 8192-token output capacity matrix and no full 1319-item quality gate for the vocabulary variant.",
+    "Original and variant use different physical A100 cards and different KV/context budgets; TPS delta is descriptive, not a controlled causal estimate.",
+    "NVML sampling may miss shorter peaks. This is a 40 GB A100 with a monitored 24 GiB budget, not a physical 24 GB GPU.",
+    "Compiler cache was prepared within budget before fixed-KV startup; do not claim direct cold fixed-budget startup."
+  ]
+}

@@ -21,8 +21,8 @@ class ChatRequest(BaseModel):
     stream_options: dict[str, StrictBool] | None = None
     temperature: float = Field(default=0, ge=0, le=2)
     top_p: float = Field(default=0.95, gt=0, le=1)
-    max_tokens: int | None = Field(default=None, gt=0, le=8192)
-    max_completion_tokens: int | None = Field(default=None, gt=0, le=8192)
+    max_tokens: int | None = Field(default=None, gt=0)
+    max_completion_tokens: int | None = Field(default=None, gt=0)
     seed: int | None = None
     reasoning_effort: Literal['none', 'low', 'medium', 'high', 'xhigh'] | None = None
     enable_thinking: StrictBool | None = None
@@ -144,16 +144,20 @@ class ChatRequest(BaseModel):
         if self.chat_template_kwargs is not None:
             kwargs['chat_template_kwargs'] = self.chat_template_kwargs
         response = ResponseRequest(**kwargs)
-        messages = self.normalized_messages()
+        messages = self.messages_with_tool_choice()
         # ResponseRequest inserts the structured-output instruction in its system message.
         if fmt.get('type') != 'text':
             messages.insert(0, response.messages()[0])
+        return PreparedChat(response, messages, self.tools if self.choice() != 'none' else None)
+
+    def messages_with_tool_choice(self):
+        messages = self.normalized_messages()
         choice = self.choice()
         if choice == 'required':
             messages.insert(0, {'role': 'system', 'content': 'You must call at least one of the supplied functions.'})
         elif choice not in ('auto', 'none'):
             messages.insert(0, {'role': 'system', 'content': f'You must call the function {choice}.'})
-        return PreparedChat(response, messages, self.tools if choice != 'none' else None)
+        return messages
 
 
 class PreparedChat:
@@ -175,29 +179,54 @@ CALL = re.compile(r'<tool_call>\s*<function=([^>\s]+)>\s*(.*?)\s*</function>\s*<
 PARAM = re.compile(r'<parameter=([^>\s]+)>\s*\n?(.*?)\n?\s*</parameter>', re.S)
 
 
-def parse_tools(text, request):
-    if request.choice() == 'none':
-        return text, []
+def tool_blocks(text):
+    """校验完整 Qwen 标记；类型转换由对应解析器负责。"""
     matches = list(CALL.finditer(text))
     residual = CALL.sub('', text)
     if '<tool_call' in residual or '</tool_call>' in residual or '<function=' in residual:
         raise ToolOutputError('工具调用格式不完整或无效')
-    choice = request.choice()
-    if not matches:
-        if choice == 'required' or choice not in ('auto', 'none'):
-            raise ToolOutputError('模型未生成要求的工具调用')
-        return text, []
-    if choice == 'none' or (not request.parallel_tool_calls and len(matches) > 1):
-        raise ToolOutputError('模型生成了不允许的工具调用')
-    tools = {t['function']['name']: t['function'] for t in request.tools or []}
-    calls = []
+    blocks = []
     for match in matches:
         name, body = match.groups()
-        if name not in tools or (choice not in ('auto', 'required') and name != choice):
-            raise ToolOutputError('模型调用了未允许的工具')
         params = list(PARAM.finditer(body))
         if PARAM.sub('', body).strip():
             raise ToolOutputError('工具参数格式无效')
+        if len({p[1] for p in params}) != len(params):
+            raise ToolOutputError('工具参数重复')
+        blocks.append((name, params))
+    return residual, blocks
+
+
+def validate_tool_calls(calls, request):
+    """两种协议和解析路径共用的调用策略与最终参数校验。"""
+    choice = request.choice()
+    if not calls:
+        if choice == 'required' or choice not in ('auto', 'none'):
+            raise ToolOutputError('模型未生成要求的工具调用')
+        return
+    if choice == 'none' or (not request.parallel_tool_calls and len(calls) > 1):
+        raise ToolOutputError('模型生成了不允许的工具调用')
+    tools = {t['function']['name']: t['function'] for t in request.tools or []}
+    for call in calls:
+        name = call['function']['name']
+        if name not in tools or (choice not in ('auto', 'required') and name != choice):
+            raise ToolOutputError('模型调用了未允许的工具')
+        try:
+            args = json.loads(call['function']['arguments'])
+            Draft202012Validator(tools[name].get('parameters', {'type': 'object'})).validate(args)
+        except (ValueError, ValidationError) as exc:
+            raise ToolOutputError('工具参数不符合 schema') from exc
+
+
+def parse_tools(text, request):
+    if request.choice() == 'none':
+        return text, []
+    residual, blocks = tool_blocks(text)
+    tools = {t['function']['name']: t['function'] for t in request.tools or []}
+    calls = []
+    for name, params in blocks:
+        if name not in tools:
+            raise ToolOutputError('模型调用了未允许的工具')
         schema = tools[name].get('parameters', {'type': 'object'})
         properties = schema.get('properties', {})
         args = {}
@@ -215,13 +244,10 @@ def parse_tools(text, request):
                 except ValueError:
                     # Union/anyOf schemas may permit a plain string as well as JSON values.
                     args[key] = value
-        try:
-            Draft202012Validator(schema).validate(args)
-        except ValidationError as exc:
-            raise ToolOutputError('工具参数不符合 schema') from exc
         calls.append({'id': 'call_' + uuid.uuid4().hex, 'type': 'function',
                       'function': {'name': name, 'arguments': json.dumps(args, ensure_ascii=False)}})
-    return residual.strip(), calls
+    validate_tool_calls(calls, request)
+    return residual.strip() if calls else text, calls
 
 
 def usage_for(response):
@@ -230,12 +256,16 @@ def usage_for(response):
             'total_tokens': usage.get('total_tokens', 0)}
 
 
-def project(response, request, chat_id=None, created=None):
+def project(response, request, chat_id=None, created=None, *, parsed_tools=False):
     text = ''.join(part.get('text', '') for item in response.get('output', []) if item['type'] == 'message'
                    for part in item.get('content', []) if part['type'] == 'output_text')
     reasoning = ''.join(part.get('text', '') for item in response.get('output', []) if item['type'] == 'reasoning'
                         for part in item.get('content', []) if part['type'] == 'reasoning_text')
-    if response['status'] == 'incomplete' and request.choice() != 'none':
+    if parsed_tools:
+        calls = [{'id': item['call_id'], 'type': 'function',
+                  'function': {'name': item['name'], 'arguments': item['arguments']}}
+                 for item in response['output'] if item['type'] == 'function_call' and item['status'] == 'completed']
+    elif response['status'] == 'incomplete' and request.choice() != 'none':
         text, calls = text.split('<tool_call', 1)[0], []
     else:
         text, calls = parse_tools(text, request)

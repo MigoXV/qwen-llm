@@ -107,7 +107,7 @@ def test_orphan_thinking_markers_never_leak_into_non_thinking_stream():
 
 
 @pytest.mark.parametrize('extra', [
-    {'previous_response_id':'r1'}, {'store':True}, {'tools':[]},
+    {'previous_response_id':'r1'}, {'store':True}, {'tools':[{'type':'web_search'}]},
     {'input':[{'role':'user','content':[{'type':'input_image','image_url':'x'}]}]},
     {'input':[{'type':'function_call','name':'test'}]},
     {'input':None}, {'max_output_tokens':8193},
@@ -223,3 +223,48 @@ def test_cancelled_handler_aborts_and_frees_slot():
                 assert len(engine.aborted)==1
                 assert 'responses_inflight 0.0' in (await client.get('/metrics')).text
     asyncio.run(run())
+
+
+@pytest.mark.parametrize('stream', [False, True])
+@pytest.mark.parametrize('effort', ['none', 'low'])
+@pytest.mark.parametrize('extra', [
+    {'summary': 'auto'}, {'summary': 'concise'}, {'summary': 'detailed'},
+    {'summary': None},
+])
+def test_reasoning_compatibility_options(stream, effort, extra):
+    engine = FakeEngine(['<think>思考</think>答案'] if effort != 'none' else ['答案'])
+    with TestClient(create_app(engine=engine)) as client:
+        result = client.post('/v1/responses', json=payload(
+            stream=stream, reasoning={'effort': effort, **extra},
+            include=['reasoning.encrypted_content']))
+        assert result.status_code == 200
+        response = parse_sse(result.text)[-1]['response'] if stream else result.json()
+        assert response['status'] == 'completed'
+        assert response['reasoning'] == {'effort': effort, 'summary': None}
+        assert all('encrypted_content' not in item for item in response['output'])
+        assert response['output'][-1]['content'][0]['text'] == '答案'
+        assert engine.prepared[-1][1] == effort
+        if effort != 'none':
+            assert response['output'][0]['content'][0]['text'] == '思考'
+            assert response['output'][0]['summary'] == []
+
+
+@pytest.mark.parametrize('extra', [
+    {'reasoning': {'summary': 'auto'}},
+    {'include': ['reasoning.encrypted_content']}, {'include': None}, {'include': []},
+])
+def test_optional_reasoning_compatibility_fields(extra):
+    with TestClient(create_app(engine=FakeEngine())) as client:
+        assert client.post('/v1/responses', json=payload(**extra)).status_code == 200
+
+
+@pytest.mark.parametrize('extra', [
+    {'reasoning': {'summary': 'invalid'}}, {'include': ['unknown']},
+    {'include': 'reasoning.encrypted_content'}, {'unknown': True},
+    {'input': [{'type': 'reasoning', 'encrypted_content': 'opaque'}]},
+])
+def test_reasoning_compatibility_keeps_strict_validation(extra):
+    engine = FakeEngine()
+    with TestClient(create_app(engine=engine)) as client:
+        assert client.post('/v1/responses', json=payload(**extra)).status_code == 400
+        assert not engine.prepared

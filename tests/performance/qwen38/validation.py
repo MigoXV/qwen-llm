@@ -57,9 +57,9 @@ async def check_code_isolated(text, tests):
         return False
 
 
-async def quality(url,model,output,*,math_samples=128,include_code=True):
+async def quality(url,model,output,*,math_samples=128,include_code=True,dataset=None):
     items=smoke_cases()
-    dataset=Path('/home/qwen-models/evaluation/gsm8k-test.jsonl')
+    dataset=Path(dataset or '/home/qwen-models/evaluation/gsm8k-test.jsonl')
     raw=dataset.read_bytes()
     for i,line in enumerate(raw.decode().splitlines()[:math_samples]):
         r=json.loads(line)
