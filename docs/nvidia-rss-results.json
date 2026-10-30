@@ -1,0 +1,1828 @@
+{
+  "completed": true,
+  "batches": 16,
+  "measurement": "smaps sum at completed batch boundaries; TPS is output tokens / makespan",
+  "patch": {
+    "vllm_version": "0.32.0",
+    "file": "distributed/device_communicators/shm_broadcast.py",
+    "before_sha256": "8b122fa8a8ae05a489c2a15069e67d17b626da5d9939524f088cda2ef3c1d75b",
+    "after_sha256": "d5e0ee481135db5abd614cdc6b7eb46f7235c7e6384aa337a065037a5791083e",
+    "patch": "shm-notify-conflate.patch"
+  },
+  "profiles": {
+    "original": {
+      "physical_gpu": "2",
+      "instance_id": "99378c7b0db34baab93804291f67e10e",
+      "worker_pid": 638619,
+      "config": {
+        "kv_cache_bytes": 19327352832,
+        "batch_tokens": 2048,
+        "graph_mode": "FULL_DECODE_ONLY",
+        "prefix_caching": false,
+        "speculative_tokens": 0,
+        "dtype": "bfloat16"
+      },
+      "runtime": {
+        "tensor_parallel_size": 1,
+        "packages": {
+          "torch": "2.13.0",
+          "vllm": "0.32.0",
+          "transformers": "5.17.0",
+          "compressed-tensors": "0.17.0"
+        },
+        "kv_cache_dtype": "fp8_e4m3",
+        "requested_attention_backend": "FLASHINFER"
+      },
+      "long": {
+        "prompt_sha256": "663187c68756af3fc5d656c2e9a928fd52ae9af1d52c19885a842edb6808b4d8",
+        "seconds": 224.61040456127375,
+        "ttft_seconds": 224.57189866434783,
+        "expected": "QZE7ADB279D7",
+        "retrieval_passed": true
+      },
+      "long_usage": {
+        "input_tokens": 253952,
+        "output_tokens": 10,
+        "total_tokens": 253962,
+        "input_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "formal_requests": 160,
+      "warmups": 16,
+      "all_full_output": true,
+      "all_isolated": true,
+      "instance_unchanged": true,
+      "rss_sample_first_utc": "2026-10-29T02:30:28.442088+00:00",
+      "rss_sample_last_utc": "2026-10-29T02:41:36.368028+00:00",
+      "inter_batch_gap_estimates_seconds": [
+        1.0981512814760208,
+        2.117740840651095,
+        1.1161824185401201,
+        2.009750441648066,
+        1.1197741096839309,
+        2.105309716425836,
+        1.1026929700747132,
+        2.1129900692030787,
+        1.0954416571184993,
+        2.1151389302685857,
+        1.1080201296135783,
+        1.0929595278576016,
+        1.1146451365202665,
+        2.1173010477796197,
+        1.1104854429140687
+      ],
+      "gap_estimate_timestamp_resolution_seconds": 1,
+      "memory": {
+        "worker": {
+          "pid": 638619,
+          "first": {
+            "Rss": 2576740352,
+            "Pss": 2140568576,
+            "Private_Dirty": 1931386880,
+            "Private_Clean": 61952000,
+            "Shared_Dirty": 2097152,
+            "Shared_Clean": 581304320
+          },
+          "last": {
+            "Rss": 2576801792,
+            "Pss": 2140574720,
+            "Private_Dirty": 1930108928,
+            "Private_Clean": 63291392,
+            "Shared_Dirty": 2097152,
+            "Shared_Clean": 581304320
+          },
+          "delta_bytes": {
+            "Rss": 61440,
+            "Pss": 6144,
+            "Private_Dirty": -1277952,
+            "Private_Clean": 1339392,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 0
+          },
+          "last_ten_delta_bytes": {
+            "Rss": 12288,
+            "Pss": -43008,
+            "Private_Dirty": -2084864,
+            "Private_Clean": 2097152,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 0
+          },
+          "rss_bytes_by_batch": [
+            2576740352,
+            2576773120,
+            2576781312,
+            2576781312,
+            2576781312,
+            2576789504,
+            2576789504,
+            2576797696,
+            2576797696,
+            2576797696,
+            2576797696,
+            2576797696,
+            2576797696,
+            2576801792,
+            2576801792,
+            2576801792
+          ],
+          "largest_mapping_changes": [
+            {
+              "start": "607c0b05f000",
+              "path": "[heap]",
+              "rss_delta_bytes": 45056
+            },
+            {
+              "start": "718e60000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 8192
+            },
+            {
+              "start": "718dec000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 4096
+            },
+            {
+              "start": "718cc5700000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 4096
+            },
+            {
+              "start": "607b8304c000",
+              "path": "/root/.local/share/uv/python/cpython-3.11.18-linux-x86_64-gnu/bin/python3.11",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "718eb78cd000",
+              "path": "/usr/lib/x86_64-linux-gnu/libcjson.so.1.7.18",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "7188b4000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "718eb5e8b000",
+              "path": "/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.1.0",
+              "rss_delta_bytes": 0
+            }
+          ]
+        },
+        "core": {
+          "pid": 638557,
+          "first": {
+            "Rss": 1299013632,
+            "Pss": 953827328,
+            "Private_Dirty": 894738432,
+            "Private_Clean": 151552,
+            "Shared_Dirty": 2097152,
+            "Shared_Clean": 402026496
+          },
+          "last": {
+            "Rss": 1299034112,
+            "Pss": 953794560,
+            "Private_Dirty": 894758912,
+            "Private_Clean": 151552,
+            "Shared_Dirty": 2097152,
+            "Shared_Clean": 402026496
+          },
+          "delta_bytes": {
+            "Rss": 20480,
+            "Pss": -32768,
+            "Private_Dirty": 20480,
+            "Private_Clean": 0,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 0
+          },
+          "last_ten_delta_bytes": {
+            "Rss": 4096,
+            "Pss": -49152,
+            "Private_Dirty": 4096,
+            "Private_Clean": 0,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 0
+          },
+          "rss_bytes_by_batch": [
+            1299013632,
+            1299021824,
+            1299021824,
+            1299025920,
+            1299030016,
+            1299030016,
+            1299030016,
+            1299034112,
+            1299034112,
+            1299034112,
+            1299034112,
+            1299034112,
+            1299034112,
+            1299034112,
+            1299034112,
+            1299034112
+          ],
+          "largest_mapping_changes": [
+            {
+              "start": "771fc0000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 12288
+            },
+            {
+              "start": "771fb8000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 8192
+            },
+            {
+              "start": "77204a01b000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "77204803d000",
+              "path": "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.8400.4",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "772060035000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "772046beb000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "7720839ef000",
+              "path": "/workspace/qwen-nvidia/runtime/virtualenvs/qwen-llm-Ay_xTav1-py3.11/lib/python3.11/site-packages/pyzmq.libs/libzmq-82f916e6.so.5.2.5",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "772045673000",
+              "path": "/usr/lib/x86_64-linux-gnu/libflite_cmulex.so.2.2",
+              "rss_delta_bytes": 0
+            }
+          ]
+        },
+        "api": {
+          "pid": 638444,
+          "first": {
+            "Rss": 2023768064,
+            "Pss": 1675789312,
+            "Private_Dirty": 1615699968,
+            "Private_Clean": 151552,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 407916544
+          },
+          "last": {
+            "Rss": 2024239104,
+            "Pss": 1676206080,
+            "Private_Dirty": 1616175104,
+            "Private_Clean": 147456,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 407916544
+          },
+          "delta_bytes": {
+            "Rss": 471040,
+            "Pss": 416768,
+            "Private_Dirty": 475136,
+            "Private_Clean": -4096,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 0
+          },
+          "last_ten_delta_bytes": {
+            "Rss": 147456,
+            "Pss": 93184,
+            "Private_Dirty": 151552,
+            "Private_Clean": -4096,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 0
+          },
+          "rss_bytes_by_batch": [
+            2023768064,
+            2024009728,
+            2024034304,
+            2024058880,
+            2024067072,
+            2024071168,
+            2024091648,
+            2024091648,
+            2024095744,
+            2024095744,
+            2024095744,
+            2024108032,
+            2024108032,
+            2024108032,
+            2024214528,
+            2024239104
+          ],
+          "largest_mapping_changes": [
+            {
+              "start": "7d4efc000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 110592
+            },
+            {
+              "start": "7d4f168fe000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 98304
+            },
+            {
+              "start": "7d4f00000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 98304
+            },
+            {
+              "start": "7d4f26e00000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 98304
+            },
+            {
+              "start": "7d4f140fa000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 24576
+            },
+            {
+              "start": "7d4f148fb000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 24576
+            },
+            {
+              "start": "7d4f2c000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 8192
+            },
+            {
+              "start": "7d5006605000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 4096
+            }
+          ]
+        }
+      },
+      "tps": {
+        "1": {
+          "median": 62.128686334723014,
+          "minimum": 61.553241813003815,
+          "maximum": 62.271090185143976,
+          "ttft_ms_median": 91.96129022166133,
+          "decode_tps_median": 62.723381419344236
+        },
+        "2": {
+          "median": 119.71711408108212,
+          "minimum": 118.8130820664005,
+          "maximum": 119.98207831928383,
+          "ttft_ms_median": 139.69044387340546,
+          "decode_tps_median": 60.76002191035484
+        },
+        "3": {
+          "median": 175.42045925596477,
+          "minimum": 169.73605594646003,
+          "maximum": 175.86710550117473,
+          "ttft_ms_median": 185.05493132397532,
+          "decode_tps_median": 59.62678602805172
+        },
+        "4": {
+          "median": 230.41624835628102,
+          "minimum": 227.80235261627524,
+          "maximum": 230.68814303917827,
+          "ttft_ms_median": 188.1780200637877,
+          "decode_tps_median": 58.691810357038975
+        }
+      },
+      "temperature_c_range": [
+        56.0,
+        69.0
+      ],
+      "sm_clock_mhz_range": [
+        1395.0,
+        1395.0
+      ],
+      "gpu_memory_mib_range": [
+        37279.0,
+        37281.0
+      ]
+    },
+    "fixed": {
+      "physical_gpu": "3",
+      "instance_id": "14510d0cc26b49e59fc7bc3bc0c47c48",
+      "worker_pid": 638614,
+      "config": {
+        "kv_cache_bytes": 19327352832,
+        "batch_tokens": 2048,
+        "graph_mode": "FULL_DECODE_ONLY",
+        "prefix_caching": false,
+        "speculative_tokens": 0,
+        "dtype": "bfloat16"
+      },
+      "runtime": {
+        "tensor_parallel_size": 1,
+        "packages": {
+          "torch": "2.13.0",
+          "vllm": "0.32.0",
+          "transformers": "5.17.0",
+          "compressed-tensors": "0.17.0"
+        },
+        "kv_cache_dtype": "fp8_e4m3",
+        "requested_attention_backend": "FLASHINFER"
+      },
+      "long": {
+        "prompt_sha256": "663187c68756af3fc5d656c2e9a928fd52ae9af1d52c19885a842edb6808b4d8",
+        "seconds": 218.4444401273504,
+        "ttft_seconds": 218.3921221299097,
+        "expected": "QZE7ADB279D7",
+        "retrieval_passed": true
+      },
+      "long_usage": {
+        "input_tokens": 253952,
+        "output_tokens": 10,
+        "total_tokens": 253962,
+        "input_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0
+        },
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "formal_requests": 160,
+      "warmups": 16,
+      "all_full_output": true,
+      "all_isolated": true,
+      "instance_unchanged": true,
+      "rss_sample_first_utc": "2026-10-29T02:30:28.844059+00:00",
+      "rss_sample_last_utc": "2026-10-29T02:41:36.776072+00:00",
+      "inter_batch_gap_estimates_seconds": [
+        1.1913382429629564,
+        2.214066268876195,
+        1.1949562337249517,
+        2.1963535947725177,
+        1.190843604505062,
+        2.1912329299375415,
+        1.1861544884741306,
+        2.2027047984302044,
+        1.1868839170783758,
+        2.1889883559197187,
+        1.1938127093017101,
+        1.180265586823225,
+        1.196680466644466,
+        2.2026842441409826,
+        1.1961327828466892
+      ],
+      "gap_estimate_timestamp_resolution_seconds": 1,
+      "memory": {
+        "worker": {
+          "pid": 638614,
+          "first": {
+            "Rss": 2576216064,
+            "Pss": 2140391424,
+            "Private_Dirty": 1928302592,
+            "Private_Clean": 65011712,
+            "Shared_Dirty": 2097152,
+            "Shared_Clean": 580804608
+          },
+          "last": {
+            "Rss": 2576281600,
+            "Pss": 2140406784,
+            "Private_Dirty": 1928933376,
+            "Private_Clean": 64446464,
+            "Shared_Dirty": 2097152,
+            "Shared_Clean": 580804608
+          },
+          "delta_bytes": {
+            "Rss": 65536,
+            "Pss": 15360,
+            "Private_Dirty": 630784,
+            "Private_Clean": -565248,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 0
+          },
+          "last_ten_delta_bytes": {
+            "Rss": 16384,
+            "Pss": -33792,
+            "Private_Dirty": 16384,
+            "Private_Clean": 0,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 0
+          },
+          "rss_bytes_by_batch": [
+            2576216064,
+            2576248832,
+            2576261120,
+            2576265216,
+            2576265216,
+            2576265216,
+            2576265216,
+            2576273408,
+            2576273408,
+            2576273408,
+            2576277504,
+            2576277504,
+            2576277504,
+            2576277504,
+            2576277504,
+            2576281600
+          ],
+          "largest_mapping_changes": [
+            {
+              "start": "5fb82871f000",
+              "path": "[heap]",
+              "rss_delta_bytes": 40960
+            },
+            {
+              "start": "75313c000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 16384
+            },
+            {
+              "start": "752fa1700000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 4096
+            },
+            {
+              "start": "7530c8000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 4096
+            },
+            {
+              "start": "753102dea000",
+              "path": "/dev/nvidiactl",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "753191879000",
+              "path": "/usr/lib/x86_64-linux-gnu/libunibreak.so.6.0.1",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "7531939ba000",
+              "path": "/usr/lib/x86_64-linux-gnu/libhogweed.so.6.10",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "753194130000",
+              "path": "/usr/lib/x86_64-linux-gnu/libpangocairo-1.0.so.0.5600.3",
+              "rss_delta_bytes": 0
+            }
+          ]
+        },
+        "core": {
+          "pid": 638546,
+          "first": {
+            "Rss": 1290682368,
+            "Pss": 944988160,
+            "Private_Dirty": 885747712,
+            "Private_Clean": 151552,
+            "Shared_Dirty": 2097152,
+            "Shared_Clean": 402685952
+          },
+          "last": {
+            "Rss": 1290706944,
+            "Pss": 944958464,
+            "Private_Dirty": 885772288,
+            "Private_Clean": 151552,
+            "Shared_Dirty": 2097152,
+            "Shared_Clean": 402685952
+          },
+          "delta_bytes": {
+            "Rss": 24576,
+            "Pss": -29696,
+            "Private_Dirty": 24576,
+            "Private_Clean": 0,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 0
+          },
+          "last_ten_delta_bytes": {
+            "Rss": 4096,
+            "Pss": -50176,
+            "Private_Dirty": 4096,
+            "Private_Clean": 0,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 0
+          },
+          "rss_bytes_by_batch": [
+            1290682368,
+            1290694656,
+            1290694656,
+            1290694656,
+            1290702848,
+            1290702848,
+            1290702848,
+            1290706944,
+            1290706944,
+            1290706944,
+            1290706944,
+            1290706944,
+            1290706944,
+            1290706944,
+            1290706944,
+            1290706944
+          ],
+          "largest_mapping_changes": [
+            {
+              "start": "7696a0000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 12288
+            },
+            {
+              "start": "769698000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 8192
+            },
+            {
+              "start": "7696f7c00000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 4096
+            },
+            {
+              "start": "769724ef8000",
+              "path": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.4.309",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "76974182e000",
+              "path": "/usr/lib/x86_64-linux-gnu/libva.so.2.2200.0",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "769752d81000",
+              "path": "/usr/lib/x86_64-linux-gnu/libXau.so.6.0.0",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "769729946000",
+              "path": "/usr/lib/x86_64-linux-gnu/libpocketsphinx.so.3.0.0",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "76973772e000",
+              "path": "/workspace/qwen-nvidia/runtime/virtualenvs/qwen-llm-Ay_xTav1-py3.11/lib/python3.11/site-packages/torchvision/_C.so",
+              "rss_delta_bytes": 0
+            }
+          ]
+        },
+        "api": {
+          "pid": 638445,
+          "first": {
+            "Rss": 2018091008,
+            "Pss": 1670215680,
+            "Private_Dirty": 1609932800,
+            "Private_Clean": 278528,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 407879680
+          },
+          "last": {
+            "Rss": 2018344960,
+            "Pss": 1670416384,
+            "Private_Dirty": 1610190848,
+            "Private_Clean": 274432,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 407879680
+          },
+          "delta_bytes": {
+            "Rss": 253952,
+            "Pss": 200704,
+            "Private_Dirty": 258048,
+            "Private_Clean": -4096,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 0
+          },
+          "last_ten_delta_bytes": {
+            "Rss": 12288,
+            "Pss": -40960,
+            "Private_Dirty": 16384,
+            "Private_Clean": -4096,
+            "Shared_Dirty": 0,
+            "Shared_Clean": 0
+          },
+          "rss_bytes_by_batch": [
+            2018091008,
+            2018267136,
+            2018308096,
+            2018320384,
+            2018324480,
+            2018328576,
+            2018332672,
+            2018332672,
+            2018332672,
+            2018336768,
+            2018336768,
+            2018340864,
+            2018340864,
+            2018340864,
+            2018344960,
+            2018344960
+          ],
+          "largest_mapping_changes": [
+            {
+              "start": "7df148000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 114688
+            },
+            {
+              "start": "7df178000000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 90112
+            },
+            {
+              "start": "7df14e7fe000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 24576
+            },
+            {
+              "start": "7df164ff9000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 12288
+            },
+            {
+              "start": "7df171400000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 8192
+            },
+            {
+              "start": "7df212533000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 4096
+            },
+            {
+              "start": "7df20d74a000",
+              "path": "[anonymous]",
+              "rss_delta_bytes": 0
+            },
+            {
+              "start": "7df2d5351000",
+              "path": "/workspace/qwen-nvidia/runtime/virtualenvs/qwen-llm-Ay_xTav1-py3.11/lib/python3.11/site-packages/torch/lib/libc10.so",
+              "rss_delta_bytes": 0
+            }
+          ]
+        }
+      },
+      "tps": {
+        "1": {
+          "median": 62.80836382065233,
+          "minimum": 62.39469007193087,
+          "maximum": 62.95402666854929,
+          "ttft_ms_median": 90.6582698225975,
+          "decode_tps_median": 63.40777451619077
+        },
+        "2": {
+          "median": 120.98526817019459,
+          "minimum": 120.29345351668319,
+          "maximum": 121.25700366674798,
+          "ttft_ms_median": 138.78111960366368,
+          "decode_tps_median": 61.37384496760121
+        },
+        "3": {
+          "median": 177.33743976392174,
+          "minimum": 172.08238258972835,
+          "maximum": 177.6690827076267,
+          "ttft_ms_median": 182.00474325567484,
+          "decode_tps_median": 60.27875072726154
+        },
+        "4": {
+          "median": 232.5788585714635,
+          "minimum": 232.20653866178404,
+          "maximum": 233.0998687988102,
+          "ttft_ms_median": 182.7716613188386,
+          "decode_tps_median": 59.302972054888414
+        }
+      },
+      "temperature_c_range": [
+        55.0,
+        66.0
+      ],
+      "sm_clock_mhz_range": [
+        1395.0,
+        1410.0
+      ],
+      "gpu_memory_mib_range": [
+        37279.0,
+        37283.0
+      ]
+    }
+  },
+  "matched_output_texts": 0,
+  "tps_change_percent": {
+    "1": 1.093983352983674,
+    "2": 1.0592922313960695,
+    "3": 1.0927918648073964,
+    "4": 0.9385667159368838
+  },
+  "cpu_zmq": {
+    "idle": {
+      "mode": "idle",
+      "before": {
+        "uordblks": 1873568,
+        "fordblks": 186720,
+        "arena": 2060288,
+        "rss_kib": 21856
+      },
+      "rows": [
+        {
+          "sent": 10004,
+          "uordblks": 1974784,
+          "fordblks": 138752,
+          "arena": 2113536,
+          "rss_kib": 22040
+        },
+        {
+          "sent": 20004,
+          "uordblks": 2058784,
+          "fordblks": 136672,
+          "arena": 2195456,
+          "rss_kib": 22120
+        },
+        {
+          "sent": 30005,
+          "uordblks": 2142112,
+          "fordblks": 135264,
+          "arena": 2277376,
+          "rss_kib": 22200
+        },
+        {
+          "sent": 40000,
+          "uordblks": 2224096,
+          "fordblks": 135200,
+          "arena": 2359296,
+          "rss_kib": 22280
+        },
+        {
+          "sent": 50000,
+          "uordblks": 2307424,
+          "fordblks": 137888,
+          "arena": 2445312,
+          "rss_kib": 22364
+        }
+      ],
+      "after": {
+        "uordblks": 2391472,
+        "fordblks": 135760,
+        "arena": 2527232,
+        "rss_kib": 22444
+      },
+      "after_events": {
+        "uordblks": 1897552,
+        "fordblks": 629680,
+        "arena": 2527232,
+        "rss_kib": 22444
+      },
+      "libzmq": "4.3.5",
+      "pyzmq": "27.2.0"
+    },
+    "events": {
+      "mode": "events",
+      "before": {
+        "uordblks": 1879616,
+        "fordblks": 303552,
+        "arena": 2183168,
+        "rss_kib": 21960
+      },
+      "rows": [
+        {
+          "sent": 10003,
+          "uordblks": 1903552,
+          "fordblks": 279616,
+          "arena": 2183168,
+          "rss_kib": 22064
+        },
+        {
+          "sent": 20003,
+          "uordblks": 1902880,
+          "fordblks": 280288,
+          "arena": 2183168,
+          "rss_kib": 22064
+        },
+        {
+          "sent": 30003,
+          "uordblks": 1902880,
+          "fordblks": 280288,
+          "arena": 2183168,
+          "rss_kib": 22064
+        },
+        {
+          "sent": 40004,
+          "uordblks": 1903552,
+          "fordblks": 279616,
+          "arena": 2183168,
+          "rss_kib": 22064
+        },
+        {
+          "sent": 50004,
+          "uordblks": 1902880,
+          "fordblks": 280288,
+          "arena": 2183168,
+          "rss_kib": 22064
+        }
+      ],
+      "after": {
+        "uordblks": 1902928,
+        "fordblks": 280240,
+        "arena": 2183168,
+        "rss_kib": 22064
+      },
+      "after_events": {
+        "uordblks": 1902928,
+        "fordblks": 280240,
+        "arena": 2183168,
+        "rss_kib": 22064
+      },
+      "libzmq": "4.3.5",
+      "pyzmq": "27.2.0"
+    }
+  },
+  "cpu_message_queue": {
+    "original": {
+      "points": [
+        {
+          "count": 0,
+          "uordblks": 159105840,
+          "fordblks": 253136,
+          "arena": 159358976,
+          "rss_kib": 738260
+        },
+        {
+          "count": 10000,
+          "uordblks": 159192528,
+          "fordblks": 195120,
+          "arena": 159387648,
+          "rss_kib": 738360
+        },
+        {
+          "count": 20000,
+          "uordblks": 159280560,
+          "fordblks": 197200,
+          "arena": 159477760,
+          "rss_kib": 738448
+        },
+        {
+          "count": 30000,
+          "uordblks": 159371280,
+          "fordblks": 196592,
+          "arena": 159567872,
+          "rss_kib": 738536
+        },
+        {
+          "count": 40000,
+          "uordblks": 159463344,
+          "fordblks": 194640,
+          "arena": 159657984,
+          "rss_kib": 738624
+        },
+        {
+          "count": 50000,
+          "uordblks": 159561456,
+          "fordblks": 194832,
+          "arena": 159756288,
+          "rss_kib": 738720
+        },
+        {
+          "count": 60000,
+          "uordblks": 159651504,
+          "fordblks": 194896,
+          "arena": 159846400,
+          "rss_kib": 738808
+        }
+      ],
+      "after_events": {
+        "count": 60000,
+        "uordblks": 159102480,
+        "fordblks": 743920,
+        "arena": 159846400,
+        "rss_kib": 738808
+      },
+      "record_read_file": "/workspace/opusi/qwen-llm/outputs/nvidia-rss-20261029/original/shm_broadcast.py",
+      "all_61024_ordered": true
+    },
+    "fixed": {
+      "points": [
+        {
+          "count": 0,
+          "uordblks": 159101088,
+          "fordblks": 257888,
+          "arena": 159358976,
+          "rss_kib": 738236
+        },
+        {
+          "count": 10000,
+          "uordblks": 159100416,
+          "fordblks": 258560,
+          "arena": 159358976,
+          "rss_kib": 738248
+        },
+        {
+          "count": 20000,
+          "uordblks": 159100416,
+          "fordblks": 258560,
+          "arena": 159358976,
+          "rss_kib": 738248
+        },
+        {
+          "count": 30000,
+          "uordblks": 159100416,
+          "fordblks": 258560,
+          "arena": 159358976,
+          "rss_kib": 738248
+        },
+        {
+          "count": 40000,
+          "uordblks": 159100416,
+          "fordblks": 258560,
+          "arena": 159358976,
+          "rss_kib": 738248
+        },
+        {
+          "count": 50000,
+          "uordblks": 159100416,
+          "fordblks": 258560,
+          "arena": 159358976,
+          "rss_kib": 738248
+        },
+        {
+          "count": 60000,
+          "uordblks": 159100416,
+          "fordblks": 258560,
+          "arena": 159358976,
+          "rss_kib": 738252
+        }
+      ],
+      "after_events": {
+        "count": 60000,
+        "uordblks": 159100416,
+        "fordblks": 258560,
+        "arena": 159358976,
+        "rss_kib": 738252
+      },
+      "record_read_file": "/workspace/qwen-nvidia/runtime/virtualenvs/qwen-llm-Ay_xTav1-py3.11/lib/python3.11/site-packages/vllm/distributed/device_communicators/shm_broadcast.py",
+      "all_61024_ordered": true
+    }
+  },
+  "prior_diagnostics": {
+    "bf16_kv_after_long_prefill": {
+      "batches": 16,
+      "worker_rss_delta_kib": 1584,
+      "core_rss_delta_kib": 744,
+      "directory": "outputs/nvidia-rss-bf16-history-20261029"
+    },
+    "fp8_native_mapping": {
+      "worker_pid": 633755,
+      "worker_start": "749014000000",
+      "worker_rss_kib": [
+        140,
+        456
+      ],
+      "core_pid": 633720,
+      "core_start": "7bdf70000000",
+      "core_rss_kib": [
+        144,
+        460
+      ],
+      "directory": "outputs/nvidia-rss-trace-20261029"
+    }
+  },
+  "regression_tests": {
+    "patched": {
+      "passed": 3,
+      "log": "outputs/nvidia-rss-20261029/notify-tests-final.log"
+    },
+    "original_negative_control": {
+      "expected_failure": true,
+      "native_growth_bytes": 540960,
+      "maximum_allowed_bytes": 196608,
+      "test": "test_shm_notification_memory_bounded",
+      "log": "outputs/nvidia-rss-20261029/notify-test-original-expected-failure.log"
+    },
+    "cuda_visible_devices": "",
+    "patch_idempotent": true
+  },
+  "evidence": [
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/cleanup-note.json",
+      "sha256": "b448d4ad02c8c11a024788dccb0132cf08e4d7052d27910532a93edee4093be4"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/complete.json",
+      "sha256": "a0bb539f2df88980e34564d87b754cad4c7e98864779fb102005e4d633a75d19"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-00-memory.json",
+      "sha256": "c82587a06da6c40932c915b60107804cc60ed7dc030340639203ee3d85f3ae76"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-01-memory.json",
+      "sha256": "b25ef71484ba31b98001305f2816bba0f49b386a6d4868458f74dd4cdba00c67"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-02-memory.json",
+      "sha256": "4d56af2c40cd5f9a197d4ebcd8dd4abe4be23c184246737e79b601d8142f0a5e"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-03-memory.json",
+      "sha256": "b41a3b67afb923c547b9494a422876aa48eefe6bef4cc8050cdc4a87521c98d4"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-04-memory.json",
+      "sha256": "8f2deb4d7905ed9a397c270291425bdb3afb2e56f43ba02a3349716d58e74b56"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-05-memory.json",
+      "sha256": "bf31a6cf837a928cfd9c395061285f1d1f7e392df22bcf9fecec259d5940372a"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-06-memory.json",
+      "sha256": "9ec1cf823be184d3a1242a3ba1a123fa40509409e985aa5028d61859212e150e"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-07-memory.json",
+      "sha256": "f752ace0045f3bc5c78861d71b86ed4db817d9453c0f5ef5f7bd0e282f0cc2f2"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-08-memory.json",
+      "sha256": "cc78877f15ccae5420eda8ad6651be1c0c76cd20c16450e1b910c257d06f7f8e"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-09-memory.json",
+      "sha256": "52957f7a18b817f8554d64e9b18a591e278ffee6ef73e94a4470c653a4915e8c"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-10-memory.json",
+      "sha256": "bea3acf415f178b68e83d66cad18fd46e4b7be7a3b6f11d222ac87ab714915a1"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-11-memory.json",
+      "sha256": "6c41e68cab2e76a1ae5ab4654aaacbef91e71f04d2ac285732de22a342fb3c68"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-12-memory.json",
+      "sha256": "c75f50a48e52900ace14f5b4cd500b9f4c0cfbb9b2fe0b010fc2a15bebc6f59d"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-13-memory.json",
+      "sha256": "08b41b6340e5afaf522ba4fed67bc0d9a1e3019c5511a37e7921be6f9e4c2c8e"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-14-memory.json",
+      "sha256": "7d954f80dd824b87aecae634d88b5be1e6ea28e96f522887da188ce77316a80a"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-15-memory.json",
+      "sha256": "fc6144fe39bc88b116c3df3b2dcb7d21244b187655b1920937c50c5ecce56862"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-after-long-memory.json",
+      "sha256": "582af5d047f1ae487a0b228f0157ef347f107c97850445041f04e7f4c106c208"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-00.json",
+      "sha256": "8cb4cdb87450fbb8fbebdf23689fb6094698b949664b882eb74fac10823ecdad"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-01.json",
+      "sha256": "1baa3578cb8cba0fb18ea41aecd488e2e33d108300f85c91b6e048ba1ddbcb9e"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-02.json",
+      "sha256": "ff71ec42e67bca98ae44f08ce4f31e8d4ee228606dd62ea1fb6f9c5944d2ff69"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-03.json",
+      "sha256": "09be8b2361931134947a36342255f74f4776a49dafd96b1b7e13f51e2eb2aaf7"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-04.json",
+      "sha256": "a5efafb8555d9b6c7c9cf63a8ac03dcfaa5743f22621d3cb309134b0606921c3"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-05.json",
+      "sha256": "6190a1c316d418033e34685da9ae04729440286c95cd2190e5e1a236bd21ae39"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-06.json",
+      "sha256": "437d9171376ed0c178bd54904e521ec74476e18ae839105d56597cb28ea43b8f"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-07.json",
+      "sha256": "2dfd2f1933250b9b29bd4768abeb97083ef186f6a04189e149482fc7c024405c"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-08.json",
+      "sha256": "943aa7e66b3c9fa0f6ea4d541e22ee653434bd4cceea192195eb3dab6498b510"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-09.json",
+      "sha256": "16ff2229b00b76e62621d9b1fb8383ce0ec944432f68648101a099a709153752"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-10.json",
+      "sha256": "31dcf272edcc89460ee4e1ca076afa322a850380515a49741c4b65108abe5a7c"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-11.json",
+      "sha256": "ef2f6f4aa67775cdf35d0e6f82c4e62b502526d8465f6b710a3ac2fe5676dfda"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-12.json",
+      "sha256": "2f3f733427ce19040ec4ce64f34cf25db5ef8ad83bd469dc43404aff5ecbb720"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-13.json",
+      "sha256": "82264a05e8b27d3d84d330087ee251b54ad5726fb63d2dc27b0345f3f5cb7bd3"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-14.json",
+      "sha256": "aeebb46d3d79c44bbd4a3b11f247542ed2e499d53cdc18ad2a23ecde8c7556f8"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-batch-15.json",
+      "sha256": "0de5765b39ecd16d32010e44f799eb001cbdf4aff6228bee57513a9f90ffd6d5"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-long.json",
+      "sha256": "b55c76215bfc5a242a5d63791b70e26c9b23202f08135f2eb1f7abb9332528a7"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-process.json",
+      "sha256": "f8113da341f23db44523be7cdf8e8b08bf1cf465c3d4cb3d123bd55555cc81fc"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/fixed-ready.json",
+      "sha256": "2ee48c9cdab0bc7e73766a0cc43cea602028a0b005bb156a745194e9ac6df68b"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-00-memory.json",
+      "sha256": "6f9a0db67f63e1afa9c1870a81edfa0f9a52f6a05006844e25bbfd85f53a3f18"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-01-memory.json",
+      "sha256": "627d0a38e453ab539155b5d0ac3989c26d2920bd58a1f52596b3902885e9d21b"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-02-memory.json",
+      "sha256": "1cd5dbef428f27cf7999c8276ac455f960566b0774d5328220e7bf9662e01afc"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-03-memory.json",
+      "sha256": "bff303907ce051cdcd6c1d8cabdef6a43f22bcfb7fbf1125a143b9a979c182d5"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-04-memory.json",
+      "sha256": "c3006a58633edb8f3430fcab72e78e395014e10d2d4b6a4e62d02d2c0b245de0"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-05-memory.json",
+      "sha256": "5e1e7abfabf485722966db67162a156f05ab30c896bb212e052df13aeb5b78fc"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-06-memory.json",
+      "sha256": "ccbaaad4130b7b7c57d083e3983916932d055e198c855fecc368b8c4786f1b2f"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-07-memory.json",
+      "sha256": "f6a25ad0f5e99aca37f51972fea8470f44a8a4661438c4fafb95ded8939e0626"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-08-memory.json",
+      "sha256": "21af02a61195498289dc6f2e6f632ea2509f62eca20b3f6c1aded8c66265d1fc"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-09-memory.json",
+      "sha256": "1b7a094471b038e06c09092b8a7c74ab1c13d0557d2511b9eaaac58286eda881"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-10-memory.json",
+      "sha256": "4c1ccf6234a4bc4b77b8d64afe039e0e7050f9acfc4c1a778b964d7f88bd7ad9"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-11-memory.json",
+      "sha256": "8de4d22cc883138b96e04d78a35c4e4df2de2d95d5463e20781524aeba045c2c"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-12-memory.json",
+      "sha256": "836685414badb5634d28b1918d46c9fa6fbb5c536ab6e944a73b50765309fae3"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-13-memory.json",
+      "sha256": "558e393c46f8ccaf326d4b1a332f197c75db60848960ea790cccbc901de19ae9"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-14-memory.json",
+      "sha256": "b528e46e2adadd7a8bf851219350bb9ce99073c0fc809108f7d0a3d345b1b43e"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-15-memory.json",
+      "sha256": "1da874d774fba70fde1de24d26fac3212ba182f2e03825a283d1a62a17dc9f2d"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-after-long-memory.json",
+      "sha256": "1a3bd410b3eac7f10ba8b287e7abaec5e327241f56e3d779d84f536fc4bc7f1f"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-00.json",
+      "sha256": "88a1a0c9a96c14e0784f6de09af869303a4f55d9eae0523016a254cebf26bc16"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-01.json",
+      "sha256": "8d625425ea28031b15015928934fcc75514a690180c5342fed2364d6e156a1a5"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-02.json",
+      "sha256": "acb6b20612ddf697e218e90fb9b774bcca9e06768fb56d0a73b66022db647ca6"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-03.json",
+      "sha256": "6116ab64a7c7d8e53b5cf3770419d07c0403fac7b02ad7d714bde8cf778fab46"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-04.json",
+      "sha256": "6959589e460e468610e86bac61c1064eb501ae89cab719dcf0e9efdf710c6b9b"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-05.json",
+      "sha256": "1422c5557536be63d36ff7906bd6040fa37b13da7083a88f6f76b1ada36523cd"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-06.json",
+      "sha256": "03e226323d05960538e850ac864287bafea0a3dbb28c8d459ca925314535deaf"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-07.json",
+      "sha256": "f3b5f1bb8a662d93372b35d652d8f8daa0c3a0ec25fda5099e64d8e41b9310f5"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-08.json",
+      "sha256": "b8b801465eeb15e2f4d7008446c1094d01e2be22e588ad45ff8e5d7547c192d8"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-09.json",
+      "sha256": "9edd951c0cd70ec674a1c8e387485e95fda10434c7c0ccf83847b1e8238b8882"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-10.json",
+      "sha256": "1a85b096e15ab78e07caab08ecd03079bf864276028bae50bd43c77b74af2e84"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-11.json",
+      "sha256": "8e820fc3c11a51d48a1f7bfac8c1a15e56dc69e75f88115951904f2d592de3c6"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-12.json",
+      "sha256": "36984cf81787c57180276c9f210ad1287c954aaa094c90fda64070bd14db9991"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-13.json",
+      "sha256": "70cbbcc0f145c155b38d3c7610822e04f3c9b21ce880b2b8fc7e7e882db3ec60"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-14.json",
+      "sha256": "4b327b0784d894e6a6bdb30d434c3cc7f1a895152b5ed533e5b019e3ec6dcf3f"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-batch-15.json",
+      "sha256": "3842ae8d7289076dd82518231390fb6a16b76ebb0eef102f9fce12ef71b38a25"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-long.json",
+      "sha256": "1da9336324aaae7e3bab0c49664a9d7efc96684ff9a11d8f1b68734c9cfc1d42"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-process.json",
+      "sha256": "02b57b5334a05fcb69d75291a791615088d77c8846ed06a4dff4c7fe6a4318fe"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/original-ready.json",
+      "sha256": "2dd1e3dc669b4f3c6f64d6c5029ba65d6339b79cadace79a15de91af7c4411ca"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/progress.json",
+      "sha256": "bf3056418021ba5ee45ba8a22d512fec79e08d35d1a151f763df2a6ce2cd960d"
+    },
+    {
+      "path": "outputs/nvidia-rss-ab-20261029/state.json",
+      "sha256": "9ffe08577b528e914a937ab4f10ea8c557d0e039dd16ecb36fe9ffc60d99b59e"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/ab.py",
+      "sha256": "e3eb45f304c09a246bde3de48e72683689292375f24c8c1f6bb7b7aadce7f018"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/audit_ab.py",
+      "sha256": "52b0565c78f862d487eb1df9a2aed1ea9be75f57cbb48e5255083938eba42723"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/unpatched/sitecustomize.py",
+      "sha256": "d72bd2e99ef75bf1ec3978e32309c85ab550a4cb886ef99468e0274b93e70133"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/original/shm_broadcast.py",
+      "sha256": "8b122fa8a8ae05a489c2a15069e67d17b626da5d9939524f088cda2ef3c1d75b"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/zmq_repro.py",
+      "sha256": "252513fa6fde230b308ad924e40514e4faa92189dd69ae01641aa7bc7f4f9b76"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/zmq-idle.json",
+      "sha256": "d305c4258b529845dd0108ba0dc8b0d55c26345adbd0609e37e39506b407f5c1"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/zmq-events.json",
+      "sha256": "95a271478b9b7524e500b36b50dfac1e335a30b1988a31d29e84465db1f908f8"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/shm_repro.py",
+      "sha256": "5d751f48225d8eb253387f82a87c9835c478db23e178e647c4675522640bd332"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/shm-original.json",
+      "sha256": "e34f68b0d39b3d2b7245be7cddb2d20e8151d018d5a1c39a6cb60cf42ddc1bcf"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/shm-fixed.json",
+      "sha256": "19aefc658116a32b1156c4c9b1c9b1d71bc9f9e6805032eb747301ba132b6c9d"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/notify-tests.log",
+      "sha256": "6489e68fd2724c5221081fe94c976fc1ca28e9462cd84fe3d0bd71b18885a26b"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/notify-tests-final.log",
+      "sha256": "5032e85f4eea68de5add5464ec4fc57ecb56125d3a91f6e78112f62505f119be"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/notify-test-original-expected-failure.log",
+      "sha256": "924a9fb2fba2ccf50f241adb56f2d47b6253457e7ddea1179d4c7290f3b2975d"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/patch-idempotent.log",
+      "sha256": "a39b5556604e354abf6cc728d4e3d8356ce73a8db94afeb631cd09fb1a929221"
+    },
+    {
+      "path": "outputs/nvidia-rss-bf16-history-20261029/ready.json",
+      "sha256": "2181555384445645c54857fb63a8eeafc52caa9696af3c765d00c5e32bd1aaf6"
+    },
+    {
+      "path": "outputs/nvidia-rss-bf16-history-20261029/after-00-memory.json",
+      "sha256": "1047d55780293fc8bb78ed0c63df52a555ca6bfdf938a0ef149b84c88210b694"
+    },
+    {
+      "path": "outputs/nvidia-rss-bf16-history-20261029/after-15-memory.json",
+      "sha256": "bc9e7a5751d0257befcdb7ffa791dd2a91cbe51dc9180dbe08b04259fb48e3ed"
+    },
+    {
+      "path": "outputs/nvidia-rss-bf16-history-20261029/long-response.json",
+      "sha256": "90f8ab7bdd70763582ec046e1f43f39c37e7081bd6343a0b80d53efb9c0a0bb2"
+    },
+    {
+      "path": "outputs/nvidia-rss-trace-20261029/ready.json",
+      "sha256": "f4f517f98752eff78facd561f5e4a53ffda9a81a1a0164a5950f40f9f5178b2f"
+    },
+    {
+      "path": "outputs/nvidia-rss-trace-20261029/untraced-0-memory.json",
+      "sha256": "757649481acde119ff3d5d00277393c533a68a131aa41c047485cae06da07bee"
+    },
+    {
+      "path": "outputs/nvidia-rss-trace-20261029/untraced-3-memory.json",
+      "sha256": "bd23ce00f6314f63c8a94262d80865d8c922bafafb98375c5bbba79af1760545"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/audit_continuous.py",
+      "sha256": "467de31ae973b3dbff29e309769a691fb4c8ba39c81df1a46d924542a47ee99d"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/continuous.py",
+      "sha256": "d99a4f877e3e406f3b504db7a4c65e3372d280991ecc3a82ecfebbfaf433e797"
+    },
+    {
+      "path": "outputs/nvidia-rss-20261029/native/sitecustomize.py",
+      "sha256": "ec876460fb3c7f408c7cfd466bca0fc0d990787558f722d7cf77f73b147e60e9"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/audit.json",
+      "sha256": "4936f31a2994702235f499512d4497641bcf49299d3a367b3c34dc3fc7055f86"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/complete.json",
+      "sha256": "e630459656c70f038c246b5ce3d214c44f456e4aedeac97d07d9b7ff98314bc4"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/fixed-after-inventory.json",
+      "sha256": "b09d63566388b7fcfa26f48f8dcbc3d471d5633d70e0eff11dc83925f3d14c01"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/fixed-after-memory.json",
+      "sha256": "2e8cf0e5f5d9d5f204ef632d95fd50380ddfd8fb5356447defc6e424516df6cf"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/fixed-before-inventory.json",
+      "sha256": "0d95b640907936d799e05fb8c619bc1db4c052bd8e4f593aa5673a2ca7229601"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/fixed-before-memory.json",
+      "sha256": "9344a230854316874adbc0ccccfce38874053a1b2d1b5ddb9cd2bae90f50e6e4"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/fixed-load-start.json",
+      "sha256": "c31a3acf87061ee0d3fe5aea84113319d2e43f9747fd1de1b0a763c12c4206f9"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/fixed-process.json",
+      "sha256": "d26b6710091743cdf1b1c751751a354b68abe4e02e59bfc3aec844085cb8094f"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/fixed-ready.json",
+      "sha256": "0c4cb6b702040f39ec1c377406768546f0a5ee1d5e3d12335944d963cadcd4f6"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/fixed-requests.json",
+      "sha256": "c184193d916b8fe0507937ba7ccb54197b0bd7ed10335bdaeb824f7e2439d8a4"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/native/642982.jsonl",
+      "sha256": "5d1a1786cc02aec8f7db07dbfc58441a0f32497e2806188e9a055f55a5360fc9"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/native/642983.jsonl",
+      "sha256": "cffe8837071333278df381b4c8acd444ed050d36f42d0eabbbc98141c32f43f8"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/native/643110.jsonl",
+      "sha256": "ce9d1d996e40c4fafd3251f5b0abda7a5f43e63a3e1355926df364297736b332"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/native/643117.jsonl",
+      "sha256": "6229d46c93e5c9d5b0cab936b3d6e26c316b0c4432bee364ae5719bea0390a73"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/native/643178.jsonl",
+      "sha256": "c83d3423dfa634f46d8aef22ed696a79aef2bc2aa8c3b1421c3541471940b8e2"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/native/643183.jsonl",
+      "sha256": "72d8636a4b5999baef005160d6548b9281dd3fccaaf9a496c6935fc533166e2a"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/original-after-inventory.json",
+      "sha256": "773317b1fce677862c8cf66aeecdc714b7fd1a54988e67cddd90685d793dc38a"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/original-after-memory.json",
+      "sha256": "2e3a4b99b4693c327839821dc2c2280fa6e1b45162f5db741fff894b0d31dad4"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/original-before-inventory.json",
+      "sha256": "9fb39ee9eca3a515721170d1b48f71a601c070b8d21fb5f88186aff2eb2e7dd3"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/original-before-memory.json",
+      "sha256": "4d8ad0cd6815bb1fb402b9bf6a04c65dc1d1aaad1624341f9d6cbffeab0af931"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/original-load-start.json",
+      "sha256": "89fef63865d239d4145b539c70b10abffd32dd41dfe87910ed827fb9c5fab434"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/original-process.json",
+      "sha256": "c86d4ac718e4f5c1896031a57bb0930f0cfd5473c9853b8e81e760c88f8c5309"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/original-ready.json",
+      "sha256": "fae56fd84b22dfa422e91d0179122510c9621b7c6d3029930138c85f38db2347"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/original-requests.json",
+      "sha256": "2161ee207a1c6b6087d0e1c33ee9fc0f73d3014f96d6af56302613e137576cdc"
+    },
+    {
+      "path": "outputs/nvidia-rss-continuous-20261029/state.json",
+      "sha256": "5d8d72bff253f3e135b6271749d2a0526d516f77470663ce101adefec4760f10"
+    }
+  ],
+  "continuous_gpu": {
+    "complete": true,
+    "profiles": {
+      "original": {
+        "physical_gpu": "2",
+        "memory": {
+          "worker": {
+            "pid": 643183,
+            "record_read_file": "/workspace/opusi/qwen-llm/outputs/nvidia-rss-20261029/original/shm_broadcast.py",
+            "samples": 71,
+            "first_time": 1793241894.8342113,
+            "last_time": 1793242244.942598,
+            "seconds": 350.1083867549896,
+            "malloc_in_use_bytes": {
+              "first": 1333051088,
+              "last": 1334130800,
+              "delta": 1079712,
+              "minimum": 1333051088,
+              "maximum": 1334130800,
+              "slope_per_second": 3298.278176555457
+            },
+            "rss_kib": {
+              "first": 2498752,
+              "last": 2500092,
+              "delta": 1340,
+              "minimum": 2498752,
+              "maximum": 2500092,
+              "slope_per_second": 4.236733834465144
+            },
+            "malloc_free_bytes": {
+              "first": 58188080,
+              "last": 58263440,
+              "delta": 75360,
+              "minimum": 58164000,
+              "maximum": 58295824,
+              "slope_per_second": 418.0398298115006
+            }
+          },
+          "core": {
+            "pid": 643117,
+            "record_read_file": "/workspace/opusi/qwen-llm/outputs/nvidia-rss-20261029/original/shm_broadcast.py",
+            "samples": 71,
+            "first_time": 1793241892.9452353,
+            "last_time": 1793242242.9954627,
+            "seconds": 350.05022740364075,
+            "malloc_in_use_bytes": {
+              "first": 295705856,
+              "last": 296626816,
+              "delta": 920960,
+              "minimum": 295631552,
+              "maximum": 296626816,
+              "slope_per_second": 2700.5499696444363
+            },
+            "rss_kib": {
+              "first": 1251716,
+              "last": 1252584,
+              "delta": 868,
+              "minimum": 1251716,
+              "maximum": 1252584,
+              "slope_per_second": 2.4377913404619878
+            },
+            "malloc_free_bytes": {
+              "first": 55628544,
+              "last": 55559552,
+              "delta": -68992,
+              "minimum": 55521408,
+              "maximum": 55727424,
+              "slope_per_second": -258.49939287166126
+            }
+          },
+          "api": {
+            "pid": 642982,
+            "record_read_file": "/workspace/opusi/qwen-llm/outputs/nvidia-rss-20261029/original/shm_broadcast.py",
+            "samples": 71,
+            "first_time": 1793241892.3868396,
+            "last_time": 1793242243.6149635,
+            "seconds": 351.22812390327454,
+            "malloc_in_use_bytes": {
+              "first": 545402512,
+              "last": 545557472,
+              "delta": 154960,
+              "minimum": 545346256,
+              "maximum": 545598656,
+              "slope_per_second": 431.42070362344026
+            },
+            "rss_kib": {
+              "first": 1880876,
+              "last": 1881048,
+              "delta": 172,
+              "minimum": 1880876,
+              "maximum": 1881048,
+              "slope_per_second": 0.27059882006678054
+            },
+            "malloc_free_bytes": {
+              "first": 209117552,
+              "last": 208962592,
+              "delta": -154960,
+              "minimum": 208921408,
+              "maximum": 209173808,
+              "slope_per_second": -431.42070362344043
+            }
+          }
+        },
+        "requests": 48,
+        "output_tokens": 98304,
+        "all_full_output": true,
+        "all_isolated": true,
+        "seconds": 424.3646008968353,
+        "aggregate_tps": 231.64985908873695,
+        "median_round_tps": 231.9413175011488,
+        "max_inter_round_gap_seconds": 0.00015735626220703125
+      },
+      "fixed": {
+        "physical_gpu": "3",
+        "memory": {
+          "worker": {
+            "pid": 643178,
+            "record_read_file": "/workspace/qwen-nvidia/runtime/virtualenvs/qwen-llm-Ay_xTav1-py3.11/lib/python3.11/site-packages/vllm/distributed/device_communicators/shm_broadcast.py",
+            "samples": 69,
+            "first_time": 1793241894.6705956,
+            "last_time": 1793242234.7942967,
+            "seconds": 340.12370109558105,
+            "malloc_in_use_bytes": {
+              "first": 1332087872,
+              "last": 1332103088,
+              "delta": 15216,
+              "minimum": 1332087872,
+              "maximum": 1332118784,
+              "slope_per_second": 25.270674151825663
+            },
+            "rss_kib": {
+              "first": 2498520,
+              "last": 2498692,
+              "delta": 172,
+              "minimum": 2498520,
+              "maximum": 2498692,
+              "slope_per_second": 0.4760593014359144
+            },
+            "malloc_free_bytes": {
+              "first": 59163584,
+              "last": 59148368,
+              "delta": -15216,
+              "minimum": 59132672,
+              "maximum": 59163584,
+              "slope_per_second": -25.270674151825663
+            }
+          },
+          "core": {
+            "pid": 643110,
+            "record_read_file": "/workspace/qwen-nvidia/runtime/virtualenvs/qwen-llm-Ay_xTav1-py3.11/lib/python3.11/site-packages/vllm/distributed/device_communicators/shm_broadcast.py",
+            "samples": 70,
+            "first_time": 1793241892.9339817,
+            "last_time": 1793242238.0054376,
+            "seconds": 345.07145595550537,
+            "malloc_in_use_bytes": {
+              "first": 295563536,
+              "last": 295596640,
+              "delta": 33104,
+              "minimum": 295463472,
+              "maximum": 295627360,
+              "slope_per_second": 115.28033247189633
+            },
+            "rss_kib": {
+              "first": 1251560,
+              "last": 1251592,
+              "delta": 32,
+              "minimum": 1251560,
+              "maximum": 1251592,
+              "slope_per_second": 0.0751753784118587
+            },
+            "malloc_free_bytes": {
+              "first": 55553776,
+              "last": 55520672,
+              "delta": -33104,
+              "minimum": 55489952,
+              "maximum": 55653840,
+              "slope_per_second": -115.28033247189633
+            }
+          },
+          "api": {
+            "pid": 642983,
+            "record_read_file": "/workspace/qwen-nvidia/runtime/virtualenvs/qwen-llm-Ay_xTav1-py3.11/lib/python3.11/site-packages/vllm/distributed/device_communicators/shm_broadcast.py",
+            "samples": 70,
+            "first_time": 1793241892.3664007,
+            "last_time": 1793242238.6779723,
+            "seconds": 346.311571598053,
+            "malloc_in_use_bytes": {
+              "first": 545453376,
+              "last": 545561632,
+              "delta": 108256,
+              "minimum": 545383072,
+              "maximum": 545607952,
+              "slope_per_second": 317.9552454420496
+            },
+            "rss_kib": {
+              "first": 1886128,
+              "last": 1886188,
+              "delta": 60,
+              "minimum": 1886128,
+              "maximum": 1886188,
+              "slope_per_second": 0.13299350953623135
+            },
+            "malloc_free_bytes": {
+              "first": 215096000,
+              "last": 214987744,
+              "delta": -108256,
+              "minimum": 214941424,
+              "maximum": 215166304,
+              "slope_per_second": -317.9552454420496
+            }
+          }
+        },
+        "requests": 48,
+        "output_tokens": 98304,
+        "all_full_output": true,
+        "all_isolated": true,
+        "seconds": 418.8945748806,
+        "aggregate_tps": 234.67479861256302,
+        "median_round_tps": 234.71970796697713,
+        "max_inter_round_gap_seconds": 0.0001785755157470703
+      }
+    },
+    "method": "4 concurrent requests, 2048 output tokens, 12 back-to-back rounds; native allocator sampled every 5 seconds in an identical diagnostic thread on both variants; no GC/trim or socket access from observer",
+    "analysis_window": "skip first 60 seconds of load; stop 10 seconds before last response to exclude idle notification cleanup"
+  }
+}

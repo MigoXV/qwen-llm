@@ -1,0 +1,6 @@
+vllm==0.32.0
+transformers==5.17.0
+pytest>=8,<9
+openai==3.31.0
+fastapi>=0.133,<0.137
+typer>=0.15.1,<1

@@ -1,0 +1,25 @@
+--- a/distributed/device_communicators/shm_broadcast.py
++++ b/distributed/device_communicators/shm_broadcast.py
+@@ -145,6 +145,7 @@
+ 
+             # Time to keep busy-looping on the shm buffer before going idle
+             self.busy_loop_s = busy_loop_s
++            self._reads_since_notify_check = 0
+ 
+             # Readers subscribe to write notifications
+             self.local_notify_socket: zmq.Socket = context.socket(SUB)
+@@ -184,6 +185,14 @@
+ 
+     def record_read(self):
+         self.last_read = time.monotonic()
++        # CONFLATE only reclaims queued notifications when the reader touches
++        # its socket. Busy SHM readers otherwise accumulate native ZMQ memory.
++        # Query from the owning reader thread; do not consume cancellation or
++        # change the authoritative SHM written flags / idle wakeup protocol.
++        self._reads_since_notify_check += 1
++        if self._reads_since_notify_check >= 256:
++            self.local_notify_socket.getsockopt(zmq.EVENTS)
++            self._reads_since_notify_check = 0
+ 
+     def cancel(self):
+         # Sends cancellation ping that will cause the reader to wake up.

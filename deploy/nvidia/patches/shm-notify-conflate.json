@@ -1,0 +1,7 @@
+{
+  "vllm_version": "0.32.0",
+  "file": "distributed/device_communicators/shm_broadcast.py",
+  "before_sha256": "8b122fa8a8ae05a489c2a15069e67d17b626da5d9939524f088cda2ef3c1d75b",
+  "after_sha256": "d5e0ee481135db5abd614cdc6b7eb46f7235c7e6384aa337a065037a5791083e",
+  "patch": "shm-notify-conflate.patch"
+}

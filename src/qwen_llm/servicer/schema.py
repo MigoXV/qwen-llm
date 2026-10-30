@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator, model_validator
@@ -9,6 +9,8 @@ from qwen_llm.config import ReasoningEffort
 
 class Reasoning(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    summary: Literal["auto", "concise", "detailed"] | None = Field(
+        default=None, description="兼容选项；本地服务不生成额外摘要，返回明文 reasoning_text")
     effort: ReasoningEffort = Field(default=ReasoningEffort.NONE, description="原生档位；high 为 xhigh 的兼容别名")
 
     @field_validator("effort", mode="before",
@@ -65,13 +67,20 @@ class ResponseRequest(BaseModel):
     stream: bool = False
     temperature: float = Field(default=0.6, ge=0, le=2)
     top_p: float = Field(default=0.95, gt=0, le=1)
-    max_output_tokens: int = Field(default=8192, gt=0, le=8192)
+    # 上限由运行实例配置校验，不能在共享协议中固定为 Ascend 的 8K。
+    max_output_tokens: int = Field(default=8192, gt=0)
     reasoning: Reasoning = Field(default_factory=Reasoning)
+    include: list[Literal["reasoning.encrypted_content"]] | None = Field(
+        default=None, description="兼容选项；本地服务不返回加密推理内容")
     store: Literal[False] = False
     seed: int | None = None
     chat_template_kwargs: ChatTemplateKwargs | None = None
     enable_thinking: StrictBool | None = None
     text: TextOptions = Field(default_factory=TextOptions)
+    tools: list[dict[str, Any]] | None = None
+    tool_choice: Any = None
+    parallel_tool_calls: StrictBool = True
+    prompt_cache_key: str | None = None
 
     @model_validator(mode="after")
     def valid_input(self):
@@ -97,7 +106,7 @@ class ResponseRequest(BaseModel):
                 raise ValueError("reasoning 与 enable_thinking 冲突")
             if not efforts:
                 effort = ReasoningEffort.XHIGH if enabled else ReasoningEffort.NONE
-        self.reasoning = Reasoning(effort=effort)
+        self.reasoning = Reasoning(effort=effort, summary=self.reasoning.summary)
         if self.text.format.type != "text" and self.reasoning.effort != "none":
             raise ValueError("结构化输出当前只支持非思考模式")
         self.messages()
@@ -118,18 +127,46 @@ class ResponseRequest(BaseModel):
         if isinstance(self.input, str):
             messages.append({"role": "user", "content": self.input})
         for item in self.input if isinstance(self.input, list) else []:
-            if item.get("type", "message") != "message":
-                raise ValueError("仅支持文本 message 历史，不支持工具或 reasoning 输入项")
+            kind = item.get("type", "message")
+            if kind == "function_call":
+                if any(not isinstance(item.get(key), str) or not item[key] for key in ("call_id", "name", "arguments")):
+                    raise ValueError("function_call 需要 call_id、name 和 JSON arguments")
+                if not messages or messages[-1]['role'] != 'assistant':
+                    messages.append({'role': 'assistant', 'content': ''})
+                messages[-1].setdefault('tool_calls', []).append({
+                    'id': item['call_id'], 'type': 'function',
+                    'function': {'name': item['name'], 'arguments': item['arguments']}})
+                continue
+            if kind == "function_call_output":
+                if not isinstance(item.get('call_id'), str) or not item['call_id']:
+                    raise ValueError('function_call_output 需要 call_id')
+                messages.append({'role': 'tool', 'tool_call_id': item['call_id'],
+                                 'content': text_content(item.get('output'), ('input_text', 'output_text'))})
+                continue
+            if kind == "reasoning":
+                if item.get('encrypted_content'):
+                    raise ValueError('不支持加密 reasoning 历史')
+                content = item.get('content') or item.get('summary') or []
+                messages.append({'role': 'assistant', 'content': '',
+                                 'reasoning_content': text_content(content, ('reasoning_text', 'summary_text'))})
+                continue
+            if kind != "message":
+                raise ValueError("仅支持文本 message、function_call、function_call_output 和明文 reasoning 历史")
             role = item.get("role")
             if role not in ("system", "developer", "user", "assistant"):
                 raise ValueError("不支持的 message role")
-            content = item.get("content")
-            if isinstance(content, list):
-                if any(not isinstance(part, dict) or part.get("type") not in ("input_text", "output_text") or
-                       not isinstance(part.get("text"), str) for part in content):
-                    raise ValueError("仅支持文本 content parts")
-                content = "".join(part["text"] for part in content)
-            if not isinstance(content, str):
-                raise ValueError("message content 必须为文本")
-            messages.append({"role": "system" if role == "developer" else role, "content": content})
+            content = text_content(item.get('content'), ('input_text', 'output_text'))
+            if role == 'assistant' and messages and set(messages[-1]) == {'role', 'content', 'reasoning_content'} and not messages[-1]['content']:
+                messages[-1]['content'] = content
+            else:
+                messages.append({"role": "system" if role == "developer" else role, "content": content})
         return messages
+
+
+def text_content(value, part_types):
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list) and all(isinstance(part, dict) and part.get('type') in part_types
+                                     and isinstance(part.get('text'), str) for part in value):
+        return ''.join(part['text'] for part in value)
+    raise ValueError('仅支持文本 content parts')

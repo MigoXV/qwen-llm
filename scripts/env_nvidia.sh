@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# 与 Ascend 环境隔离；QWEN_NVIDIA_ENV=quant 使用独立量化工具环境。
+export QWEN_NVIDIA_ROOT="${QWEN_NVIDIA_ROOT:-/workspace/qwen-nvidia}"
+export QWEN_NVIDIA_ENV="${QWEN_NVIDIA_ENV:-runtime}"
+export POETRY_CACHE_DIR="$QWEN_NVIDIA_ROOT/$QWEN_NVIDIA_ENV/poetry-cache"
+export POETRY_VIRTUALENVS_PATH="$QWEN_NVIDIA_ROOT/$QWEN_NVIDIA_ENV/virtualenvs"
+unset VIRTUAL_ENV
+export QWEN_MODELS_ROOT="$QWEN_NVIDIA_ROOT/models"
+export HF_HOME="$QWEN_NVIDIA_ROOT/huggingface"
+export UV_CACHE_DIR="$QWEN_NVIDIA_ROOT/uv-cache"
+export VLLM_WORKER_MULTIPROC_METHOD=spawn
+export TOKENIZERS_PARALLELISM=false
+export PYTHONUNBUFFERED=1
+export OMP_NUM_THREADS="${OMP_NUM_THREADS:-4}"
+export VLLM_CACHE_ROOT="$QWEN_NVIDIA_ROOT/cache/${QWEN_INSTANCE:-default}/vllm"
+export TRITON_CACHE_DIR="$QWEN_NVIDIA_ROOT/cache/${QWEN_INSTANCE:-default}/triton"
+mkdir -p "$POETRY_VIRTUALENVS_PATH" "$HF_HOME" "$VLLM_CACHE_ROOT" "$TRITON_CACHE_DIR"

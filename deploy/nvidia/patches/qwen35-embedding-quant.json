@@ -1,0 +1,7 @@
+{
+  "vllm_version": "0.32.0",
+  "file": "model_executor/models/qwen3_5.py",
+  "before_sha256": "ea7e71303c902b9678e85ff3e9a75a7ab6e69b5770605d540ad6ab1084e18187",
+  "after_sha256": "c5ce2b6ddd7fdbcf0b59f794571ebe6918364a46a2246717c0f1b5a91107197a",
+  "patch": "qwen35-embedding-quant.patch"
+}
