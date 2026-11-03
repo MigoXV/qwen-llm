@@ -15,6 +15,8 @@ class AsyncGenerationEngine:
         self.supports_thinking = True
         self.supports_reasoning_effort = False
         self.supports_tools = False
+        self.image_placeholder = None
+        self.image_pad_token_id = None
 
     async def health(self):
         if self.llm is None:
@@ -26,7 +28,7 @@ class AsyncGenerationEngine:
             self.llm.shutdown()
             self.llm = None
 
-    async def prepare(self, messages: list[dict], effort: ReasoningEffort, *, tools: list[dict] | None = None) -> list[int]:
+    async def prepare(self, messages: list[dict], effort: ReasoningEffort, *, tools: list[dict] | None = None) -> list[int] | dict:
         effort = ReasoningEffort(effort)
         kwargs = {"enable_thinking": effort is not ReasoningEffort.NONE}
         if self.supports_reasoning_effort and effort is not ReasoningEffort.NONE:
@@ -35,10 +37,33 @@ class AsyncGenerationEngine:
             if not self.supports_tools:
                 raise ValueError("当前模型模板不支持工具调用")
             kwargs["tools"] = tools
+        images = []
+        rendered = []
+        for message in messages:
+            content = message.get('content')
+            if isinstance(content, list):
+                parts = []
+                for part in content:
+                    if part.get('type') == 'image':
+                        if self.image_placeholder is None:
+                            raise ValueError("当前引擎未启用视觉输入，消息不能包含图像 part")
+                        images.append(part['image'])
+                        parts.append(self.image_placeholder)
+                    else:
+                        parts.append(part['text'])
+                rendered.append({**message, 'content': ''.join(parts)})
+            else:
+                rendered.append(message)
         encoded = await asyncio.to_thread(
-            self.tokenizer.apply_chat_template, messages, tokenize=True,
+            self.tokenizer.apply_chat_template, rendered, tokenize=True,
             add_generation_prompt=True, **kwargs)
-        return encoded['input_ids'] if isinstance(encoded, Mapping) else encoded
+        ids = encoded['input_ids'] if isinstance(encoded, Mapping) else encoded
+        if not images:
+            return ids
+        ids = list(ids)
+        if self.image_pad_token_id is None or ids.count(self.image_pad_token_id) != len(images):
+            raise ValueError('chat 模板没有为每张图像保留 image pad 占位符')
+        return {'prompt_token_ids': ids, 'multi_modal_data': {'image': images}}
 
     async def generate(self, prompt, request_id, **sampling):
         thinking = sampling.pop("thinking", False)
@@ -51,8 +76,9 @@ class AsyncGenerationEngine:
             from vllm.sampling_params import StructuredOutputsParams
             sampling["structured_outputs"] = StructuredOutputsParams(
                 json=schema, json_object=True if json_object else None)
+        prompt_arg = TokensPrompt(**prompt) if isinstance(prompt, dict) else TokensPrompt(prompt_token_ids=prompt)
         async for result in self.llm.generate(
-            TokensPrompt(prompt_token_ids=prompt), SamplingParams(**sampling), request_id):
+            prompt_arg, SamplingParams(**sampling), request_id):
             item = result.outputs[0]
             yield Generation(item.text, tuple(item.token_ids), item.finish_reason,
                              getattr(result, "num_cached_tokens", 0),
