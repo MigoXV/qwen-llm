@@ -1,0 +1,18 @@
+{
+  "label": "gpu3-original-vocab4-40g-c4",
+  "gpu": 3,
+  "context": 163840,
+  "max_output_tokens": 32768,
+  "concurrency": 4,
+  "utilization": 0.95,
+  "cache": "original-vocab4-40g-c4-capacity-20261103",
+  "force_length": false,
+  "batch_tokens": 512,
+  "kv_gib": 22,
+  "model_path": "/workspace/opusi/Qwen/Qwen3.8-27B-W4A16-AWQ-GPTQ-VOCAB4-NVIDIA",
+  "run_dir": "/workspace/opusi/qwen-llm/outputs/services/gpu3-original-vocab4-40g-c4-160k-20261103",
+  "host": "0.0.0.0",
+  "prefix_caching": true,
+  "port": 8132,
+  "budget_gib": 40
+}
