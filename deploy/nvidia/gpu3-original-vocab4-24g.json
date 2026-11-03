@@ -1,0 +1,17 @@
+{
+  "label": "gpu3-original-vocab4-24g",
+  "gpu": 3,
+  "context": 131072,
+  "max_output_tokens": 32768,
+  "concurrency": 2,
+  "utilization": 0.6,
+  "cache": "vocab4-service-c2-20261029",
+  "force_length": false,
+  "batch_tokens": 512,
+  "kv_gib": 8.75,
+  "model_path": "/workspace/opusi/Qwen/Qwen3.8-27B-W4A16-AWQ-GPTQ-VOCAB4-NVIDIA",
+  "run_dir": "/workspace/opusi/qwen-llm/outputs/services/gpu3-original-vocab4-20261103",
+  "host": "0.0.0.0",
+  "prefix_caching": true,
+  "port": 8132
+}
