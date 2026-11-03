@@ -17,7 +17,8 @@ from tests.performance.nvidia.inventory import inventory
 
 config = json.loads(Path(sys.argv[1]).read_text())
 GPU = config['gpu']
-URL = f'http://127.0.0.1:{8130+GPU}'
+PORT = config.get('port', 8130 + GPU)
+URL = f'http://127.0.0.1:{PORT}'
 ROOT = Path(config['run_dir'])
 ROOT.mkdir(exist_ok=False, parents=True)
 def save(name, value):
@@ -38,7 +39,7 @@ async def main():
     args = ['poetry','run','python','-m','tests.performance.nvidia.cli','serve',
         '--host',config.get('host','0.0.0.0'),
         '--model-path',config.get('model_path','/workspace/model-bin/windowsxp811203/Qwen3.8-27B-Abliterated-W4A16-AWQ-GPTQ-NVIDIA'),
-        '--concurrency',str(config.get('concurrency',4)),'--model-name','qwen38-24g','--port',str(8130+GPU),'--tp','1','--context',str(config['context']),
+        '--concurrency',str(config.get('concurrency',4)),'--model-name','qwen38-24g','--port',str(PORT),'--tp','1','--context',str(config['context']),
         '--max-output-tokens',str(config.get('max_output_tokens',8192)),
         '--kv-dtype','fp8_e4m3','--attention-backend','FLASHINFER','--cuda-graph',
         '--gpu-memory-utilization',str(config['utilization']), '--batch-tokens',str(config['batch_tokens'])]
