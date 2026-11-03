@@ -18,6 +18,10 @@ from tests.performance.nvidia.inventory import inventory
 config = json.loads(Path(sys.argv[1]).read_text())
 GPU = config['gpu']
 PORT = config.get('port', 8130 + GPU)
+BUDGET_GIB = float(config.get('budget_gib', 24))
+if BUDGET_GIB <= 0:
+    raise ValueError('budget_gib 必须大于 0')
+LIMIT_BYTES = int(BUDGET_GIB * 1024**3)
 URL = f'http://127.0.0.1:{PORT}'
 ROOT = Path(config['run_dir'])
 ROOT.mkdir(exist_ok=False, parents=True)
@@ -51,7 +55,7 @@ async def main():
         args.append('--force-length')
     with (ROOT/'service.log').open('w') as log:
         proc = subprocess.Popen(args,env=env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
-    save('process.json',{'pid':proc.pid,'config':config,'command':args,'limit_bytes':24*1024**3,
+    save('process.json',{'pid':proc.pid,'config':config,'command':args,'limit_bytes':LIMIT_BYTES,
                          'cache_path':env['VLLM_CACHE_ROOT'],'gpu':GPU,
                          'launcher_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                          'worker_source_sha256':hashlib.sha256(Path('src/qwen_llm/engine/nvidia_worker.py').read_bytes()).hexdigest()})
@@ -82,7 +86,7 @@ async def main():
                 if state == 'serving': serving_peak = max(serving_peak,m.used)
                 if sample_count % 50 == 0:
                     save('budget-status.json',dict(row,peak_used_bytes=peak_used,samples=sample_count))
-                if m.used > 24*1024**3 and not exceeded:
+                if m.used > LIMIT_BYTES and not exceeded:
                     exceeded = True
                     if proc.poll() is None: proc.terminate()
                     save('over-budget.json',row)
