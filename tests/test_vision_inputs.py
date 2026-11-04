@@ -6,10 +6,11 @@ from types import SimpleNamespace
 
 import pytest
 
+from qwen_llm.engine.base import Generation
 from qwen_llm.engine.generation import AsyncGenerationEngine
 from qwen_llm.engine.nvidia import NvidiaConfig, has_visual_weights
 from qwen_llm.servicer.chat import ChatRequest
-from qwen_llm.servicer.media import count_image_parts, parse_image_part
+from qwen_llm.servicer.media import count_image_parts, parse_image_part, trim_image_history
 
 # 1x1 红色 PNG。
 PNG_1PX = base64.b64decode(
@@ -65,10 +66,13 @@ def _vision_engine():
 
     def apply_chat_template(messages, **kwargs):
         content = messages[0]['content']
+        if not kwargs.get('tokenize', True):
+            return content
         return [1, 99, 2] if placeholder in content else [1, 2]
 
     engine.tokenizer = SimpleNamespace(
-        apply_chat_template=apply_chat_template, convert_tokens_to_ids=lambda token: [])
+        apply_chat_template=apply_chat_template, convert_tokens_to_ids=lambda token: [],
+        encode=lambda text, **kwargs: [1, 99, 2] if placeholder in text else [1, 2])
     return engine, placeholder
 
 
@@ -128,10 +132,9 @@ def test_vision_config_gating():
     with pytest.raises(ValueError, match='实验'):
         NvidiaConfig(vision=True)
     assert NvidiaConfig(vision=True, experimental=True).vision
-    with pytest.raises(ValueError, match='1 到 4'):
+    with pytest.raises(ValueError, match='至少为 1'):
         NvidiaConfig(vision=True, experimental=True, max_images_per_prompt=0)
-    with pytest.raises(ValueError, match='1 到 4'):
-        NvidiaConfig(vision=True, experimental=True, max_images_per_prompt=5)
+    assert NvidiaConfig(vision=True, experimental=True, max_images_per_prompt=64).max_images_per_prompt == 64
 
 
 def _artifact(tmp_path, weight_map):
@@ -145,7 +148,7 @@ def test_has_visual_weights_detection(tmp_path):
     assert has_visual_weights(tmp_path) is True
 
 
-def _client(vision: bool, max_images: int = 1):
+def _client(vision: bool, max_images: int = 1, trim_history: bool = False):
     from fastapi.testclient import TestClient
     from qwen_llm.servicer.app import create_app
 
@@ -162,14 +165,17 @@ def _client(vision: bool, max_images: int = 1):
             pass
 
         async def prepare(self, messages, effort, **kwargs):
+            self.prepared_messages = messages
             return [1, 2]
 
         async def generate(self, prompt, request_id, **sampling):
-            if False:
-                yield
+            yield Generation('ok', (5,), 'stop')
 
-    config = NvidiaConfig(model_name='m', experimental=True, vision=vision, max_images_per_prompt=max_images)
-    return TestClient(create_app(config=config, engine=StubEngine()))
+    config = NvidiaConfig(model_name='m', experimental=True, vision=vision, max_images_per_prompt=max_images, trim_history_images=trim_history)
+    engine = StubEngine()
+    app = create_app(config=config, engine=engine)
+    app.state.test_engine = engine
+    return TestClient(app)
 
 
 def _image_request():
@@ -189,3 +195,76 @@ def test_api_rejects_image_over_limit():
     with _client(vision=True, max_images=1) as client:
         response = client.post('/v1/chat/completions', json=request)
     assert response.status_code == 400 and '每请求最多' in response.text
+
+
+def test_api_trims_history_and_preserves_current_images():
+    request = _image_request()
+    old = request['messages'][0]
+    request['messages'] = [old, {'role': 'assistant', 'content': '旧图回答'},
+                           old, {'role': 'assistant', 'content': '上一轮回答'},
+                           old]
+    with _client(vision=True, max_images=2, trim_history=True) as client:
+        response = client.post('/v1/chat/completions', json=request)
+        sent = client.app.state.test_engine.prepared_messages
+    assert response.status_code == 200, response.text
+    assert count_image_parts(sent) == 2
+    assert count_image_parts(sent[:1]) == 0
+    assert count_image_parts(sent[2:3]) == 1
+    assert count_image_parts(sent[4:]) == 1
+    assert sent[1]['content'] == '旧图回答'
+    assert '本轮未发送' in sent[0]['content'][1]['text']
+
+
+def test_history_trim_keeps_latest_images_without_mutating_inputs():
+    images = [object() for _ in range(5)]
+    messages = [{'role': 'user', 'content': [
+        {'type': 'text', 'text': f'文字{i}'}, {'type': 'image', 'image': image}]}
+        for i, image in enumerate(images)]
+    result = trim_image_history(messages, 2)
+    assert count_image_parts(result) == 2
+    assert count_image_parts(messages) == 5
+    assert result[-1]['content'][1]['image'] is images[-1]
+    assert result[-2]['content'][1]['image'] is images[-2]
+    assert [m['content'][0]['text'] for m in result] == [f'文字{i}' for i in range(5)]
+
+
+def test_history_trim_protects_whole_current_turn_and_tool_results():
+    old_image, new_image, tool_image = object(), object(), object()
+    messages = [
+        {'role': 'user', 'content': [{'type': 'image', 'image': old_image}]},
+        {'role': 'assistant', 'content': '旧回答'},
+        {'role': 'user', 'content': [{'type': 'image', 'image': new_image}]},
+        {'role': 'assistant', 'content': '', 'tool_calls': [{'function': {'name': 'read'}}]},
+        {'role': 'tool', 'content': [{'type': 'image', 'image': tool_image}]}]
+    result = trim_image_history(messages, 2)
+    assert count_image_parts(result) == 2
+    assert result[2:] == messages[2:]
+    assert trim_image_history(messages, 1) is messages
+
+
+def test_text_followup_keeps_recent_history_and_under_limit_is_unchanged():
+    messages = [{'role': 'user', 'content': [{'type': 'image', 'image': object()}]},
+                {'role': 'user', 'content': [{'type': 'image', 'image': object()}]},
+                {'role': 'user', 'content': '继续说明'}]
+    assert trim_image_history(messages, 2) is messages
+    result = trim_image_history(messages, 1)
+    assert count_image_parts(result) == 1
+    assert result[-2:] == messages[-2:]
+
+
+def test_api_preserves_large_image_history_by_default():
+    request = _image_request()
+    request['messages'] = request['messages'] * 12
+    with _client(vision=True, max_images=64) as client:
+        response = client.post('/v1/chat/completions', json=request)
+        sent = client.app.state.test_engine.prepared_messages
+    assert response.status_code == 200, response.text
+    assert count_image_parts(sent) == 12
+
+
+def test_api_default_does_not_silently_remove_history():
+    request = _image_request()
+    request['messages'] = request['messages'] * 3
+    with _client(vision=True, max_images=2) as client:
+        response = client.post('/v1/chat/completions', json=request)
+    assert response.status_code == 400

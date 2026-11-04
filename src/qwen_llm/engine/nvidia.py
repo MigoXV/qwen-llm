@@ -23,6 +23,7 @@ class NvidiaConfig(InferenceConfig):
     experimental: bool = False
     vision: bool = False
     max_images_per_prompt: int = 1
+    trim_history_images: bool = False
 
     def __post_init__(self):
         super().__post_init__()
@@ -40,8 +41,8 @@ class NvidiaConfig(InferenceConfig):
             raise ValueError('固定 attention backend 仅用于独立对照实验')
         if self.vision and not self.experimental:
             raise ValueError('视觉输入目前仅供实验性入口使用')
-        if not 1 <= self.max_images_per_prompt <= 4:
-            raise ValueError('每请求图像数量须在 1 到 4 之间')
+        if self.max_images_per_prompt < 1:
+            raise ValueError('每请求图像数量须至少为 1')
 
 
 def inspect_model(model: Path) -> dict:

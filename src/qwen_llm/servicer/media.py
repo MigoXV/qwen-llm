@@ -24,6 +24,41 @@ def count_image_parts(messages) -> int:
                for part in _content_parts(message) if part.get('type') == 'image')
 
 
+def trim_image_history(messages: list[dict], max_images: int) -> list[dict]:
+    """Keep this turn intact and fill remaining slots with the newest history images.
+
+    A turn starts at the last user message, including any following tool results.
+    If that turn exceeds the limit, leave it intact for the caller to reject.
+    Input messages and image objects are never mutated.
+    """
+    if max_images < 1:
+        raise ValueError('max_images must be positive')
+    last_user = next((i for i in range(len(messages) - 1, -1, -1)
+                      if messages[i].get('role') == 'user'), None)
+    if last_user is None:
+        return messages
+    current_count = count_image_parts(messages[last_user:])
+    if current_count > max_images:
+        return messages
+    history = [(i, j) for i, message in enumerate(messages[:last_user])
+               for j, part in enumerate(_content_parts(message)) if part.get('type') == 'image']
+    drop_count = max(0, len(history) - (max_images - current_count))
+    if not drop_count:
+        return messages
+    dropped = {position: number for number, position in enumerate(history[:drop_count], 1)}
+    result = []
+    for i, message in enumerate(messages):
+        if i < last_user and isinstance(message.get('content'), list):
+            parts = [({'type': 'text', 'text':
+                       f'[历史图片 {dropped[i, j]} 本轮未发送；如需查看，请重新上传。]'}
+                      if (i, j) in dropped else part)
+                     for j, part in enumerate(message['content'])]
+            result.append({**message, 'content': parts})
+        else:
+            result.append(message)
+    return result
+
+
 def parse_image_part(part: dict):
     """校验并解码单个 image content part，返回 RGB PIL.Image；失败抛中文说明的 ValueError。"""
     if set(part) - {'type', 'image_url'} or part.get('type') != 'image_url':

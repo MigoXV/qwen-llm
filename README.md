@@ -99,7 +99,8 @@ reply = client.chat.completions.create(
 
 支持 Qwen 原生工具模板的 `tools` 函数调用、`tool_choice`（`auto`、`none`、`required` 或指定函数）、`parallel_tool_calls` 和工具结果历史；工具由调用方执行，再以 `role=tool`、`tool_call_id` 回传。`required` 和指定函数通过提示和结果校验实现：模型不满足要求时返回错误。NVIDIA 使用 vLLM 原生 Qwen 解析器逐步发送正文和工具参数，完整校验后才确认调用完成；Ascend 保留原有的完整解析后发送行为。模型工具标记不作为正文输出。无工具能力的模板拒绝工具请求，可通过 `/health/ready` 的 `runtime.supports_tools` 查看。
 
-支持 `reasoning_effort`（`none`、`low`、`medium`、`high`、`xhigh`）、`enable_thinking`、`chat_template_kwargs`；思考内容在扩展字段 `reasoning_content` 中返回。支持 `response_format` 的 `text`、`json_object`、`json_schema`，结构化输出和工具调用不能同时启用。图片、文件及未知参数返回 400。
+支持 `reasoning_effort`（`none`、`low`、`medium`、`high`、`xhigh`）、`enable_thinking`、`chat_template_kwargs`；思考内容在扩展字段 `reasoning_content` 中返回。支持 `response_format` 的 `text`、`json_object`、`json_schema`，结构化输出和工具调用不能同时启用。文件及未知参数返回 400。NVIDIA 实验入口启用 `--vision` 后，Chat Completions 支持内联 PNG/JPEG/WebP 图片。`--max-images-per-prompt` / `QWEN_MAX_IMAGES_PER_PROMPT` 设置每次送入引擎的图片总数上限（正整数，默认 1，不再限制最多配置 4 张）。默认完整保留图片历史，历史和本轮图片合计超限时返回 400；可按硬件容量配置 16/32/64 等额度，实际容量需在目标 GPU 验证。启用可选的 `--trim-history-images` / `QWEN_TRIM_HISTORY_IMAGES=true` 后，优先保留最后一条 user 消息及其后工具结果中的图片，剩余额度保留最近历史图片，更早图片替换为文字提示；本轮本身超限仍返回 400。被省略的图片细节需要重新上传才能查看。
+
 
 流式生成开始后如果模型或工具格式出错，会发送包含 `error` 的数据事件并终止，不发送 `[DONE]`；调用方应把没有正常结束的流视为失败。Chat Completions 和 Responses 共享并发名额、超时和监控指标。
 
