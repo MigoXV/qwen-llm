@@ -53,6 +53,10 @@ RUN mkdir -p /usr/local/cuda-13.0/include && \
     done; \
     ln -sf libcurand.so.10 /usr/local/cuda-13.0/lib64/libcurand.so
 
+# 引擎编译缓存烘焙：先把宿主 vision-cache 复制进 .vision-cache 再 COPY 进镜像；
+# 无该目录时删掉下面这行即退回冷编译构建。
+COPY .vision-cache /var/cache/qwen-nvidia
+
 # 编译缓存直接落在容器文件系统里（烘入镜像后即可热启动），不再需要宿主机目录挂载。
 ENV CUDA_HOME=/usr/local/cuda-13.0 \
     PATH="/usr/local/cuda-13.0/bin:$VIRTUAL_ENV/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \

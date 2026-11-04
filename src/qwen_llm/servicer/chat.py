@@ -32,9 +32,14 @@ class ChatRequest(BaseModel):
     tool_choice: Any = None
     parallel_tool_calls: StrictBool = True
     n: Literal[1] = 1
+    # OpenAI 新版 SDK 默认携带的字段：接受但忽略，保证兼容客户端不因协议噪音被拒。
+    store: StrictBool | None = None
+    service_tier: Literal['auto', 'default'] | None = None
 
     @model_validator(mode='after')
     def validate_request(self):
+        if self.store is True:
+            raise ValueError('本服务不持久化对话，store=true 不受支持；请移除该字段或设为 false')
         if self.stream_options is not None and (not self.stream or set(self.stream_options) - {'include_usage'}):
             raise ValueError('stream_options 仅支持流式请求的 include_usage')
         names = set()
