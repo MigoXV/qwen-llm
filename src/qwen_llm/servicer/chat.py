@@ -32,9 +32,14 @@ class ChatRequest(BaseModel):
     tool_choice: Any = None
     parallel_tool_calls: StrictBool = True
     n: Literal[1] = 1
+    # OpenAI 新版 SDK 默认携带的字段：接受但忽略，保证兼容客户端不因协议噪音被拒。
+    store: StrictBool | None = None
+    service_tier: Literal['auto', 'default'] | None = None
 
     @model_validator(mode='after')
     def validate_request(self):
+        if self.store is True:
+            raise ValueError('本服务不持久化对话，store=true 不受支持；请移除该字段或设为 false')
         if self.stream_options is not None and (not self.stream or set(self.stream_options) - {'include_usage'}):
             raise ValueError('stream_options 仅支持流式请求的 include_usage')
         names = set()
@@ -85,14 +90,25 @@ class ChatRequest(BaseModel):
                 raise ValueError('不支持的 message 字段')
             content = msg.get('content')
             if isinstance(content, list):
-                if any(not isinstance(part, dict) or set(part) != {'type', 'text'} or part.get('type') != 'text' or not isinstance(part.get('text'), str) for part in content):
-                    raise ValueError('仅支持文本 content parts')
-                content = ''.join(part['text'] for part in content)
+                from qwen_llm.servicer.media import parse_image_part
+                image_count = 0
+                parts_out = []
+                for part in content:
+                    if not isinstance(part, dict):
+                        raise ValueError('仅支持文本或图像 content parts')
+                    if part.get('type') == 'text' and set(part) == {'type', 'text'} and isinstance(part.get('text'), str):
+                        parts_out.append({'type': 'text', 'text': part['text']})
+                    elif part.get('type') == 'image_url':
+                        parts_out.append({'type': 'image', 'image': parse_image_part(part)})
+                        image_count += 1
+                    else:
+                        raise ValueError('仅支持文本或图像 content parts')
+                content = ''.join(part.get('text', '') for part in parts_out) if not image_count else parts_out
             calls = msg.get('tool_calls')
             if content is None and role == 'assistant' and calls:
                 content = ''
-            if not isinstance(content, str):
-                raise ValueError('message content 必须为文本')
+            if not isinstance(content, (str, list)):
+                raise ValueError('message content 必须为文本或解析后的图像 part')
             if role != 'tool' and outstanding:
                 raise ValueError('工具调用必须先提供全部工具结果')
             item = {'role': 'system' if role == 'developer' else role, 'content': content}

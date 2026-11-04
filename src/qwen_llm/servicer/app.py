@@ -22,6 +22,7 @@ from qwen_llm.engine.vllm import V1Engine
 from qwen_llm.inferencers.text import split_thinking
 from qwen_llm.servicer.schema import ResponseRequest
 from qwen_llm.servicer.chat import ChatRequest, PreparedChat, ToolOutputError, parse_tools, project
+from qwen_llm.servicer.media import count_image_parts, trim_image_history
 from qwen_llm.servicer.responses import prepare_response
 from qwen_llm.servicer.tool_stream import QwenToolStream, supports_tool_stream
 
@@ -129,6 +130,25 @@ def create_app(config: InferenceConfig | None = None, engine: Engine | None = No
             return error("未知模型", 404, "model_not_found")
         if body.max_output_tokens > config.max_output_tokens:
             return error(f"超出服务输出 token 上限 {config.max_output_tokens}")
+        messages = body.messages()
+        image_count = count_image_parts(messages)
+        if image_count:
+            logger.info('image input summary: total=%d limit=%d by_message=%s',
+                        image_count, getattr(config, 'max_images_per_prompt', 1),
+                        [{'index': i, 'role': m.get('role'), 'images': count_image_parts([m])}
+                         for i, m in enumerate(messages) if count_image_parts([m])])
+            if not getattr(config, 'vision', False):
+                return error("当前服务未启用视觉输入，请求不能包含图像", code="unsupported_parameter")
+            image_limit = getattr(config, 'max_images_per_prompt', 1)
+            if (isinstance(body, PreparedChat) and image_count > image_limit
+                    and getattr(config, 'trim_history_images', False)):
+                messages = trim_image_history(messages, image_limit)
+                retained = count_image_parts(messages)
+                if retained < image_count:
+                    logger.info('omitted %d history images; retained %d images', image_count - retained, retained)
+                image_count = retained
+            if image_count > image_limit:
+                return error(f"每请求最多 {getattr(config, 'max_images_per_prompt', 1)} 张图像", code="unsupported_parameter")
         if body.reasoning.effort != "none" and not getattr(engine, "supports_thinking", True):
             return error("当前模型只支持非思考模式，请设置reasoning.effort=none", code="unsupported_parameter")
         if isinstance(body, PreparedChat) and (body.tools or any(m.get('tool_calls') or m['role'] == 'tool' for m in body.messages())) and not getattr(engine, 'supports_tools', False):
@@ -162,8 +182,9 @@ def create_app(config: InferenceConfig | None = None, engine: Engine | None = No
         thinking = body.reasoning.effort != "none"
         try:
             tools = body.tools if isinstance(body, PreparedChat) else None
-            prompt = await asyncio.wait_for(engine.prepare(body.messages(), body.reasoning.effort, **({'tools': tools} if tools else {})), timeout=config.timeout)
-            if len(prompt) > config.max_input_tokens:
+            prompt = await asyncio.wait_for(engine.prepare(messages, body.reasoning.effort, **({'tools': tools} if tools else {})), timeout=config.timeout)
+            prompt_len = len(prompt['prompt_token_ids']) if isinstance(prompt, dict) else len(prompt)
+            if prompt_len > config.max_input_tokens:
                 release()
                 return error(f"模板展开后输入超过 {config.max_input_tokens} tokens", code="context_length_exceeded")
         except asyncio.CancelledError:
@@ -360,11 +381,11 @@ def create_app(config: InferenceConfig | None = None, engine: Engine | None = No
                 if status == "incomplete":
                     response["incomplete_details"] = {"reason": "max_output_tokens"}
                 nout = len(final.token_ids)
-                response["usage"] = {"input_tokens": len(prompt), "output_tokens": nout,
-                    "total_tokens": len(prompt) + nout,
+                response["usage"] = {"input_tokens": prompt_len, "output_tokens": nout,
+                    "total_tokens": prompt_len + nout,
                     "input_tokens_details": {"cached_tokens": final.cached_tokens, "cache_write_tokens": 0},
                     "output_tokens_details": {"reasoning_tokens": final.reasoning_tokens if thinking else 0}}
-                tokens.labels("input").inc(len(prompt))
+                tokens.labels("input").inc(prompt_len)
                 tokens.labels("output").inc(nout)
                 requests.labels(status).inc()
                 yield event("response." + status, response=response)

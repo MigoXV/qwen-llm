@@ -21,6 +21,9 @@ class NvidiaConfig(InferenceConfig):
     kv_cache_dtype: str = 'auto'
     attention_backend: str | None = None
     experimental: bool = False
+    vision: bool = False
+    max_images_per_prompt: int = 1
+    trim_history_images: bool = False
 
     def __post_init__(self):
         super().__post_init__()
@@ -36,6 +39,10 @@ class NvidiaConfig(InferenceConfig):
             raise ValueError('不支持的实验 attention backend')
         if self.attention_backend is not None and not self.experimental:
             raise ValueError('固定 attention backend 仅用于独立对照实验')
+        if self.vision and not self.experimental:
+            raise ValueError('视觉输入目前仅供实验性入口使用')
+        if self.max_images_per_prompt < 1:
+            raise ValueError('每请求图像数量须至少为 1')
 
 
 def inspect_model(model: Path) -> dict:
@@ -53,6 +60,11 @@ def inspect_model(model: Path) -> dict:
         if relative.is_absolute() or '..' in relative.parts or not (model / relative).is_file():
             raise ValueError(f'非法或缺失的权重分片：{name}')
     return config
+
+
+def has_visual_weights(model: Path) -> bool:
+    index = json.loads((model / 'model.safetensors.index.json').read_text())
+    return any('visual.' in name for name in index['weight_map'])
 
 
 class NvidiaEngine(AsyncGenerationEngine):
@@ -77,7 +89,17 @@ class NvidiaEngine(AsyncGenerationEngine):
         self.supports_thinking = 'enable_thinking' in template
         self.supports_reasoning_effort = 'reasoning_effort' in template
         self.supports_tools = all(marker in template for marker in (
-            '<tool_call>', '<function=', '<parameter=', 'message.tool_calls', '<tool_response>'))
+            '<tool_call>', '<function=', '<parameter=', 'message.tool_calls', '<tool_call>'))
+        if config.vision:
+            vision_start = model_config.get('vision_start_token_id')
+            image_pad = model_config.get('image_token_id')
+            vision_end = model_config.get('vision_end_token_id')
+            if vision_start is None or image_pad is None or vision_end is None:
+                raise ValueError('模型 config.json 缺少 vision_start/image/vision_end token id，无法接线视觉输入')
+            if not has_visual_weights(config.model_path):
+                raise ValueError('模型工件缺少视觉权重（safetensors 中没有 visual.* 条目），不能启用视觉输入')
+            self.image_pad_token_id = image_pad
+            self.image_placeholder = self.tokenizer.decode([vision_start, image_pad, vision_end], skip_special_tokens=False)
         options = {}
         if config.runner is Runner.CUDAGRAPH:
             options['compilation_config'] = {'cudagraph_mode': config.graph_mode.value}
@@ -88,9 +110,11 @@ class NvidiaEngine(AsyncGenerationEngine):
             options['async_scheduling'] = config.async_scheduling
         if config.attention_backend is not None:
             options['attention_backend'] = config.attention_backend
+        if config.vision:
+            options['limit_mm_per_prompt'] = {'image': config.max_images_per_prompt}
         args = AsyncEngineArgs(
             model=str(config.model_path.resolve()), tokenizer=str(config.model_path.resolve()),
-            dtype=config.dtype.value, language_model_only=True,
+            dtype=config.dtype.value, language_model_only=not config.vision,
             tensor_parallel_size=config.tensor_parallel_size, distributed_executor_backend='mp',
             disable_custom_all_reduce=os.getenv('NCCL_P2P_DISABLE') == '1',
             worker_cls='qwen_llm.engine.nvidia_worker.ObservedGPUWorker',
@@ -115,6 +139,8 @@ class NvidiaEngine(AsyncGenerationEngine):
             'tokenizer_path': str(config.model_path), 'kv_cache_dtype': config.kv_cache_dtype,
             'requested_attention_backend': config.attention_backend,
             'experimental': config.experimental,
+            'supports_vision': config.vision,
+            'max_images_per_prompt': config.max_images_per_prompt if config.vision else None,
             'kv_scale_method': ('checkpoint scales when present, otherwise vLLM default 1.0; '
                                 'actual values in workers.kv_cache_scales') if config.kv_cache_dtype != 'auto' else None,
             'supports_thinking': self.supports_thinking, 'supports_tools': self.supports_tools,

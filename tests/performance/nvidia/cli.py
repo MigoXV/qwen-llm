@@ -39,6 +39,9 @@ def serve(
     prefix_caching: bool = typer.Option(False, envvar='QWEN_PREFIX_CACHING'),
     speculative_tokens: int = typer.Option(0, envvar='QWEN_SPECULATIVE_TOKENS'),
     force_length: bool = typer.Option(False, envvar='QWEN_FORCE_LENGTH'),
+    vision: bool = typer.Option(False, envvar='QWEN_VISION'),
+    max_images_per_prompt: int = typer.Option(1, min=1, envvar='QWEN_MAX_IMAGES_PER_PROMPT'),
+    trim_history_images: bool = typer.Option(False, envvar='QWEN_TRIM_HISTORY_IMAGES'),
 ):
     import uvicorn
     from qwen_llm.servicer.app import create_app
@@ -51,7 +54,7 @@ def serve(
         gpu_memory_utilization=gpu_memory_utilization,
         kv_cache_bytes=int(kv_cache_gib * 1024**3) if kv_cache_gib is not None else None,
         runner=Runner.CUDAGRAPH if cuda_graph else Runner.EAGER,
-        prefix_caching=prefix_caching, speculative_tokens=speculative_tokens, timeout=7200)
+        prefix_caching=prefix_caching, speculative_tokens=speculative_tokens, vision=vision, max_images_per_prompt=max_images_per_prompt, trim_history_images=trim_history_images, timeout=7200)
     class CapacityEngine(NvidiaEngine):
         async def start(self):
             await super().start()

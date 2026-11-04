@@ -1,5 +1,6 @@
 """共享 vLLM 请求与生命周期；平台启动由具体 Engine 负责。"""
 import asyncio
+import uuid
 from collections.abc import Mapping
 
 from qwen_llm.config import InferenceConfig, ReasoningEffort
@@ -15,6 +16,8 @@ class AsyncGenerationEngine:
         self.supports_thinking = True
         self.supports_reasoning_effort = False
         self.supports_tools = False
+        self.image_placeholder = None
+        self.image_pad_token_id = None
 
     async def health(self):
         if self.llm is None:
@@ -26,7 +29,7 @@ class AsyncGenerationEngine:
             self.llm.shutdown()
             self.llm = None
 
-    async def prepare(self, messages: list[dict], effort: ReasoningEffort, *, tools: list[dict] | None = None) -> list[int]:
+    async def prepare(self, messages: list[dict], effort: ReasoningEffort, *, tools: list[dict] | None = None) -> list[int] | dict:
         effort = ReasoningEffort(effort)
         kwargs = {"enable_thinking": effort is not ReasoningEffort.NONE}
         if self.supports_reasoning_effort and effort is not ReasoningEffort.NONE:
@@ -35,10 +38,51 @@ class AsyncGenerationEngine:
             if not self.supports_tools:
                 raise ValueError("当前模型模板不支持工具调用")
             kwargs["tools"] = tools
-        encoded = await asyncio.to_thread(
-            self.tokenizer.apply_chat_template, messages, tokenize=True,
+        images = []
+        image_marker = f"QWEN_IMAGE_{uuid.uuid4().hex}_END"
+        rendered = []
+        for message in messages:
+            content = message.get('content')
+            if isinstance(content, list):
+                parts = []
+                for part in content:
+                    if part.get('type') == 'image':
+                        if self.image_placeholder is None:
+                            raise ValueError("当前引擎未启用视觉输入，消息不能包含图像 part")
+                        images.append(part['image'])
+                        parts.append(image_marker)
+                    else:
+                        parts.append(part['text'])
+                rendered.append({**message, 'content': ''.join(parts)})
+            else:
+                rendered.append(message)
+        if not images:
+            encoded = await asyncio.to_thread(
+                self.tokenizer.apply_chat_template, rendered, tokenize=True,
+                add_generation_prompt=True, return_dict=False, **kwargs)
+            return encoded['input_ids'] if isinstance(encoded, Mapping) else encoded
+
+        # Keep real images separate from token spellings in text/history/tools.
+        prompt_text = await asyncio.to_thread(
+            self.tokenizer.apply_chat_template, rendered, tokenize=False,
             add_generation_prompt=True, **kwargs)
-        return encoded['input_ids'] if isinstance(encoded, Mapping) else encoded
+        if prompt_text.count(image_marker) != len(images):
+            raise ValueError('chat 模板丢失或重复了实际图像占位符')
+        for token in ('<|vision_start|>', '<|image_pad|>', '<|vision_end|>'):
+            prompt_text = prompt_text.replace(token, token.replace('<', '&lt;').replace('>', '&gt;'))
+        prompt_text = prompt_text.replace(image_marker, self.image_placeholder)
+        encoded = await asyncio.to_thread(
+            self.tokenizer.encode, prompt_text, add_special_tokens=False)
+        ids = encoded
+        ids = list(ids)
+        if self.image_pad_token_id is None or ids.count(self.image_pad_token_id) != len(images):
+            raise ValueError(
+                'chat 模板没有为每张图像保留 image pad 占位符: '
+                f'images={len(images)}, image_pad_token_id={self.image_pad_token_id}, '
+                f'pad_count={ids.count(self.image_pad_token_id)}, '
+                f'encoded_type={type(encoded).__name__}, '
+                f'first_token_type={type(ids[0]).__name__ if ids else None}')
+        return {'prompt_token_ids': ids, 'multi_modal_data': {'image': images}}
 
     async def generate(self, prompt, request_id, **sampling):
         thinking = sampling.pop("thinking", False)
@@ -51,8 +95,9 @@ class AsyncGenerationEngine:
             from vllm.sampling_params import StructuredOutputsParams
             sampling["structured_outputs"] = StructuredOutputsParams(
                 json=schema, json_object=True if json_object else None)
+        prompt_arg = TokensPrompt(**prompt) if isinstance(prompt, dict) else TokensPrompt(prompt_token_ids=prompt)
         async for result in self.llm.generate(
-            TokensPrompt(prompt_token_ids=prompt), SamplingParams(**sampling), request_id):
+            prompt_arg, SamplingParams(**sampling), request_id):
             item = result.outputs[0]
             yield Generation(item.text, tuple(item.token_ids), item.finish_reason,
                              getattr(result, "num_cached_tokens", 0),
