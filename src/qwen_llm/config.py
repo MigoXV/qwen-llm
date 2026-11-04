@@ -72,9 +72,12 @@ class ServingConfig(InferenceConfig):
     npugraph_ex: bool | None = None
     overlap_shared_expert: bool = False
     model_adaptation: ModelAdaptation = ModelAdaptation.NONE
+    qwen38_fast_w4: bool = False
 
     def __post_init__(self):
         super().__post_init__()
         object.__setattr__(self, "model_adaptation", ModelAdaptation(self.model_adaptation))
+        if self.qwen38_fast_w4 and self.model_adaptation is not ModelAdaptation.QWEN38_910B_V1:
+            raise ValueError("W4快速解码只支持Qwen3.8专项适配")
         if self.kv_cache_bytes is None or self.runner is Runner.CUDAGRAPH:
             raise ValueError("Ascend 配置必须显式指定 KV 预算且不能使用 CUDA Graph")

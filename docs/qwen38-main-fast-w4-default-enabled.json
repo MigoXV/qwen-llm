@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-04",
+  "enabled": true,
+  "runtime": {
+    "backend": "native-tuned",
+    "layers": 128,
+    "fast_M": [
+      6,
+      12
+    ],
+    "inner_precise": 1,
+    "fallback_inner_precise": 0,
+    "weight_layout": "original NZ",
+    "extra_weight_bytes": 0,
+    "dispatch": "opaque custom operator; native arithmetic kernel",
+    "counter_semantics": "eager/capture dispatches only; graph replays are not counted",
+    "capture_dispatch": {
+      "8192:0": 128,
+      "12:1": 256,
+      "6:1": 256,
+      "3:0": 256,
+      "1:0": 128
+    }
+  },
+  "response": "2"
+}

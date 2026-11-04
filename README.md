@@ -41,6 +41,8 @@ NPU 兼容处理、能力验收和性能结果见 [27B W4 报告](docs/qwen38-w4
 原生 INT8 激活实验 `qwen3.8-27b-w4a8` 有已知算术错误，其实现和别名已迁入测试区，供独立对照，不属于生产入口。
 
 Qwen3.8 的模型专项适配、独立新权重及完整验收见 [专项优化报告](docs/qwen38-optimization.md)。
+
+AscendC W4A16 V1 对照见 [算子实验报告](docs/qwen38-ascendc.md)，K 流水、专用布局和并行 Split-K 见 [V2 实验报告](docs/qwen38-ascendc-v2.md)。[V3 算子复核](docs/qwen38-ascendc-v3.md)发现 M=6/12 的原生计算分支有收益；旧服务短测存在编译分支失效，已更正结论。修复后的加速开关已接入正式程序，使用方式与重复测速见 [主程序接入报告](docs/qwen38-main-fast-w4.md)。
 新别名 `qwen3.8-27b-optimized-v1` 使用独立的 `Qwen3.8-27B-W4A8-Ascend-GDNHeadW8-v1` 仓库，
 开启尺度缓存、目标/MTP输出头共享和GDN检查点保留；原始权重、原有默认别名及参数保持不变。
 该别名固定使用22.5GiB KV、四路57344输入+8192输出和MTP2，并校验模型产物与依赖版本。

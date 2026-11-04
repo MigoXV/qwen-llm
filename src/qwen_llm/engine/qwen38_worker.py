@@ -1,10 +1,12 @@
 """Qwen3.8-27B的尺度、输出头加载适配及专用NPU Worker。"""
 from functools import wraps
+from collections import Counter
 from importlib.metadata import version
 import json
 from pathlib import Path
 
 import torch
+import torch_npu
 from vllm_ascend.quantization.methods.w4a8 import AscendW4A8DynamicLinearMethod
 
 from qwen_llm.engine.ascend_worker import BudgetedNPUWorker
@@ -18,6 +20,61 @@ class CachedScaleLinearMethod(AscendW4A8DynamicLinearMethod):
         super().process_weights_after_loading(layer)
         # 保留上游FP32合并顺序，只将原apply()中的最终舍入前移到加载阶段。
         layer.weight_scale_second.data = layer.weight_scale_second.data.to(torch.bfloat16)
+
+
+_fast_w4_dispatch = Counter()
+
+
+def _fast_w4_impl(x: torch.Tensor, weight: torch.Tensor, scale: torch.Tensor) -> torch.Tensor:
+    # This executes with concrete tensors during eager execution / graph capture.
+    # A Python shape branch in apply() gets specialized by vLLM's dynamic graph
+    # compiler, which deliberately does not evaluate guards on subsequent sizes.
+    mode = 1 if x.shape[0] in (6, 12) else 0
+    _fast_w4_dispatch[f'{x.shape[0]}:{mode}'] += 1
+    return torch_npu.npu_weight_quant_batchmatmul(
+        x, weight, antiquant_scale=scale, antiquant_group_size=128, inner_precise=mode)
+
+
+fast_w4_op = torch.library.custom_op(
+    'qwen_llm::fast_w4', mutates_args=(), device_types='npu')(_fast_w4_impl)
+
+
+@fast_w4_op.register_fake
+def _fast_w4_fake(x, weight, scale):
+    return x.new_empty((x.shape[0], scale.shape[1]))
+
+
+class FastDecodeLinearMethod(CachedScaleLinearMethod):
+    """原权重和尺度复用；仅对已复核的解码形状选择高性能分支。"""
+
+    def apply(self, layer, x, bias=None, tp_rank=None):
+        return fast_w4_op(x, layer.weight, layer.weight_scale_second)
+
+
+def install_fast_decode(model):
+    _fast_w4_dispatch.clear()
+    target = model.get_language_model() if hasattr(model, 'get_language_model') else model
+    count = 0
+    for name, layer in target.named_modules():
+        if not name.endswith(('.mlp.gate_up_proj', '.mlp.down_proj')):
+            continue
+        adapter = layer.quant_method
+        original = getattr(adapter, 'quant_method', None)
+        if (not isinstance(original, CachedScaleLinearMethod)
+                or layer.weight_scale_second.dtype != torch.bfloat16
+                or torch_npu.get_npu_format(layer.weight) != 29):
+            raise ValueError('快速W4解码要求BF16尺度缓存与原生NZ权重')
+        method = FastDecodeLinearMethod.__new__(FastDecodeLinearMethod)
+        method.__dict__.update(original.__dict__)
+        adapter.quant_method = method
+        count += 1
+    if count != 128:
+        raise ValueError('快速W4解码必须覆盖全部128个目标FFN投影')
+    return {'backend': 'native-tuned', 'layers': count, 'fast_M': [6, 12],
+            'inner_precise': 1, 'fallback_inner_precise': 0,
+            'weight_layout': 'original NZ', 'extra_weight_bytes': 0,
+            'dispatch': 'opaque custom operator; native arithmetic kernel',
+            'counter_semantics': 'eager/capture dispatches only; graph replays are not counted'}
 
 
 def install_scale_cache():
@@ -133,6 +190,13 @@ class Qwen38NPUWorker(BudgetedNPUWorker):
         self._qwen38_runtime = {**identity, 'cached_scale_layers': len(scales),
                                 'shared_lm_head': True, 'head_dtype': str(head_dtype),
                                 'gdn_output_int8_layers': gdn_int8}
+        fast_w4 = (config.additional_config or {}).get('qwen38_fast_w4', False)
+        self._qwen38_runtime['w4_decode'] = (install_fast_decode(model) if fast_w4 else
+            {'backend': 'upstream', 'layers': 128, 'fast_M': [], 'inner_precise': 0,
+             'fallback_inner_precise': 0, 'weight_layout': 'original NZ', 'extra_weight_bytes': 0})
 
     def runtime_status(self):
-        return {**super().runtime_status(), 'model_adaptation': self._qwen38_runtime}
+        identity = dict(self._qwen38_runtime)
+        if identity['w4_decode']['backend'] == 'native-tuned':
+            identity['w4_decode'] = {**identity['w4_decode'], 'capture_dispatch': dict(_fast_w4_dispatch)}
+        return {**super().runtime_status(), 'model_adaptation': identity}

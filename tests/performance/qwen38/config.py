@@ -7,6 +7,8 @@ from qwen_llm.config import ServingConfig
 class W4A8LinearBackend(str, Enum):
     UPSTREAM = "upstream"
     GMM = "gmm"
+    ASCENDC = "ascendc-w4a16"
+    NATIVE_TUNED = "native-tuned"
 
 
 @dataclass(frozen=True)
@@ -29,11 +31,27 @@ class ExperimentConfig(ServingConfig):
     w4a8_linear_backend: W4A8LinearBackend = W4A8LinearBackend.UPSTREAM
     optimizations: tuple[str, ...] = ()
     mixed_prefill_tokens: int | None = None
+    w4_selection: Path | None = None
+    w4_host_library: Path | None = None
 
     def __post_init__(self):
         super().__post_init__()
         object.__setattr__(self, "w4a8_linear_backend", W4A8LinearBackend(self.w4a8_linear_backend))
         object.__setattr__(self, "optimizations", tuple(self.optimizations))
+        for name in ('w4_selection','w4_host_library'):
+            value=getattr(self,name)
+            if value is not None:
+                object.__setattr__(self,name,Path(value).resolve())
+        if self.qwen38_fast_w4 and self.w4a8_linear_backend not in (W4A8LinearBackend.UPSTREAM,W4A8LinearBackend.NATIVE_TUNED):
+            raise ValueError('主程序W4开关不能与实验后端叠加')
+        if self.w4a8_linear_backend is W4A8LinearBackend.NATIVE_TUNED and (self.model_adaptation.value!='qwen38-910b-v1' or self.dtype.value!='bfloat16'):
+            raise ValueError('native-tuned仅支持生产Qwen3.8 BF16适配')
+        if self.w4a8_linear_backend is W4A8LinearBackend.ASCENDC:
+            if (self.model_adaptation.value != 'qwen38-910b-v1' or self.w4_selection is None
+                    or self.w4_host_library is None):
+                raise ValueError('AscendC后端要求生产Qwen3.8适配、筛选记录及队列桥动态库')
+        elif self.w4_selection is not None or self.w4_host_library is not None:
+            raise ValueError('筛选记录及动态库仅用于AscendC实验后端')
         if not set(self.optimizations) <= {'scale', 'head', 'cache', 'checkpoint', 'head-quant'}:
             raise ValueError('未知专项优化开关')
         if 'cache' in self.optimizations and 'checkpoint' in self.optimizations:

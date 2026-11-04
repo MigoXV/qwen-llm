@@ -1,0 +1,300 @@
+{
+  "schema_version": 1,
+  "order": [
+    "B1-fast",
+    "A1-native",
+    "A2-native",
+    "B2-fast"
+  ],
+  "production_path_complete": true,
+  "stable_positive": false,
+  "cases": [
+    {
+      "case": "generation512-c2",
+      "native_median_tps": 107.05948933106538,
+      "fast_median_tps": 108.27550501289554,
+      "median_tps_ratio": 1.0113583175991976,
+      "conservative_process_median_ratio": 0.9715784146630345,
+      "native_cv": 0.021074955542534364,
+      "fast_cv": 0.02722482317272432,
+      "stable_positive": false,
+      "runs": {
+        "B1-fast": {
+          "median_tps": 111.47120327861872,
+          "round_tps": [
+            109.76351006592374,
+            111.99997385675611,
+            111.47120327861872
+          ],
+          "ttft_ms": 865.6201140000001
+        },
+        "A1-native": {
+          "median_tps": 108.05480700585072,
+          "round_tps": [
+            107.73315952046931,
+            108.05480700585072,
+            111.13926112064524
+          ],
+          "ttft_ms": 862.183859
+        },
+        "A2-native": {
+          "median_tps": 104.87418229090548,
+          "round_tps": [
+            104.87418229090548,
+            106.38581914166143,
+            104.36664606621954
+          ],
+          "ttft_ms": 915.2249055
+        },
+        "B2-fast": {
+          "median_tps": 104.9837180874646,
+          "round_tps": [
+            106.78749995986735,
+            104.9837180874646,
+            104.69824352951868
+          ],
+          "ttft_ms": 920.7324075
+        }
+      }
+    },
+    {
+      "case": "generation512-c4",
+      "native_median_tps": 171.60358426938336,
+      "fast_median_tps": 192.91019800898113,
+      "median_tps_ratio": 1.124161822320393,
+      "conservative_process_median_ratio": 1.1022873000453248,
+      "native_cv": 0.011378217170321045,
+      "fast_cv": 0.01629270029532584,
+      "stable_positive": true,
+      "runs": {
+        "B1-fast": {
+          "median_tps": 195.92914313117623,
+          "round_tps": [
+            195.92914313117623,
+            194.81865191444737,
+            196.84654828481854
+          ],
+          "ttft_ms": 905.436188
+        },
+        "A1-native": {
+          "median_tps": 172.42718467619122,
+          "round_tps": [
+            175.41840870793976,
+            170.6036692856238,
+            172.42718467619122
+          ],
+          "ttft_ms": 899.7373605
+        },
+        "A2-native": {
+          "median_tps": 171.44129194191686,
+          "round_tps": [
+            168.99344896672287,
+            171.44129194191686,
+            171.76587659684986
+          ],
+          "ttft_ms": 927.720881
+        },
+        "B2-fast": {
+          "median_tps": 190.06429585113543,
+          "round_tps": [
+            190.06429585113543,
+            188.52115331683171,
+            191.00174410351488
+          ],
+          "ttft_ms": 951.168905
+        }
+      }
+    }
+  ],
+  "extra_allocated_hbm_bytes_at_ready": 0,
+  "runtime": {
+    "B1-fast": [
+      {
+        "worker": "qwen_llm.engine.qwen38_worker.Qwen38NPUWorker",
+        "device": "npu:0",
+        "graph_mode": "FULL_DECODE_ONLY",
+        "graphs_captured": 3,
+        "drafter": "AscendEagleProposer",
+        "speculative_tokens": 2,
+        "kv_cache_allocated_bytes": 24130412544,
+        "cache_block_sizes": [
+          1536
+        ],
+        "full_context_capacity": 4.036363636363636,
+        "npu_allocated_bytes": 45602853888,
+        "npu_reserved_bytes": 46221230080,
+        "model_adaptation": {
+          "name": "qwen38-910b-v1",
+          "recipe": "both",
+          "manifest_sha256": "e48aa3c177fe6294eb773f7482b3a3f8e6ea6ecaf200bd3695db0b20f54bdd83",
+          "cached_scale_layers": 128,
+          "shared_lm_head": true,
+          "head_dtype": "torch.int8",
+          "gdn_output_int8_layers": 48,
+          "w4_decode": {
+            "backend": "native-tuned",
+            "layers": 128,
+            "fast_M": [
+              6,
+              12
+            ],
+            "inner_precise": 1,
+            "fallback_inner_precise": 0,
+            "weight_layout": "original NZ",
+            "extra_weight_bytes": 0,
+            "dispatch": "opaque custom operator; native arithmetic kernel",
+            "counter_semantics": "eager/capture dispatches only; graph replays are not counted",
+            "capture_dispatch": {
+              "8192:0": 128,
+              "12:1": 256,
+              "6:1": 256,
+              "3:0": 256,
+              "1:0": 128
+            }
+          }
+        }
+      }
+    ],
+    "A1-native": [
+      {
+        "worker": "qwen_llm.engine.qwen38_worker.Qwen38NPUWorker",
+        "device": "npu:0",
+        "graph_mode": "FULL_DECODE_ONLY",
+        "graphs_captured": 3,
+        "drafter": "AscendEagleProposer",
+        "speculative_tokens": 2,
+        "kv_cache_allocated_bytes": 24130412544,
+        "cache_block_sizes": [
+          1536
+        ],
+        "full_context_capacity": 4.036363636363636,
+        "npu_allocated_bytes": 45602853888,
+        "npu_reserved_bytes": 46221230080,
+        "model_adaptation": {
+          "name": "qwen38-910b-v1",
+          "recipe": "both",
+          "manifest_sha256": "e48aa3c177fe6294eb773f7482b3a3f8e6ea6ecaf200bd3695db0b20f54bdd83",
+          "cached_scale_layers": 128,
+          "shared_lm_head": true,
+          "head_dtype": "torch.int8",
+          "gdn_output_int8_layers": 48,
+          "w4_decode": {
+            "backend": "upstream",
+            "layers": 128,
+            "fast_M": [],
+            "inner_precise": 0,
+            "fallback_inner_precise": 0,
+            "weight_layout": "original NZ",
+            "extra_weight_bytes": 0
+          }
+        }
+      }
+    ],
+    "A2-native": [
+      {
+        "worker": "qwen_llm.engine.qwen38_worker.Qwen38NPUWorker",
+        "device": "npu:0",
+        "graph_mode": "FULL_DECODE_ONLY",
+        "graphs_captured": 3,
+        "drafter": "AscendEagleProposer",
+        "speculative_tokens": 2,
+        "kv_cache_allocated_bytes": 24130412544,
+        "cache_block_sizes": [
+          1536
+        ],
+        "full_context_capacity": 4.036363636363636,
+        "npu_allocated_bytes": 45602853888,
+        "npu_reserved_bytes": 46221230080,
+        "model_adaptation": {
+          "name": "qwen38-910b-v1",
+          "recipe": "both",
+          "manifest_sha256": "e48aa3c177fe6294eb773f7482b3a3f8e6ea6ecaf200bd3695db0b20f54bdd83",
+          "cached_scale_layers": 128,
+          "shared_lm_head": true,
+          "head_dtype": "torch.int8",
+          "gdn_output_int8_layers": 48,
+          "w4_decode": {
+            "backend": "upstream",
+            "layers": 128,
+            "fast_M": [],
+            "inner_precise": 0,
+            "fallback_inner_precise": 0,
+            "weight_layout": "original NZ",
+            "extra_weight_bytes": 0
+          }
+        }
+      }
+    ],
+    "B2-fast": [
+      {
+        "worker": "qwen_llm.engine.qwen38_worker.Qwen38NPUWorker",
+        "device": "npu:0",
+        "graph_mode": "FULL_DECODE_ONLY",
+        "graphs_captured": 3,
+        "drafter": "AscendEagleProposer",
+        "speculative_tokens": 2,
+        "kv_cache_allocated_bytes": 24130412544,
+        "cache_block_sizes": [
+          1536
+        ],
+        "full_context_capacity": 4.036363636363636,
+        "npu_allocated_bytes": 45602853888,
+        "npu_reserved_bytes": 46221230080,
+        "model_adaptation": {
+          "name": "qwen38-910b-v1",
+          "recipe": "both",
+          "manifest_sha256": "e48aa3c177fe6294eb773f7482b3a3f8e6ea6ecaf200bd3695db0b20f54bdd83",
+          "cached_scale_layers": 128,
+          "shared_lm_head": true,
+          "head_dtype": "torch.int8",
+          "gdn_output_int8_layers": 48,
+          "w4_decode": {
+            "backend": "native-tuned",
+            "layers": 128,
+            "fast_M": [
+              6,
+              12
+            ],
+            "inner_precise": 1,
+            "fallback_inner_precise": 0,
+            "weight_layout": "original NZ",
+            "extra_weight_bytes": 0,
+            "dispatch": "opaque custom operator; native arithmetic kernel",
+            "counter_semantics": "eager/capture dispatches only; graph replays are not counted",
+            "capture_dispatch": {
+              "8192:0": 128,
+              "12:1": 256,
+              "6:1": 256,
+              "3:0": 256,
+              "1:0": 128
+            }
+          }
+        }
+      }
+    ]
+  },
+  "full_quality_tested": false,
+  "shutdown_policy": "0 or handled SIGTERM with Application shutdown complete; all probes and resource release must pass",
+  "policy": "min optimized process median / max native process median >=1.01 for both c2/c4; round CV <=5%; 3 rounds per case per start; two independent starts per mode",
+  "formal_service": {
+    "passed": true,
+    "owners": [
+      [
+        "3356294",
+        "VLLMEngineCor"
+      ]
+    ],
+    "test_port_released": true,
+    "text": "2"
+  },
+  "deployment": {
+    "profile": "qwen3.8-27b-optimized-v1",
+    "qwen38_fast_w4": false,
+    "default_promoted": false,
+    "reason": "c4 stable positive; c2 does not satisfy predeclared across-start conservative gain threshold. Keep production switch available but disabled.",
+    "formal_service_verified": true,
+    "actual_backend": "upstream",
+    "core_source_unchanged_since_measurement": true
+  },
+  "artifacts_root": "/home/qwen-models/reports/qwen3.8-27b/main-fast-w4-opaque-20261103"
+}

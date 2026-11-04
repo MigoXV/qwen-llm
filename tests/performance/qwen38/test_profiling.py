@@ -142,7 +142,8 @@ def test_offline_report_retains_partial_failed_case_without_worker_artifact(tmp_
 
 
 @pytest.mark.parametrize("backend,operator", [
-    ("upstream", "WeightQuantBatchMatmul"), ("gmm", "GroupedMatmul")])
+    ("upstream", "WeightQuantBatchMatmul"), ("gmm", "GroupedMatmul"),
+    ("native-tuned", "WeightQuantBatchMatmul")])
 def test_partial_device_trace_is_detected_against_actual_forward_count(tmp_path, backend, operator):
     (tmp_path / "manifest.json").write_text(json.dumps({
         "config": {"w4a8_linear_backend": backend},
@@ -163,3 +164,15 @@ def test_partial_device_trace_is_detected_against_actual_forward_count(tmp_path,
     assert result["valid_device_trace"]
     assert result["coverage"] == {"target_forwards": 2, "w4_layers": 1,
         "expected_matmuls": 2, "observed_matmuls": 1, "complete": False}
+
+
+def test_production_profile_preserves_validated_worker():
+    from tests.performance.qwen38.engine import diagnostic_worker
+    from tests.performance.qwen38.config import ExperimentConfig
+    from qwen_llm.config import ModelAdaptation
+    config = ExperimentConfig(model_adaptation=ModelAdaptation.QWEN38_910B_V1)
+    assert diagnostic_worker(config).endswith('.ProfilingQwen38NPUWorker')
+    assert diagnostic_worker(ExperimentConfig()).endswith('.ProfilingNPUWorker')
+    with pytest.raises(ValueError, match='生产基线'):
+        diagnostic_worker(ExperimentConfig(model_adaptation=ModelAdaptation.QWEN38_910B_V1,
+                                           optimizations=('scale',)))

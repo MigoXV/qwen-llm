@@ -76,6 +76,8 @@ def serve_model(
         options.append("--overlap-shared-expert")
     if "model_adaptation" in row:
         options += ["--model-adaptation", row["model_adaptation"]]
+    if row.get("qwen38_fast_w4", False):
+        options.append("--qwen38-fast-w4")
     os.execv(sys.executable, [sys.executable, "-m", "qwen_llm.commands.app", "serve", *options, *ctx.args])
 
 
@@ -113,6 +115,8 @@ def serve(
     overlap_shared_expert: bool = typer.Option(False, envvar="QWEN_OVERLAP_SHARED_EXPERT"),
     model_adaptation: ModelAdaptation = typer.Option(
         ModelAdaptation.NONE, envvar="QWEN_MODEL_ADAPTATION", help="已验收的模型专属执行适配。"),
+    qwen38_fast_w4: bool = typer.Option(False, "--qwen38-fast-w4/--no-qwen38-fast-w4",
+        envvar="QWEN38_FAST_W4", help="Qwen3.8在M=6/12时使用原生W4高性能计算分支。"),
 ) -> None:
     """启动单 worker V1 Responses 服务。"""
     import uvicorn
@@ -126,7 +130,8 @@ def serve(
                            gpu_memory_utilization=gpu_memory_utilization,
                            graph_mode=graph_mode, speculative_tokens=speculative_tokens,
                            async_scheduling=async_scheduling, npugraph_ex=npugraph_ex,
-                           overlap_shared_expert=overlap_shared_expert, model_adaptation=model_adaptation)
+                           overlap_shared_expert=overlap_shared_expert, model_adaptation=model_adaptation,
+                           qwen38_fast_w4=qwen38_fast_w4)
     uvicorn.run(create_app(config), host=host, port=port, workers=1,
                 timeout_graceful_shutdown=int(config.shutdown_grace))
 

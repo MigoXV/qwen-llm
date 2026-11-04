@@ -85,5 +85,6 @@ def serving_options(config, packages):
     identity = {'name': ADAPTATION, 'recipe': validated['recipe'],
                 'manifest_sha256': file_sha256(config.model_path / MANIFEST)}
     options = {'scheduler_cls': 'qwen_llm.engine.qwen38_cache.Qwen38CheckpointScheduler',
-               'additional_config': {'qwen38_adaptation': identity}}
+               'additional_config': {'qwen38_adaptation': identity,
+                                     'qwen38_fast_w4': config.qwen38_fast_w4}}
     return options, identity

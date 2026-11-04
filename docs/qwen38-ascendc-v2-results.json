@@ -1,0 +1,297 @@
+{
+  "schema_version": 2,
+  "scope": "short operator screen only; layer0, M=3/12/1536, gate_up/down, both layouts",
+  "decision": "stop_after_short_operator_screen",
+  "shape_layout_cases": 12,
+  "configurations_executed": 72,
+  "configurations_passed": 72,
+  "max_relative_l2_including_fp32_and_amplitude_probes": 0.002310786861926317,
+  "fallback_correct": true,
+  "measurement_loop_seconds_including_weight_preparation": 23.693931628018618,
+  "operator_comparison": [
+    {
+      "projection": "gate_up_proj",
+      "M": 3,
+      "layout": 0,
+      "configuration": [
+        128,
+        256,
+        16,
+        2,
+        1,
+        1
+      ],
+      "native_ms": 0.28921374678611755,
+      "candidate_ms": 1.3034862279891968,
+      "candidate_native_time_ratio": 4.5069995547381945,
+      "dequant_component_ms": 3.4799399375915527,
+      "bf16_gemm_component_ms": 0.4899137616157532,
+      "v1_ms": 6.344738960266113,
+      "fallback_ms": 0.4226199984550476
+    },
+    {
+      "projection": "gate_up_proj",
+      "M": 3,
+      "layout": 1,
+      "configuration": [
+        128,
+        256,
+        16,
+        2,
+        1,
+        1
+      ],
+      "native_ms": 0.20256249606609344,
+      "candidate_ms": 0.6501374840736389,
+      "candidate_native_time_ratio": 3.2095649327973708,
+      "dequant_component_ms": 1.2610399723052979,
+      "bf16_gemm_component_ms": 0.4896250069141388,
+      "v1_ms": 6.344738960266113,
+      "fallback_ms": 4.557021141052246
+    },
+    {
+      "projection": "gate_up_proj",
+      "M": 12,
+      "layout": 0,
+      "configuration": [
+        128,
+        256,
+        16,
+        2,
+        1,
+        1
+      ],
+      "native_ms": 0.14288374781608582,
+      "candidate_ms": 1.1223374605178833,
+      "candidate_native_time_ratio": 7.854899368698746,
+      "dequant_component_ms": 2.151010036468506,
+      "bf16_gemm_component_ms": 0.3766612410545349,
+      "v1_ms": 6.2960100173950195,
+      "fallback_ms": 0.14038875699043274
+    },
+    {
+      "projection": "gate_up_proj",
+      "M": 12,
+      "layout": 1,
+      "configuration": [
+        128,
+        512,
+        16,
+        3,
+        1,
+        1
+      ],
+      "native_ms": 0.1436374932527542,
+      "candidate_ms": 0.5267800092697144,
+      "candidate_native_time_ratio": 3.667426918560579,
+      "dequant_component_ms": 0.9813950061798096,
+      "bf16_gemm_component_ms": 0.37462374567985535,
+      "v1_ms": 6.2960100173950195,
+      "fallback_ms": 4.495049953460693
+    },
+    {
+      "projection": "gate_up_proj",
+      "M": 1536,
+      "layout": 0,
+      "configuration": [
+        128,
+        256,
+        128,
+        2,
+        1,
+        0
+      ],
+      "native_ms": 2.5592200756073,
+      "candidate_ms": 5.045929908752441,
+      "candidate_native_time_ratio": 1.9716670546807307,
+      "dequant_component_ms": 2.1452651023864746,
+      "bf16_gemm_component_ms": 9.534879684448242,
+      "v1_ms": 6.763820171356201,
+      "fallback_ms": 2.559530019760132
+    },
+    {
+      "projection": "gate_up_proj",
+      "M": 1536,
+      "layout": 1,
+      "configuration": [
+        128,
+        256,
+        128,
+        2,
+        1,
+        0
+      ],
+      "native_ms": 2.5551950931549072,
+      "candidate_ms": 3.8876500129699707,
+      "candidate_native_time_ratio": 1.5214689568653943,
+      "dequant_component_ms": 0.9811400175094604,
+      "bf16_gemm_component_ms": 9.536455154418945,
+      "v1_ms": 6.763820171356201,
+      "fallback_ms": 6.95234489440918
+    },
+    {
+      "projection": "down_proj",
+      "M": 3,
+      "layout": 0,
+      "configuration": [
+        128,
+        512,
+        16,
+        3,
+        1,
+        1
+      ],
+      "native_ms": 0.064970001578331,
+      "candidate_ms": 0.5471587777137756,
+      "candidate_native_time_ratio": 8.421714089911086,
+      "dequant_component_ms": 1.0904300212860107,
+      "bf16_gemm_component_ms": 0.1878024935722351,
+      "v1_ms": 3.0580363273620605,
+      "fallback_ms": 0.06241999939084053
+    },
+    {
+      "projection": "down_proj",
+      "M": 3,
+      "layout": 1,
+      "configuration": [
+        128,
+        256,
+        16,
+        2,
+        1,
+        1
+      ],
+      "native_ms": 0.06471875309944153,
+      "candidate_ms": 0.25511375069618225,
+      "candidate_native_time_ratio": 3.9418829702141416,
+      "dequant_component_ms": 0.5102350115776062,
+      "bf16_gemm_component_ms": 0.18738749623298645,
+      "v1_ms": 3.0580363273620605,
+      "fallback_ms": 2.15631365776062
+    },
+    {
+      "projection": "down_proj",
+      "M": 12,
+      "layout": 0,
+      "configuration": [
+        128,
+        256,
+        16,
+        2,
+        1,
+        1
+      ],
+      "native_ms": 0.10886000096797943,
+      "candidate_ms": 0.5459262728691101,
+      "candidate_native_time_ratio": 5.014939077850011,
+      "dequant_component_ms": 1.089264988899231,
+      "bf16_gemm_component_ms": 0.18770000338554382,
+      "v1_ms": 3.0593411922454834,
+      "fallback_ms": 0.10770375281572342
+    },
+    {
+      "projection": "down_proj",
+      "M": 12,
+      "layout": 1,
+      "configuration": [
+        128,
+        256,
+        16,
+        2,
+        1,
+        1
+      ],
+      "native_ms": 0.10943250358104706,
+      "candidate_ms": 0.25518375635147095,
+      "candidate_native_time_ratio": 2.3318826491297324,
+      "dequant_component_ms": 0.5072500109672546,
+      "bf16_gemm_component_ms": 0.1874912530183792,
+      "v1_ms": 3.0593411922454834,
+      "fallback_ms": 2.212477445602417
+    },
+    {
+      "projection": "down_proj",
+      "M": 1536,
+      "layout": 0,
+      "configuration": [
+        128,
+        256,
+        128,
+        2,
+        1,
+        0
+      ],
+      "native_ms": 1.3169150352478027,
+      "candidate_ms": 2.5880300998687744,
+      "candidate_native_time_ratio": 1.9652217725510188,
+      "dequant_component_ms": 1.0893950462341309,
+      "bf16_gemm_component_ms": 4.755259990692139,
+      "v1_ms": 3.8141748905181885,
+      "fallback_ms": 1.3245350122451782
+    },
+    {
+      "projection": "down_proj",
+      "M": 1536,
+      "layout": 1,
+      "configuration": [
+        128,
+        256,
+        128,
+        2,
+        1,
+        0
+      ],
+      "native_ms": 1.319985032081604,
+      "candidate_ms": 2.00362491607666,
+      "candidate_native_time_ratio": 1.5179148758353438,
+      "dequant_component_ms": 0.5102350115776062,
+      "bf16_gemm_component_ms": 4.754089832305908,
+      "v1_ms": 3.8141748905181885,
+      "fallback_ms": 3.4624199867248535
+    }
+  ],
+  "full_validation_completed": false,
+  "candidate_service_tested": false,
+  "default_promoted": false,
+  "long_quality_baseline": "Interrupted on user correction; partial records retained and excluded from complete-baseline claims.",
+  "build": {
+    "environment": {
+      "device": "Ascend910B4-1",
+      "cann_root": "/home/qwen-upgrade-20261015/cann/cann-9.1.1",
+      "packages": {
+        "torch": "2.9.1",
+        "torch-npu": "2.9.1",
+        "vllm": "0.18.0+empty",
+        "vllm-ascend": "0.18.0+torch291.cann911",
+        "transformers": "4.57.6"
+      },
+      "TASK_QUEUE_ENABLE": "1"
+    },
+    "host_sha256": "e2b18eb1ecf64438101c8dae1b73f405aefd18fed1a1d3d4476cee1a408e7c07",
+    "raw_library_sha256": "6e52807113488ae3c9893c7715db7022769de271e95f21857c6b3e23431151ec",
+    "model_config_sha256": "191e0af232104ed8b65258cf3fb2b842e288008baca7633c11b82a1ac7203aab",
+    "python_source_sha256": {
+      "verify_ascendc_v2.py": "096a3bf43d7c3b01a8531d54052a4f765f008296a23c5c52cbe62df73a2ebc06",
+      "ascendc_v2.py": "b8c33d82cfdae432b6c5f3cacd9b8cbce159f69b5d8acc3fe5f6afda1444b25b",
+      "ascendc_v2_runtime.py": "5b397b4ab56947227ed3a531419532bee8da126c853b7e6f5a6f9b9f1425baf7",
+      "ascendc_v2_candidate.py": "3ae7eb46d5f831c7858d9b351afb8e7d9141b20895063805b6644edfab8bf306",
+      "quantization.py": "4fd030b5895444e74499fe227a873895e4fa2878edd3b55fdd1955f93ab29c28"
+    },
+    "workspace_bytes": 620603392,
+    "timing_method": "5 alternating paired ACL Graph event spans; 16 calls for M<=117, 4 otherwise; divided by call count. Single replay also retained. Includes device graph scheduling; not pure kernel time."
+  },
+  "raw_record": "/home/qwen-models/reports/qwen3.8-27b/marlin-v2-20261103/quick/result.json",
+  "smoke_record": "/home/qwen-models/reports/qwen3.8-27b/marlin-v2-20261103/smoke-13/result.json",
+  "service_lifecycle": {
+    "passed": true,
+    "owners": [
+      [
+        "3295894",
+        "VLLMEngineCor"
+      ]
+    ],
+    "test_port_released": true,
+    "text": "2"
+  },
+  "job_wall_seconds": 56.057379005942494
+}

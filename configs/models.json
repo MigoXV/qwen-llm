@@ -247,6 +247,9 @@
     "validation_report": "/home/qwen-models/reports/qwen3.8-27b/optimization-20261022/combined-both-b8192",
     "quality_report": "/home/qwen-models/reports/qwen3.8-27b/optimization-20261022/combined-both-b8192/quality.json",
     "production_validation_report": "/home/qwen-models/reports/qwen3.8-27b/optimization-20261022/production-candidate",
-    "limitations": "仅本机已验收的Ascend910B/固定依赖、四路64K配置；GSM8K1269/1319，基线1275；冷长文仍受FFN反量化限制。"
+    "limitations": "仅本机已验收的Ascend910B/固定依赖、四路64K配置；GSM8K1269/1319，基线1275；冷长文仍受FFN反量化限制。",
+    "qwen38_fast_w4": true,
+    "qwen38_fast_w4_report": "docs/qwen38-main-fast-w4-results.json",
+    "qwen38_fast_w4_validation": "short_throughput_mixed"
   }
 ]
