@@ -22,8 +22,10 @@ class NvidiaConfig(InferenceConfig):
     attention_backend: str | None = None
     experimental: bool = False
     vision: bool = False
-    max_images_per_prompt: int = 1
+    max_images_per_prompt: int = 32
     trim_history_images: bool = False
+    max_image_pixels_per_prompt: int = 32_000_000
+    max_visual_tokens_per_prompt: int = 16384
 
     def __post_init__(self):
         super().__post_init__()
@@ -43,6 +45,14 @@ class NvidiaConfig(InferenceConfig):
             raise ValueError('视觉输入目前仅供实验性入口使用')
         if self.max_images_per_prompt < 1:
             raise ValueError('每请求图像数量须至少为 1')
+        if self.max_image_pixels_per_prompt < 1 or self.max_visual_tokens_per_prompt < 1:
+            raise ValueError('视觉资源预算须大于 0')
+
+
+class NvidiaVisionInputError(ValueError):
+    def __init__(self, message, code='unsupported_parameter'):
+        super().__init__(message)
+        self.code = code
 
 
 def inspect_model(model: Path) -> dict:
@@ -68,6 +78,33 @@ def has_visual_weights(model: Path) -> bool:
 
 
 class NvidiaEngine(AsyncGenerationEngine):
+    async def prepare(self, messages, effort, *, tools=None):
+        # Ascend continues to use AsyncGenerationEngine.prepare unchanged.
+        if not self.config.vision:
+            return await super().prepare(messages, effort, tools=tools)
+        images = [p['image'] for m in messages if isinstance(m.get('content'), list)
+                  for p in m['content'] if p.get('type') == 'image']
+        if sum(im.width * im.height for im in images) > self.config.max_image_pixels_per_prompt:
+            raise NvidiaVisionInputError('请求图片总像素超过视觉处理预算')
+        prompt = await super().prepare(messages, effort, tools=tools)
+        if not images:
+            return prompt
+        from vllm.renderers.inputs.preprocess import parse_model_prompt
+        parsed = parse_model_prompt(self.llm.model_config, prompt)
+        try:
+            (expanded,) = await self.llm.renderer.render_cmpl_async([parsed])
+        except ValueError as exc:
+            raise NvidiaVisionInputError(str(exc)) from exc
+        # Use the exact preprocessed input for generation: no second expansion.
+        visual_tokens = sum(x.length for x in expanded['mm_placeholders']['image'])
+        if visual_tokens > self.config.max_visual_tokens_per_prompt:
+            raise NvidiaVisionInputError('请求视觉 token 超过视觉处理预算')
+        if len(expanded['prompt_token_ids']) > self.config.max_input_tokens:
+            raise NvidiaVisionInputError(
+                f'文本与视觉展开后输入超过 {self.config.max_input_tokens} tokens',
+                'context_length_exceeded')
+        return expanded
+
     def metrics_text(self):
         from prometheus_client import generate_latest
         return generate_latest()
@@ -141,6 +178,8 @@ class NvidiaEngine(AsyncGenerationEngine):
             'experimental': config.experimental,
             'supports_vision': config.vision,
             'max_images_per_prompt': config.max_images_per_prompt if config.vision else None,
+            'max_image_pixels_per_prompt': config.max_image_pixels_per_prompt if config.vision else None,
+            'max_visual_tokens_per_prompt': config.max_visual_tokens_per_prompt if config.vision else None,
             'kv_scale_method': ('checkpoint scales when present, otherwise vLLM default 1.0; '
                                 'actual values in workers.kv_cache_scales') if config.kv_cache_dtype != 'auto' else None,
             'supports_thinking': self.supports_thinking, 'supports_tools': self.supports_tools,

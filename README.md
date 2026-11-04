@@ -260,3 +260,11 @@ Qwen3.6 32K 模型已实际接受 18,068 token 的真实会议转写输入并完
 ### Responses 推理字段兼容
 
 `POST /v1/responses` 接受 `reasoning.summary`（`auto`、`concise`、`detailed` 或 `null`）和 `include: ["reasoning.encrypted_content"]`；`include` 也可为空列表或 `null`。这两个选项仅用于兼容调用方，不生成额外摘要或加密内容，不改变 `reasoning.effort`。思考模式仍返回明文 `reasoning_text`，摘要列表保持为空，响应的 `reasoning.summary` 为 `null`，不返回 `encrypted_content`。多轮调用应回传明文推理历史；输入加密推理历史仍会明确报错。其他未知字段和非法选项仍被拒绝。
+
+## NVIDIA 视觉资源预算说明
+
+NVIDIA 实验入口启用 `--vision` 时，按 vLLM 实际展开后的文本与视觉 token 总数检查输入上限，并将同一份预处理结果用于生成和 usage 计量。输入上限仍为服务总上下文减去配置的最大输出额度。纯文本和 Ascend 910B 路径沿用原有处理。
+
+图片数量默认上限放宽为 32，仅作保护上限；可通过 `--max-images-per-prompt` 调整。另有两个独立预算：`--max-image-pixels-per-prompt` 默认 32000000，约束请求图片总像素；`--max-visual-tokens-per-prompt` 默认 16384，约束展开后的视觉 token 数。超预算返回 400；总上下文不足返回 `context_length_exceeded`。像素检查在多模态预处理前执行，视觉 token 检查在 CPU 预处理后、提交 GPU 生成前执行。这些是每请求准入预算，不是 GPU 显存硬分区。
+
+`--trim-history-images` 仍为显式可选：开启后按图片张数裁剪旧历史，当前轮图片不会被裁掉；需要保留完整历史时不要开启。现有单图像大小、格式、像素及 HTTP body 限制仍生效。
