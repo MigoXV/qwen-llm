@@ -108,6 +108,9 @@ def profile_model(
     speculative_tokens: int | None = typer.Option(None, min=0, max=3, envvar="QWEN_PROFILE_MTP"),
     runner: Runner | None = typer.Option(None, envvar="QWEN_PROFILE_RUNNER"),
     w4a8_linear_backend: W4A8LinearBackend | None = typer.Option(None, envvar="QWEN_PROFILE_W4_BACKEND"),
+    qwen38_fast_w4: bool | None = typer.Option(None, "--qwen38-fast-w4/--no-qwen38-fast-w4"),
+    w4_selection: Path | None = typer.Option(None, exists=True, dir_okay=False, envvar="QWEN_PROFILE_W4_SELECTION"),
+    w4_host_library: Path | None = typer.Option(None, exists=True, dir_okay=False, envvar="QWEN_PROFILE_W4_HOST_LIBRARY"),
     max_input_tokens: int | None = typer.Option(None, min=1, envvar="QWEN_PROFILE_MAX_INPUT"),
     kv_cache_gib: float | None = typer.Option(None, min=0.125, envvar="QWEN_PROFILE_KV_GIB"),
     batch_tokens: int | None = typer.Option(None, min=4, envvar="QWEN_PROFILE_BATCH_TOKENS"),
@@ -130,6 +133,8 @@ def profile_model(
         selected_suite = ProfileSuite(suite)
         config = config_from_catalog(catalog, model_name, speculative_tokens=speculative_tokens,
             runner=runner, w4a8_linear_backend=w4a8_linear_backend, max_input_tokens=max_input_tokens,
+            qwen38_fast_w4=qwen38_fast_w4,
+            w4_selection=w4_selection, w4_host_library=w4_host_library,
             kv_cache_bytes=int(kv_cache_gib * 1024**3) if kv_cache_gib is not None else None,
             batch_tokens=batch_tokens, mixed_prefill_tokens=mixed_prefill_tokens,
             optimizations=tuple(x for x in optimizations.split(",") if x))

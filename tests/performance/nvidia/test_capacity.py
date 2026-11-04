@@ -5,10 +5,12 @@ from tests.performance.nvidia.capacity import passed
 
 def complete():
     return {'instance_unchanged': True, 'pool_can_hold_all':True, 'rounds': [
-        {'all_full_output': True, 'all_exact_input': True, 'isolated': True, 'preemptions_delta': 0}]}
+        {'all_full_output': True, 'all_exact_input': True, 'all_uncached': True,
+         'isolated': True, 'preemptions_delta': 0}]}
 
 
 @pytest.mark.parametrize('field,value', [('all_full_output', False), ('all_exact_input', False),
+                                       ('all_uncached', False),
                                        ('isolated', False), ('preemptions_delta', 1)])
 def test_queued_recomputed_shortened_or_contaminated_result_is_not_capacity(field, value):
     record = complete()

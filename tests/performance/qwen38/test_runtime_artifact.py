@@ -70,3 +70,11 @@ def test_rejects_other_models_and_untested_dependency_builds(verified):
 def test_rejects_untested_serving_combinations(verified,change):
     config,packages=verified
     with pytest.raises(ValueError):serving_options(replace(config,**change),packages)
+
+
+def test_fast_decode_flag_is_forwarded_only_as_production_configuration(verified):
+    config,packages=verified
+    config=replace(config,model_adaptation=ADAPTATION,qwen38_fast_w4=True)
+    options,identity=serving_options(config,packages)
+    assert options['additional_config']['qwen38_fast_w4'] is True
+    assert 'tests.' not in json.dumps(options)

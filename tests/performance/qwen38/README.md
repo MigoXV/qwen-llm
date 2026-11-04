@@ -2,6 +2,8 @@
 
 此目录包含压测、质量评测、量化导出、算子校验、profiling、结果归因和未验收的优化原型。生产包不导入此目录，主程序没有实验命令或 profiling 配置。普通 pytest 不加载模型；只有显式执行下面的硬件实验命令才会占用 NPU。
 
+2026-11-04的KV及词表INT4实验见[KV容量报告](../../../docs/qwen38-kv-capacity.md)和[词表量化报告](../../../docs/qwen38-vocab4.md)。`kv_capacity`强制主模型图模式，MTP2草稿也使用图；早期eager数据排除。`--speed-tokens`明确区分64/512输出口径，`--speed-concurrencies 4`只做四路短测，`--profile`在计时完成后另采短trace。`--hbm-limit-mib`约束整卡采样HBM，`--long`要求实际四路指定长度输出，不把池计算当作实测。每次使用新目录，通过独占控制器执行并等待正式服务恢复核验；汇总用`summarize_kv_capacity 原始目录 --graph`。
+
 本轮仅验证 Ascend910B4 单卡、TP1、64层 dense Qwen3.8-27B，BF16 残差、FFN INT4 group128 / NZ 与现有其他混合精度。原始和当前量化模型保持只读。重新量化候选在 `/home/model-bin/Qwen/` 下建立独立目录，默认不发布到远端、不切换生产别名。
 
 ## 环境与入口
@@ -75,3 +77,51 @@ poetry run python -m tests.performance.qwen38.verify_cached_scale \
 质量门槛：基线通过的固定答案题不新增失败；GSM8K沿用推导并输出FINAL的提示，输出预算2048，避免将截断误算为量化错误。完整GSM8K准确率下降不超过1个百分点；代码合格数不低于基线；长文检索和并发隔离通过。性能至少五轮，独立新进程复测；主要吞吐提升5%，或长文热缓存TTFT下降20%，或混合卡顿下降50%，其他核心场景退化不超过5%。小收益优化单独报告重复性。
 
 通过门槛后，必要执行适配位于`src/qwen_llm/engine/qwen38*.py`；测试入口复用这些实现，采集、导出和验证代码始终保留在此目录。失败候选保留记录且不进入生产默认配置。
+
+## 当前生产优化版的完整基线
+
+当前模型应显式从生产配置表选择，避免诊断默认值选择原始混合量化版本：
+
+```bash
+bash tests/performance/qwen38/baseline.sh /home/qwen-models/reports/qwen3.8-27b/FRESH_BASELINE
+```
+
+输出路径必须是不存在的绝对路径。启动器停止本机 `qwen-llm.service`，执行当前
+`qwen3.8-27b-optimized-v1` 的23场景五轮、完整1319题质量集、长文与边界验证、
+前缀增长验证和3600秒稳定性测试；退出时恢复正式服务，并等待其就绪。
+因此运行期间正式8100端口会暂时不可用。其他NPU拥有进程仍由现有盘点检查拒绝，
+启动器不会按进程名批量终止任务。
+
+`ProfilingQwen38NPUWorker` 保留生产Worker的加载、量化及产物校验，加载完成后才
+安装观测；生产检查点分配池也纳入不变量检查。生产适配不能叠加旧实验开关或GMM
+后端，避免将不同实现当成同一基线。新内核及其对比尚需单独完成验收，不能以基线
+任务启动成功代替优化完成。
+
+## AscendC W4A16 算子实验
+
+2026-11-03的完整实测及负结果见 [实验报告](../../../docs/qwen38-ascendc.md)。
+
+构建、数值验证、图重放和显式模型接入见 [算子实验说明](kernels/README.md)。
+实验覆盖分阶段/Split-K、重排权重流水和原生NZ流水；三层真实FFN使用相同配置
+均至少降低10%耗时后才进入模型筛选。主机桥保留TorchNPU任务队列语义，未命中
+形状使用现有原生算子。服务接入要求显式提供筛选记录及动态库，并核对版本与哈希。
+
+本轮服务采用门槛同时约束生成吞吐和冷首字延迟：生成场景TPS几何均值至少提升5%，
+冷长输入TTFT几何均值至少降低5%；每个核心场景TPS不低于基线95%，长输入TTFT
+不高于基线105%。同时保留质量、四路64K容量、一小时稳定性和新增HBM不超过1GiB
+的约束，并用新进程复测基线检查5%以内的漂移。算子被拒绝时保存负结果，
+不虚构候选服务TPS，也不改变正式服务默认配置。
+
+## AscendC W4A16 V2
+
+[V2 实验说明](../../../docs/qwen38-ascendc-v2.md)记录 group128 成批反量化、K 环形流水、FP32 累加、并行 Split-K、`blocked64x128-v1` 权重布局和逆布局原生回退。安装仅接受两次独立完整三层复核的共同配置，并核对构建、源码和环境哈希。原生 NZ 与专用布局都使用相同输入和成组图计时；V1 对照已修正 INT4 搬运字节数，并重新计时。
+
+构建入口：`kernels/build.sh 输出目录 w4a16_v2.cpp`，主机桥：`build_ascendc_host --source host_v2.cpp`。优先运行短测：`verify_ascendc_v2 --phase quick`。完整验证入口：`verify_ascendc_v2_smoke`、`verify_ascendc_v2 --phase tune|validate`；两次复核交集：`select_ascendc_v2`；报告：`summarize_ascendc_v2 实验目录`。各入口通过 `poetry run python -m tests.performance.qwen38.<模块>` 调用。
+
+独占实验使用 `ascendc_v2_experiment --root 新实验目录` 控制器，队列中的不可变 JSON 给出 argv、env、timeout 和 progress。每个任务保存完整源码快照与退出状态。任务结束后写入 `finish.json`，等待 `controller-final.json` 真实推理和资源核验通过；启动后台任务不代表实验完成。
+
+## native-tuned 计算分支
+
+见 [V3 实测报告](../../../docs/qwen38-ascendc-v3.md)。`--w4a8-linear-backend native-tuned` 在现有 BF16 尺度缓存、NZ 权重上仅对 M=6/12 选择 `inner_precise=1`。该参数属于原生算子计算分支，未将它包装成自定义内核收益。其余形状走默认路径，不增加权重副本。默认短测三档 generation512 吞吐，不运行完整质量集。自定义全 K 面板与滚动 ND 内核分别由 `verify_w4_panel` 和 `verify_w4_panel --stream` 验证；两者均保留为实验原型。
+
+该入口现在复用主程序的不透明算子分派，实际图捕获模式由 `/health/ready` 中 `model_adaptation.w4_decode.capture_dispatch` 确认。旧 V3 服务的 Python 分支被动态编译固定，旧 +4.7%/+3.0% 数据已撤销为加速证据；有效对照见 [主程序接入报告](../../../docs/qwen38-main-fast-w4.md)。使用已启用加速的模型配置做原生对照时，须加 `--no-qwen38-fast-w4 --w4a8-linear-backend upstream`，避免继承模型目录中的加速开关。

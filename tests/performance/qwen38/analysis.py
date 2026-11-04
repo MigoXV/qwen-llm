@@ -20,6 +20,12 @@ def interval_union(intervals):
 def module_group(name):
     value = name.lower()
     compact = value.replace("_", "").replace(" ", "")
+    if 'restore_nz_v2' in value:return 'FFN V2 inverse layout'
+    if 'dequant_v2' in value:return 'FFN V2 antiquant'
+    if 'stream_v2' in value:return 'FFN V2 rolling-K matmul'
+    if 'gemm_nz_v2' in value:return 'FFN V2 batched matmul'
+    if 'reduce_parts' in value:return 'FFN Split-K reduction'
+    if 'pipeline_nz_gemm' in value:return 'FFN V1 NZ matmul'
     if "weightquantbatchmatmul" in compact:
         return "FFN INT4 antiquant matmul"
     if "groupedmatmul" in compact:
@@ -39,6 +45,20 @@ def module_group(name):
     if any(key in value for key in ("memcpy", "memset", "transdata", "contiguous", "cast", "index")):
         return "copy / layout / indexing"
     return "other / unassigned"
+
+
+def custom_ffn_calls(kernels):
+    counts=Counter();unknown=0
+    for event in kernels:
+        name=event['name'].lower();kind=event.get('args',{}).get('Task Type','')
+        if any(key in name for key in ('stream_v2','gemm_nz_v2','pipeline_nz_gemm')):
+            if kind in {'AI_CORE','MIX_AIC'}:counts['matmul']+=1
+            elif kind in {'AI_VECTOR_CORE','MIX_AIV'}:counts['vector_partner']+=1
+            else:unknown+=1
+        if 'dequant_v2' in name:counts['dequant']+=1
+        if 'restore_nz_v2' in name:counts['inverse_layout']+=1
+        if 'reduce_parts' in name:counts['reduce']+=1
+    return {'calls':dict(counts),'unknown_matmul_roles':unknown}
 
 
 class ScopeIndex:
@@ -259,6 +279,7 @@ def analyze_trace(path: Path, *, decode_only_graph=False):
             "device_control_accumulated_us": sum(e["dur"] for e in controls),
             "groups_us": dict(groups), "top_operators": top, "host_scopes": dict(scope_totals),
             "attribution": attribution, "kernel_shapes": kernel_shape_details(path, origin, kernels),
+            "custom_ffn":custom_ffn_calls(kernels),
             "host_costs": host_costs(events, scopes, processes),
             "valid_device_trace": bool(kernels)}
 
@@ -332,12 +353,12 @@ def analyze_directory(root: Path):
     modules_path = root / "modules.json"
     modules = json.loads(modules_path.read_text())[0] if modules_path.exists() else []
     w4_layers = sum((row.get("role", "target") == "target"
-        and ".mlp." in row["name"] and row["parameters"].get("weight", {}).get("dtype") == "torch.int32")
+        and ".mlp." in row["name"] and row["parameters"].get("weight", {}).get("dtype") in {"torch.int32","torch.uint8"})
         for row in modules)
     for path in sorted(root.rglob("trace_view.json")):
         trace = analyze_trace(path, decode_only_graph=decode_only_graph)
         backend = manifest["config"].get("w4a8_linear_backend") if manifest else None
-        if w4_layers and backend in {"upstream", "gmm"}:
+        if w4_layers and backend in {"upstream", "gmm", "ascendc-w4a16", "native-tuned"}:
             case = next((c for c in manifest["cases"] if path.parents[1].name.startswith(c["name"] + "-trace")), None)
             worker_path = root / case["name"] / "trace-worker.json" if case else None
             if worker_path and worker_path.exists():
@@ -347,8 +368,10 @@ def analyze_directory(root: Path):
                 operator = "groupedmatmul" if backend == "gmm" else "weightquantbatchmatmul"
                 observed = sum(op["calls"] for op in trace["top_operators"]
                                if operator in op["name"].lower().replace("_", ""))
+                if backend=='ascendc-w4a16':observed+=trace['custom_ffn']['calls'].get('matmul',0)
                 trace["coverage"] = {"target_forwards": forwards, "w4_layers": w4_layers,
-                    "expected_matmuls": expected, "observed_matmuls": observed, "complete": expected == observed}
+                    "expected_matmuls": expected, "observed_matmuls": observed,
+                    "complete": expected == observed and not trace['custom_ffn']['unknown_matmul_roles']}
         result["traces"].append(trace)
     if manifest is not None:
         for case in manifest["cases"]:

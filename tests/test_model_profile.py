@@ -114,3 +114,29 @@ def test_production_commands_exclude_experiment_entry_points():
     assert result.exit_code == 0
     for name in ('benchmark', 'evaluate', 'profile-report', 'quantize-w4a8', 'smoke'):
         assert name not in result.output
+
+
+def test_fast_w4_production_flag_reaches_config_and_can_be_disabled(monkeypatch):
+    import uvicorn
+    import qwen_llm.servicer.app as service
+    configs=[]
+    monkeypatch.setattr(service,'create_app',lambda config:configs.append(config) or object())
+    monkeypatch.setattr(uvicorn,'run',lambda *args,**kwargs:None)
+    args=['serve','--model-adaptation','qwen38-910b-v1','--qwen38-fast-w4']
+    assert CliRunner().invoke(app,args).exit_code==0
+    assert configs[-1].qwen38_fast_w4
+    assert CliRunner().invoke(app,[*args,'--no-qwen38-fast-w4']).exit_code==0
+    assert not configs[-1].qwen38_fast_w4
+    from qwen_llm.config import ServingConfig
+    with pytest.raises(ValueError):ServingConfig(qwen38_fast_w4=True)
+
+
+def test_catalog_forwards_fast_w4_and_keeps_explicit_rollback(tmp_path,monkeypatch):
+    catalog=tmp_path/'models.json'
+    catalog.write_text(json.dumps([{'name':'fast','path':'/models/qwen38','kv_cache_gib':22.5,
+        'model_adaptation':'qwen38-910b-v1','qwen38_fast_w4':True}]))
+    invoked=[]
+    monkeypatch.setattr(os,'execv',lambda executable,args:invoked.extend(args))
+    result=CliRunner().invoke(app,['serve-model','fast','--catalog',str(catalog),'--no-qwen38-fast-w4'])
+    assert result.exit_code==0,result.output
+    assert '--qwen38-fast-w4' in invoked and invoked[-1]=='--no-qwen38-fast-w4'

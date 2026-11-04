@@ -9,6 +9,7 @@ import torch
 import torch_npu
 
 from qwen_llm.engine.ascend_worker import BudgetedNPUWorker
+from qwen_llm.engine.qwen38_worker import Qwen38NPUWorker
 
 
 class ProfilingNPUWorker(BudgetedNPUWorker):
@@ -19,6 +20,9 @@ class ProfilingNPUWorker(BudgetedNPUWorker):
             from .gmm import install_native_w4a8
             install_native_w4a8()
         super().load_model()
+        self._initialize_observers()
+
+    def _initialize_observers(self):
         self._case = None
         self._capture = False
         self._steps = []
@@ -60,6 +64,13 @@ class ProfilingNPUWorker(BudgetedNPUWorker):
             'cached_scale_layers': sum(m['parameters']['weight_scale_second']['dtype'] == 'torch.bfloat16' for m in scales),
             'gdn_output_int8_layers': sum(m['role'] == 'target' and m['name'].endswith('linear_attn.out_proj')
                 and m['parameters'].get('weight', {}).get('dtype') == 'torch.int8' for m in modules)}
+        if hasattr(self,'_native_tuned_identity'):
+            result['experiment']['w4_backend']=self._native_tuned_identity
+        if hasattr(self,'_ascendc_identity'):
+            result['experiment']['w4_backend'] = self._ascendc_identity
+            result['experiment']['w4_host_dispatch_counts'] = list(
+                torch.ops.qwen_w4_v2.counts() if self._ascendc_identity.get('schema_version')==2
+                else torch.ops.qwen_w4.dispatch_counts())
         return result
 
     def _install_scheduler_observer(self):
@@ -116,10 +127,13 @@ class ProfilingNPUWorker(BudgetedNPUWorker):
         Scheduler.make_stats = observed_stats
         BlockPool._maybe_evict_cached_block = observed_evict
         BlockPool.get_new_blocks = observed_allocate
-        if set((self.vllm_config.additional_config or {}).get('qwen_experiment', [])) & {'cache', 'checkpoint'}:
+        production = 'qwen38_adaptation' in (self.vllm_config.additional_config or {})
+        if production or set((self.vllm_config.additional_config or {}).get('qwen_experiment', [])) & {'cache', 'checkpoint'}:
             from .cache import FreeFirstBlockPool
             from .runtime_cache_candidate import Qwen38BlockPool
             selected_pool = Qwen38BlockPool if 'checkpoint' in self.vllm_config.additional_config.get('qwen_experiment', []) else FreeFirstBlockPool
+            if production:
+                from qwen_llm.engine.qwen38_cache import Qwen38BlockPool as selected_pool
             candidate_allocate = selected_pool.get_new_blocks
             @wraps(candidate_allocate)
             def observed_candidate(pool, *args, **kwargs):
@@ -327,3 +341,20 @@ class ProfilingNPUWorker(BudgetedNPUWorker):
             self._device_events[-1][2] = torch.npu.Event(enable_timing=True)
             self._device_events[-1][2].record()
         return result
+
+
+class ProfilingQwen38NPUWorker(ProfilingNPUWorker, Qwen38NPUWorker):
+    """保留已验收的生产加载路径，只在加载后安装诊断观测。"""
+
+    def load_model(self):
+        options = self.vllm_config.additional_config or {}
+        if options.get('qwen_experiment') or options.get('qwen_w4a8_linear_backend', 'upstream') not in {'upstream','ascendc-w4a16','native-tuned'}:
+            raise ValueError('生产基线不允许叠加旧实验适配或未验收后端')
+        Qwen38NPUWorker.load_model(self)
+        if options.get('qwen_w4a8_linear_backend') == 'ascendc-w4a16':
+            from .ascendc_candidate import install
+            install(self)
+        if options.get('qwen_w4a8_linear_backend')=='native-tuned':
+            from .native_tuned import install
+            install(self)
+        self._initialize_observers()
