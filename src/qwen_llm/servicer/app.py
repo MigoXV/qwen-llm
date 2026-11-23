@@ -19,6 +19,7 @@ from prometheus_client import CollectorRegistry, Counter, Gauge, Histogram, gene
 from qwen_llm.config import InferenceConfig, Runner, ServingConfig
 from qwen_llm.engine.base import Engine
 from qwen_llm.engine.vllm import V1Engine
+from qwen_llm.engine.nvidia import NvidiaVisionInputError
 from qwen_llm.inferencers.text import split_thinking
 from qwen_llm.servicer.schema import ResponseRequest
 from qwen_llm.servicer.chat import ChatRequest, PreparedChat, ToolOutputError, parse_tools, project
@@ -193,6 +194,9 @@ def create_app(config: InferenceConfig | None = None, engine: Engine | None = No
         except asyncio.TimeoutError:
             release()
             return error("预处理超时", 504, "request_timeout")
+        except NvidiaVisionInputError as exc:
+            release()
+            return error(str(exc), 400, exc.code)
         except Exception:
             release()
             logger.exception("prompt preparation failed")

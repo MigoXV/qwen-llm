@@ -1,0 +1,18 @@
+{
+  "label": "gpu3-abliterated-vocab4-40g-c2-256k",
+  "gpu": 3,
+  "context": 262144,
+  "max_output_tokens": 32768,
+  "concurrency": 2,
+  "utilization": 0.95,
+  "cache": "abliterated-vocab4-256k-c2-20261107",
+  "force_length": false,
+  "batch_tokens": 512,
+  "kv_gib": 22,
+  "model_path": "/workspace/model-bin/windowsxp811203/Qwen3.8-27B-Abliterated-W4A16-AWQ-GPTQ-VOCAB4-NVIDIA",
+  "run_dir": "/workspace/opusi/qwen-llm/outputs/services/gpu3-abliterated-vocab4-256k-20261120",
+  "host": "0.0.0.0",
+  "prefix_caching": true,
+  "port": 8132,
+  "budget_gib": 40
+}
